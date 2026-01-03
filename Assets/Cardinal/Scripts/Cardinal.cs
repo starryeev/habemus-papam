@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Cardinal : MonoBehaviour
@@ -15,6 +16,9 @@ public class Cardinal : MonoBehaviour
     [Header("이동 관련 설정")]
     [SerializeField] private float moveSpeed = 3.0f;
 
+    // 추기경 멤버변수
+    private List<Item> items;
+
     // 기타 멤버변수
     private ICardinalController controller;
     private Rigidbody2D rb;
@@ -29,6 +33,7 @@ public class Cardinal : MonoBehaviour
     void Awake()
     {
         // 멤버변수 초기화
+        items = new List<Item>();
         rb = GetComponentInChildren<Rigidbody2D>();    
         controller = GetComponent<ICardinalController>();
     }
