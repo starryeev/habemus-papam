@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Cardinal : MonoBehaviour
 {
@@ -24,6 +25,8 @@ public class Cardinal : MonoBehaviour
     private Rigidbody2D rb;
     private Vector2? targetPos = null;  // 이동 시 목표지점
 
+    private NavMeshAgent agent;
+
     // 추기경 기본 프로퍼티 설정
     public int Hp => hp;
     public int Influence => influence;
@@ -36,38 +39,83 @@ public class Cardinal : MonoBehaviour
         items = new List<Item>();
         rb = GetComponentInChildren<Rigidbody2D>();    
         controller = GetComponent<ICardinalController>();
+        agent = GetComponent<NavMeshAgent>();
+
+        
+        if(agent != null)
+        {
+            // 회전 방지
+            agent.updateRotation = false;
+            agent.updateUpAxis = false;
+
+            //속도 초기화
+            agent.speed = moveSpeed;
+        }
+        
+
+        
+
+        
     }
 
     void Start() {}
 
     void Update()
     {
-        CardinalInputData input = controller.GetInput();
+        if (agent != null)
+        {
+            // Player , AI_NPC 구분
+            if (CompareTag("Player"))
+            {
+                CardinalInputData input = controller.GetInput();
+                
+                //1순위 키보드 이동 
+                if(input.moveDirection != Vector2.zero)
+                {
+                    MoveByKeyboard(input.moveDirection);
+                }
+                //2순위 마우스 이동
+                else if (input.targetPos.HasValue)
+                {
+                    MoveToTargetPos(input.targetPos.Value);
+                }
+                else
+                {
+                    if(!agent.hasPath && agent.velocity.sqrMagnitude> 0.01f)
+                    {
+                        agent.velocity = Vector3.zero;
+                    }
+                }
+            }
+            
+        }
         
-        if(input.targetPos.HasValue)
-        {
-            targetPos = input.targetPos.Value;
-        }
-
-        if(targetPos.HasValue)
-        {
-            MoveToTargetPos(targetPos.Value);
-        }
     }
 
+    //네브메시 이동 함수
     void MoveToTargetPos(Vector2 targetPos)
     {
-        if(Vector2.Distance(transform.position, targetPos) <= 0.01f)
-        {
-            transform.position = targetPos;
-            this.targetPos = null;
+        //기존 마우스 클릭함수를 네브메시로 대체
 
-            return;
+        // 클릭 위치를 넘겨받아 클릭 위치로 Player 이동
+        Vector3 destination = new Vector3(targetPos.x , targetPos.y, transform.position.z);
+        agent.SetDestination(destination);
+    }
+
+    void MoveByKeyboard(Vector2 direction)
+    {
+        // 마우스 이동 경로 초기화
+        if (agent.hasPath)
+        {
+            agent.ResetPath();
         }
 
-        // 실제 임시 이동 로직 추후에 NavMesh로 변경필요
-        transform.position = Vector2.MoveTowards(transform.position, targetPos, moveSpeed * Time.deltaTime);
+
+        //키보드 입력
+        agent.velocity = new Vector3(direction.x, direction.y, 0) * moveSpeed;
     }
+
+    
 
     public void ChangeHp(int delta)
     {

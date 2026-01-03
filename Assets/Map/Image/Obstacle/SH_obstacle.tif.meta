@@ -1,0 +1,311 @@
+fileFormatVersion: 2
+guid: 4f44f5cb18ca6fc4e90605492a257ace
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1374635608820706808
+    second: SH_obstacle_0
+  - first:
+      213: 4097314212482521170
+    second: SH_obstacle_1
+  - first:
+      213: 4246432503083108891
+    second: SH_obstacle_2
+  - first:
+      213: 2276932240450410260
+    second: SH_obstacle_3
+  - first:
+      213: -3189777206593516329
+    second: SH_obstacle_4
+  - first:
+      213: 3530283339512490030
+    second: SH_obstacle_5
+  - first:
+      213: 8166889422892016090
+    second: SH_obstacle_6
+  - first:
+      213: -7422268078221842594
+    second: SH_obstacle_7
+  - first:
+      213: 278317215963874150
+    second: SH_obstacle_8
+  - first:
+      213: 6653758850585204418
+    second: SH_obstacle_9
+  - first:
+      213: -2491781292012039138
+    second: SH_obstacle_10
+  - first:
+      213: 6993914399451402866
+    second: SH_obstacle_11
+  - first:
+      213: 4419049111783568293
+    second: SH_obstacle_12
+  - first:
+      213: 4757036933182325388
+    second: SH_obstacle_13
+  - first:
+      213: -49281035134400169
+    second: SH_obstacle_14
+  - first:
+      213: 277955791876791597
+    second: SH_obstacle_15
+  - first:
+      213: -1469969537820759140
+    second: SH_obstacle_16
+  - first:
+      213: -3289698790195352676
+    second: SH_obstacle_17
+  - first:
+      213: -3596351515087979073
+    second: SH_obstacle_18
+  - first:
+      213: 1878495350282302724
+    second: SH_obstacle_19
+  - first:
+      213: -5733859328520101566
+    second: SH_obstacle_20
+  - first:
+      213: -7770342655549030579
+    second: SH_obstacle_21
+  - first:
+      213: -5686669076339058162
+    second: SH_obstacle_22
+  - first:
+      213: 6939367386835384626
+    second: SH_obstacle_23
+  - first:
+      213: -519090969132266626
+    second: SH_obstacle_24
+  - first:
+      213: -1414900287320523899
+    second: SH_obstacle_25
+  - first:
+      213: -7309630157015873514
+    second: SH_obstacle_26
+  - first:
+      213: -1461040413075640888
+    second: SH_obstacle_27
+  - first:
+      213: -4539673984515953562
+    second: SH_obstacle_28
+  - first:
+      213: 892284591690804194
+    second: SH_obstacle_29
+  - first:
+      213: 4345807422737354296
+    second: SH_obstacle_30
+  - first:
+      213: -1348940604305639335
+    second: SH_obstacle_31
+  - first:
+      213: -5742640736478320697
+    second: SH_obstacle_32
+  - first:
+      213: 4219974357582517820
+    second: SH_obstacle_33
+  - first:
+      213: 2768814992856141143
+    second: SH_obstacle_34
+  - first:
+      213: 1821904018269040540
+    second: SH_obstacle_35
+  - first:
+      213: 2462460510942002867
+    second: SH_obstacle_36
+  - first:
+      213: -3530333405445245104
+    second: SH_obstacle_37
+  - first:
+      213: 7339051345365249708
+    second: SH_obstacle_38
+  - first:
+      213: -1032856014391297830
+    second: SH_obstacle_39
+  - first:
+      213: 8036300792016947079
+    second: SH_obstacle_40
+  - first:
+      213: -4732346279142756056
+    second: SH_obstacle_41
+  - first:
+      213: 1880956693662068622
+    second: SH_obstacle_42
+  - first:
+      213: 9045827210241414906
+    second: SH_obstacle_43
+  - first:
+      213: -4489026374898327087
+    second: SH_obstacle_44
+  - first:
+      213: 4014053346047703879
+    second: SH_obstacle_45
+  - first:
+      213: -7248908215005292021
+    second: SH_obstacle_46
+  - first:
+      213: 3695178087475832816
+    second: SH_obstacle_47
+  - first:
+      213: -3651993303756406054
+    second: SH_obstacle_48
+  - first:
+      213: -4294140063417856045
+    second: SH_obstacle_49
+  - first:
+      213: 2687543176060075357
+    second: SH_obstacle_50
+  - first:
+      213: -6025340535868163935
+    second: SH_obstacle_51
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: SH_obstacle_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1920
+        height: 1080
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 80293a862305cece0800000000000000
+      internalID: -1374635608820706808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 719724ca92039b248a86acbe76948f17
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":1920.0,"y":1080.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      SH_obstacle_0: -1374635608820706808
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
