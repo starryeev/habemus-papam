@@ -18,7 +18,7 @@ public class GameBalance : ScriptableObject
 
     [Tooltip("추기경 기본 이동속도 계수")]
     [SerializeField] private float initialMoveSpeed = 3.0f;
-    public int InitialMoveSpeed => initialPiety;
+    public float InitialMoveSpeed => initialMoveSpeed;
 
     [Header("게임 진행 설정")]
     [Tooltip("한 콘클라베 당 자유 행동 시간")]
