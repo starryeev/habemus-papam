@@ -16,4 +16,15 @@ MonoBehaviour:
   initialInfluence: 20
   initialPiety: 20
   initialMoveSpeed: 3
+  praySuccessChance: 0.8
+  praySuccessDeltaPiety: 15
+  praySuccessDeltaHp: 10
+  prayFailDeltaPiety: 5
+  prayFailDeltaHp: 20
+  speechSuccessChance: 0.9
+  speechSuccessDeltaInfluenceMin: 3
+  speechSuccessDeltaInfluenceMax: 7
+  speechSuccessDeltaHp: -5
+  speechFailDeltaInfluence: -2
+  speechFailDeltaHp: -5
   maxConclaveTime: 60
