@@ -140,6 +140,12 @@ public class Cardinal : MonoBehaviour
     {
         GameBalance balance = InGameManager.Instance.Balance;
 
+        // 아이템 이벤트 로직
+        foreach(var item in items)
+        {
+            item?.OnPray(this);
+        }
+
         if(Random.value < balance.PraySuccessChance)
         {
             // 기도 성공
@@ -158,6 +164,12 @@ public class Cardinal : MonoBehaviour
     public void Speech()
     {
         GameBalance balance = InGameManager.Instance.Balance;
+
+        // 아이템 이벤트 로직
+        foreach(var item in items)
+        {
+            item?.OnSpeech(this);
+        }
 
         if(Random.value < balance.SpeechSuccessChance)
         {
