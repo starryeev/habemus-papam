@@ -96,7 +96,12 @@ public class InGameManager : MonoBehaviour
 
     void Update()
     {
+        // 콘클라베 타이머
         gameContext.Tick(Time.deltaTime);
+
+        // 추기경 자동 체력감소
+        CardinalManager cardinalManager = CardinalManager.Instance;
+        cardinalManager.DrainAllCardinalHp(balance.HpDeltaPerSec * Time.deltaTime);
     }
 
     void InitGame()

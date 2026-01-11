@@ -77,9 +77,9 @@ public class CardinalManager : MonoBehaviour
         }
     }
 
-    public int GetCardinalHpSum()
+    public float GetCardinalHpSum()
     {
-        int result = 0;
+        float result = 0;
 
         foreach(var cardinal in cardinals)
         {
@@ -89,9 +89,9 @@ public class CardinalManager : MonoBehaviour
         return result;
     }
 
-    public int GetCardinalPietySum()
+    public float GetCardinalPietySum()
     {
-        int result = 0;
+        float result = 0;
 
         foreach(var cardinal in cardinals)
         {
@@ -99,6 +99,14 @@ public class CardinalManager : MonoBehaviour
         }
 
         return result;
+    }
+
+    public void DrainAllCardinalHp(float delta)
+    {
+        foreach(var cardinal in cardinals)
+        {
+            cardinal.ChangeHp(delta);
+        }
     }
 
 }

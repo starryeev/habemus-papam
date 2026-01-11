@@ -6,13 +6,13 @@ public class Cardinal : MonoBehaviour
 {
     [Header("추기경 기본 설정")]
     [Tooltip("추기경 기본 체력")]
-    [SerializeField] private int hp;
+    [SerializeField] private float hp;
 
     [Tooltip("추기경 기본 정치력")]
-    [SerializeField] private int influence;
+    [SerializeField] private float influence;
 
     [Tooltip("추기경 기본 경건함")]
-    [SerializeField] private int piety;
+    [SerializeField] private float piety;
 
     [Header("이동 관련 설정")]
     [SerializeField] private float moveSpeed;
@@ -27,9 +27,9 @@ public class Cardinal : MonoBehaviour
     private NavMeshAgent agent;
 
     // 추기경 기본 프로퍼티 설정
-    public int Hp => hp;
-    public int Influence => influence;
-    public int Piety => piety;
+    public float Hp => hp;
+    public float Influence => influence;
+    public float Piety => piety;
 
 
     void Awake()
@@ -120,19 +120,19 @@ public class Cardinal : MonoBehaviour
         agent.velocity = new Vector3(direction.x, direction.y, 0) * moveSpeed;
     }
 
-    public void ChangeHp(int delta)
+    public void ChangeHp(float delta)
     {
-        hp = Mathf.Clamp(hp + delta, 0, 100);
+        hp = Mathf.Clamp(hp + delta, 0f, 100f);
     }
 
-    public void ChangeInfluence(int delta)
+    public void ChangeInfluence(float delta)
     {
-        influence = Mathf.Clamp(influence + delta, 0, 100);
+        influence = Mathf.Clamp(influence + delta, 0f, 100f);
     }
 
-    public void ChangePiety(int delta)
+    public void ChangePiety(float delta)
     {
-        influence = Mathf.Clamp(piety + delta, 0, 100);
+        influence = Mathf.Clamp(piety + delta, 0f, 100f);
     }
 
     // 기도 함수
@@ -174,7 +174,7 @@ public class Cardinal : MonoBehaviour
         if(Random.value < balance.SpeechSuccessChance)
         {
             // 연설 성공
-            int speechSuccessDeltaInfluence = Random.Range(balance.SpeechSuccessDeltaInfluenceMin, balance.SpeechSuccessDeltaInfluenceMax + 1);
+            float speechSuccessDeltaInfluence = Random.Range(balance.SpeechSuccessDeltaInfluenceMin, balance.SpeechSuccessDeltaInfluenceMax + 1);
             ChangeInfluence(speechSuccessDeltaInfluence);
             ChangeHp(balance.SpeechSuccessDeltaHp);
         }
