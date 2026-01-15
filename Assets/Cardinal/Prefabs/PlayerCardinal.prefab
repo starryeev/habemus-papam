@@ -49,10 +49,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a15b5b6defa540e5a25f63bc7113600, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cardinal
+  currentState: 0
   hp: 100
   influence: 20
   piety: 20
   moveSpeed: 3
+  ConClaving: 0
 --- !u!114 &8780407932907178985
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -79,11 +81,11 @@ NavMeshAgent:
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
-  m_StoppingDistance: 0
+  m_StoppingDistance: 0.1
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 0.68
+  m_Height: 1
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
