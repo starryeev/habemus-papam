@@ -19,18 +19,40 @@ public enum CardinalState
 public class StateController : MonoBehaviour
 {
     [Header("상태 정보")]
+    [Tooltip("현재 캐릭터가 수행 중인 상태")]
     [SerializeField] private CardinalState currentState = CardinalState.CutScene;
 
     [Header("Chat 설정")]
-    [SerializeField] private GameObject chatPrefab; // 말풍선(채팅) 프리팹
-    [SerializeField] private float chatDuration = 5.0f; // 채팅 상태 유지 시간
+    [Tooltip("채팅 시작을 알리고 NPC를 모으는 트리거(말풍선) 프리팹")]
+    [SerializeField] private GameObject chatTriggerPrefab;
+
+    [Tooltip("채팅 상태가 유지되는 시간 (초)")]
+    [SerializeField] private float chatDuration = 5.0f;
+
+    [Tooltip("Idle 상태에서 ChatMaster(말하기) 상태로 전환될 확률 (%)")]
+    [SerializeField] private float ChatMaster = 5f;
+
+    [Header("Chat Visual 설정 (말풍선)")]
+    [Tooltip("말하는 사람(Master) 머리 위에 표시될 말풍선 프리팹")]
+    [SerializeField] private GameObject masterBubblePrefab;
+
+    [Tooltip("듣는 사람(Listener) 머리 위에 표시될 말풍선 프리팹")]
+    [SerializeField] private GameObject listenerBubblePrefab;
+
+    [Tooltip("플레이어 감지 시 표시될 언짢은 이모티콘 프리팹")]
+    [SerializeField] private GameObject masterAlertBubblePrefab;
+
+    [Tooltip("캐릭터 위치를 기준으로 말풍선이 생성될 오프셋 (높이 조절)")]
+    [SerializeField] private Vector3 bubbleOffset = new Vector3(0, 2.5f, 0);
 
     // 컴포넌트 참조
-    private Cardinal cardinal;
+    private Cardinal cardinal;                  
     private NavMeshAgent agent;
-    private ICardinalController inputController; // 입력 처리를 위해 가져옴
-
+    private ICardinalController inputController; 
     private Animation_Controller animController;
+
+    // 말풍선 인스턴스
+    private GameObject currentBubbleInstance; 
 
     // 이동 경로 큐 (컷씬용)
     private Queue<Vector3> waypoints = new Queue<Vector3>();
@@ -38,7 +60,7 @@ public class StateController : MonoBehaviour
     // 코루틴
     private Coroutine pathCoroutine;
     private Coroutine aiWanderCoroutine;
-    private Coroutine chatSequenceCoroutine; // [변경] 채팅 시퀀스 통합 관리
+    private Coroutine chatSequenceCoroutine;
 
     // 프로퍼티
     public bool IsMoving => pathCoroutine != null;
@@ -56,7 +78,7 @@ public class StateController : MonoBehaviour
 
     void Start()
     {
-        ChangeState(CardinalState.CutScene);
+        EnterState(CardinalState.CutScene);
     }
 
     void Update()
@@ -155,6 +177,7 @@ public class StateController : MonoBehaviour
     // ---------------------------------------------------------
     // [이동 로직] AI 배회 (Idle)
     // ---------------------------------------------------------
+
     private IEnumerator AIWanderRoutine()
     {
         while (currentState == CardinalState.Idle)
@@ -164,11 +187,15 @@ public class StateController : MonoBehaviour
 
             if (currentState != CardinalState.Idle) yield break;
 
-            // 1. 10% 확률로 ChatMaster 상태 전환
-            if (Random.Range(0f, 100f) < 10f)
+            // 1. 일정 확률로 ChatMaster 상태 전환 || ChatMaster 상태 1명 이하일때만 
+            if (CardinalManager.Instance != null && CardinalManager.Instance.GetCurrentChatMasterCount() < 2)
             {
-                ChangeState(CardinalState.ChatMaster);
-                yield break;
+                // 설정된 확률(ChatMaster 변수) 체크
+                if (Random.Range(0f, 100f) < ChatMaster)
+                {
+                    ChangeState(CardinalState.ChatMaster);
+                    yield break;
+                }
             }
 
             // 2. 이동 로직 (기존과 동일)
@@ -263,22 +290,39 @@ public class StateController : MonoBehaviour
                 break;
 
             case CardinalState.ChatMaster:
-                // [변경] ChatMaster 진입 시 시퀀스 코루틴 시작
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.1f, 0.1f);
+                }
+
                 if (chatSequenceCoroutine != null) StopCoroutine(chatSequenceCoroutine);
                 chatSequenceCoroutine = StartCoroutine(ProcessChatSequence());
+
+                ShowBubble(masterBubblePrefab); // 말풍선
                 break;
 
             case CardinalState.Chatting:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.1f, 0.1f);
+                }
+
                 if (agent != null && agent.isOnNavMesh)
                 {
                     agent.ResetPath();
                     agent.velocity = Vector3.zero;
                     agent.isStopped = true; // 이동 정지
                 }
+
+                ShowBubble(listenerBubblePrefab);
                 break;
 
             case CardinalState.CutScene:
                 if (agent != null && agent.hasPath) agent.ResetPath();
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.1f, 0.1f);
+                }
                 break;
         }
     }
@@ -297,123 +341,225 @@ public class StateController : MonoBehaviour
                 break;
 
             case CardinalState.ChatMaster:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.5f, 1f);
+                }
+
                 // 상태 나갈 때 시퀀스 코루틴 정리
                 if (chatSequenceCoroutine != null)
                 {
                     StopCoroutine(chatSequenceCoroutine);
                     chatSequenceCoroutine = null;
                 }
+
+                HideBubble();
                 break;
 
             case CardinalState.Chatting:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.5f, 1f);
+                }
+
                 if (agent != null && agent.isOnNavMesh)
                 {
                     agent.isStopped = false; // 이동 재개 가능
+                }
+
+                HideBubble();
+                break;
+            case CardinalState.CutScene:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.5f, 1f);
                 }
                 break;
         }
     }
 
+    private void ShowBubble(GameObject prefab)
+    {
+        HideBubble();
+
+        if (prefab != null)
+        {
+            currentBubbleInstance = Instantiate(prefab, transform.position + bubbleOffset, Quaternion.identity, transform);
+        }
+    }
+
+    private void HideBubble()
+    {
+        if (currentBubbleInstance != null)
+        {
+            Destroy(currentBubbleInstance);
+            currentBubbleInstance = null;
+        }
+    }
+
     // ---------------------------------------------------------
-    // [추가됨] ChatMaster 로직 및 충돌 처리 지원
+    // ChatMaster 로직 및 충돌 처리 지원
     // ---------------------------------------------------------
 
     private IEnumerator ProcessChatSequence()
     {
-        // 1. 이동 정지
+        // 1. [Master] 이동 정지
         if (agent.isOnNavMesh) agent.ResetPath();
 
-        // 2. ChatTrigger 프리팹 생성
+        // [위치 선정]
+        Vector3 spawnPos = transform.position;
+        Animator myAnim = GetComponentInChildren<Animator>();
+        if (myAnim != null)
+        {
+            Vector2 facingDir = new Vector2(myAnim.GetFloat("InputX"), myAnim.GetFloat("InputY"));
+            if (facingDir == Vector2.zero) facingDir = Vector2.down;
+            spawnPos += (Vector3)facingDir.normalized * 1.5f;
+        }
+
+        // 2. ChatTrigger 생성
         GameObject triggerObj = null;
         ChatTrigger triggerScript = null;
+        BoxCollider2D triggerCollider = null;
 
-        if (chatPrefab != null)
+        if (chatTriggerPrefab != null)
         {
-            triggerObj = Instantiate(chatPrefab, transform.position, Quaternion.identity, this.transform);
+            triggerObj = Instantiate(chatTriggerPrefab, spawnPos, Quaternion.identity);
             triggerScript = triggerObj.GetComponent<ChatTrigger>();
+            triggerCollider = triggerObj.GetComponent<BoxCollider2D>();
         }
 
-        // 3. Trigger가 NPC들을 감지할 시간을 줌 (0.5초 대기)
-        // BoxCollider가 활성화되고 충돌 이벤트를 받아낼 물리 프레임 확보
+        // [상태 변수]
+        bool playerDetected = false;
+
+        // 3. 초기 대기 (NPC 수집)
         yield return new WaitForSeconds(0.5f);
 
-        // 4. 감지된 NPC 중 랜덤 3명 뽑기
+        // 4. 리스너 선별 (플레이어 제외)
         List<StateController> listeners = new List<StateController>();
-
         if (triggerScript != null && triggerScript.collectedNPCs.Count > 0)
         {
-            // 리스트를 랜덤으로 섞음 (System.Linq 사용)
-            var shuffled = triggerScript.collectedNPCs.OrderBy(x => Random.value).ToList();
+            var candidates = triggerScript.collectedNPCs
+                .Where(npc => !npc.CompareTag("Player") && npc.gameObject != this.gameObject)
+                .OrderBy(x => Random.value)
+                .ToList();
 
-            // 최대 3명, 혹은 그보다 적으면 전체 선택
-            int countToPick = Mathf.Min(3, shuffled.Count);
+            int countToPick = Mathf.Min(3, candidates.Count);
+            for (int i = 0; i < countToPick; i++) listeners.Add(candidates[i]);
+        }
 
-            for (int i = 0; i < countToPick; i++)
+        int totalCount = 1 + listeners.Count;
+
+        // [배치 로직]
+        float radius = (triggerCollider != null) ? Mathf.Max(triggerCollider.size.x, triggerCollider.size.y) * 0.3f : 0.8f;
+        List<StateController> allParticipants = new List<StateController>();
+        allParticipants.Add(this);
+        allParticipants.AddRange(listeners);
+
+        foreach (var l in listeners) l.EnterChatListener();
+
+        if (listeners.Count > 0)
+        {
+            float angleStep = 360f / totalCount;
+            float currentAngle = 90f;
+            foreach (var participant in allParticipants)
             {
-                listeners.Add(shuffled[i]);
+                float rad = currentAngle * Mathf.Deg2Rad;
+                Vector3 circleOffset = new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0) * radius;
+                participant.MoveToPosition(triggerObj.transform.position + circleOffset);
+                currentAngle += angleStep;
             }
         }
 
-        // 5. 선택된 NPC들에게 상태 부여 및 방향 설정
+        // 5. 이동 및 자리잡기
+
+        yield return new WaitForSeconds(1.5f); // 이동 대기
+
+        // 방향 보정 (0.5초)
+        float orientationTimer = 0f;
+        while (orientationTimer < 0.5f)
+        {
+            foreach (var participant in allParticipants)
+            {
+                if (participant != null && participant.animController != null)
+                {
+                    if (participant.agent != null) { participant.agent.isStopped = true; participant.agent.velocity = Vector3.zero; }
+                    Vector2 dirToCenter = (triggerObj.transform.position - participant.transform.position).normalized;
+                    if (dirToCenter.sqrMagnitude > 0.001f) participant.animController.SetLookDirection(dirToCenter);
+                }
+            }
+            orientationTimer += Time.deltaTime;
+            yield return null;
+        }
+
+        // -----------------------------------------------------------------------
+        // [중요] 대형 완성 -> 다각형 콜라이더 생성!
+        // -----------------------------------------------------------------------
+        if (triggerScript != null)
+        {
+            // 참가자들의 Transform 리스트 생성
+            List<Transform> participantTransforms = new List<Transform>();
+            foreach (var p in allParticipants) participantTransforms.Add(p.transform);
+
+            // ChatTrigger에게 "이 좌표들을 잇는 다각형을 만들어라" 명령
+            triggerScript.CreateFormationCollider(participantTransforms);
+        }
+
+        // -----------------------------------------------------------------------
+        // 6. 대화 진행 (실제 감지 시작)
+        // -----------------------------------------------------------------------
+        float chatTimer = 0f;
+        float totalWaitTime = Mathf.Max(0, chatDuration - 1.5f);
+
+        while (chatTimer < totalWaitTime)
+        {
+            // 다각형 내부 감지 변수 체크 (IsPlayerInFormation)
+            if (!playerDetected && triggerScript != null && triggerScript.IsPlayerInFormation)
+            {
+                GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+                if (playerObj != null)
+                {
+                    playerDetected = true; 
+
+                    // 말풍선 교체
+                    if (masterAlertBubblePrefab != null) ShowBubble(masterAlertBubblePrefab);
+
+                    // 정치력 감소
+                    Cardinal playerCardinal = playerObj.GetComponent<Cardinal>();
+                    if (playerCardinal != null)
+                    {
+                        playerCardinal.ChangeInfluence(-3f);
+                    }
+                }
+            }
+
+            chatTimer += Time.deltaTime;
+            yield return null;
+        }
+
+        // 7. 종료 처리
         foreach (var listener in listeners)
         {
-            // A. 상태 변경 (Chatting 상태로 전환하여 멈춤)
-            listener.EnterChatListener();
-
-            // B. ChatMaster(나)를 바라보게 설정
-            if (listener.animController != null)
-            {
-                // 방향 벡터 계산: (내 위치 - 상대 위치)
-                Vector2 directionToMaster = (this.transform.position - listener.transform.position).normalized;
-
-                // Animation_Controller에 추가한 함수 호출
-                listener.animController.SetLookDirection(directionToMaster);
-            }
+            if (listener.CurrentState == CardinalState.Chatting) listener.ChangeState(CardinalState.Idle);
         }
-
-        // 6. 5초 동안 대기 (채팅 진행 중)
-        yield return new WaitForSeconds(chatDuration);
-
-        // 7. 종료 처리: 선택된 리스너들 해제
-        foreach (var listener in listeners)
-        {
-            // 리스너가 여전히 Chatting 상태라면 Idle로 복귀
-            if (listener.CurrentState == CardinalState.Chatting)
-            {
-                listener.ChangeState(CardinalState.Idle);
-            }
-        }
-
-        // 8. 프리팹(말풍선) 삭제
-        if (triggerObj != null)
-        {
-            Destroy(triggerObj);
-        }
-
-        // 9. 나 자신도 Idle로 복귀
+        if (triggerObj != null) Destroy(triggerObj);
         ChangeState(CardinalState.Idle);
     }
 
-    private IEnumerator RevertToIdleAfterDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-
-        // [수정] ChatMaster(말하는 애) 뿐만 아니라 Chatting(듣는 애)도 시간이 지나면 풀려야 함
-        if (currentState == CardinalState.ChatMaster || currentState == CardinalState.Chatting)
-        {
-            ChangeState(CardinalState.Idle);
-        }
-    }
 
     public void EnterChatListener()
     {
-        // 컷씬이나 이미 마스터가 아니라면 변경
         if (currentState != CardinalState.CutScene && currentState != CardinalState.ChatMaster)
         {
             ChangeState(CardinalState.Chatting);
+        }
+    }
 
-            // 주의: 해제는 Master(말 건 사람)가 5초 뒤에 ChangeState(Idle)을 호출해줌으로써 이루어짐.
-            // 만약 안전장치가 필요하다면 여기에 별도의 타임아웃 코루틴을 둘 수 있음.
+    public void MoveToPosition(Vector3 targetPos) // 채팅 상태일때 움직이도록
+    {
+        if (agent != null && agent.isOnNavMesh)
+        {
+            agent.isStopped = false; // 정지 해제
+            agent.SetDestination(targetPos);
         }
     }
 }

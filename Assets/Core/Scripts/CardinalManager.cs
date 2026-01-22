@@ -47,8 +47,7 @@ public class CardinalManager : MonoBehaviour
     // 싱글톤
     public static CardinalManager Instance { get; private set; }
 
-    // 기타 멤버변수
-    // 데이터 관리는 여전히 Cardinal 클래스를 통해 합니다.
+    // Cardinal 관리 리스트
     private List<Cardinal> cardinals;
 
    
@@ -374,6 +373,25 @@ public class CardinalManager : MonoBehaviour
         }
 
         return cardinalObj;
+    }
+
+    // 현재 ChatMaster 상태인 추기경의 수를 반환하는 함수
+    public int GetCurrentChatMasterCount()
+    {
+        int count = 0;
+        if (cardinals == null) return 0;
+
+        foreach (var card in cardinals)
+        {
+            if (card == null) continue;
+
+            StateController sc = card.GetComponent<StateController>();
+            if (sc != null && sc.CurrentState == CardinalState.ChatMaster)
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     // 기타 추기경 함수 (데이터 관련이므로 Cardinal 접근 유지)
