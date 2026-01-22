@@ -7,6 +7,7 @@ using UnityEngine.AI;
 public enum CardinalState
 {
     Idle,
+    ReadyPraying,
     Praying,
     InSpeech,
     ChatMaster,
@@ -42,8 +43,15 @@ public class StateController : MonoBehaviour
     [Tooltip("플레이어 감지 시 표시될 언짢은 이모티콘 프리팹")]
     [SerializeField] private GameObject masterAlertBubblePrefab;
 
+    [Tooltip("기도(Praying) 상태일 때 표시될 말풍선 프리팹")]
+    [SerializeField] private GameObject prayingBubblePrefab;
+
     [Tooltip("캐릭터 위치를 기준으로 말풍선이 생성될 오프셋 (높이 조절)")]
     [SerializeField] private Vector3 bubbleOffset = new Vector3(0, 2.5f, 0);
+
+    [Header("Pray 설정")]
+    [Tooltip("기도 상태를 유지할 시간 (초)")]
+    [SerializeField] private float prayDuration = 3.0f;
 
     // 컴포넌트 참조
     private Cardinal cardinal;                  
@@ -61,6 +69,7 @@ public class StateController : MonoBehaviour
     private Coroutine pathCoroutine;
     private Coroutine aiWanderCoroutine;
     private Coroutine chatSequenceCoroutine;
+    private Coroutine praySequenceCoroutine;
 
     // 프로퍼티
     public bool IsMoving => pathCoroutine != null;
@@ -182,8 +191,7 @@ public class StateController : MonoBehaviour
     {
         while (currentState == CardinalState.Idle)
         {
-            float waitTime = Random.Range(1f, 3f);
-            yield return new WaitForSeconds(waitTime);
+            
 
             if (currentState != CardinalState.Idle) yield break;
 
@@ -211,6 +219,12 @@ public class StateController : MonoBehaviour
                 currentState != CardinalState.Idle ||
                 (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance && agent.velocity.sqrMagnitude <= 0.1f)
             );
+
+            if (currentState == CardinalState.Idle)
+            {
+                float waitTime = Random.Range(1f, 3f);
+                yield return new WaitForSeconds(waitTime);
+            }
         }
     }
 
@@ -285,8 +299,17 @@ public class StateController : MonoBehaviour
         switch (state)
         {
             case CardinalState.Idle:
+                // [추가] Idle 진입 시 에이전트 상태 강제 초기화 (방어 코드)
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.isStopped = false;
+                    agent.ResetPath();
+                }
+
                 if (!CompareTag("Player") && aiWanderCoroutine == null)
+                {
                     aiWanderCoroutine = StartCoroutine(AIWanderRoutine());
+                }
                 break;
 
             case CardinalState.ChatMaster:
@@ -324,6 +347,30 @@ public class StateController : MonoBehaviour
                     cardinal.SetAgentSize(0.1f, 0.1f);
                 }
                 break;
+            case CardinalState.ReadyPraying:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.1f, 0.1f);
+                }
+                if (agent.isOnNavMesh) agent.ResetPath(); // 기존 경로 초기화
+                agent.avoidancePriority = 0;
+                // 실제 로직은 OrderToPray 함수에서 시작된 코루틴이 담당함
+                break;
+            case CardinalState.Praying:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.1f, 0.1f);
+                }
+
+                if (agent.isOnNavMesh)
+                {
+                    agent.ResetPath();
+                    agent.isStopped = true;
+                    agent.velocity = Vector3.zero;
+                }
+
+                ShowBubble(prayingBubblePrefab);
+                break;
         }
     }
 
@@ -355,6 +402,7 @@ public class StateController : MonoBehaviour
 
                 HideBubble();
                 break;
+            
 
             case CardinalState.Chatting:
                 if (cardinal != null)
@@ -374,6 +422,37 @@ public class StateController : MonoBehaviour
                 {
                     cardinal.SetAgentSize(0.5f, 1f);
                 }
+                break;
+
+            case CardinalState.ReadyPraying:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.5f, 1f);
+                }
+                if (agent != null) agent.avoidancePriority = 50;
+                break;
+
+            case CardinalState.Praying:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.5f, 1f);
+                }
+
+                if (praySequenceCoroutine != null)
+                {
+                    StopCoroutine(praySequenceCoroutine);
+                    praySequenceCoroutine = null;
+                }
+
+                // [수정] 기도 상태 해제 시 이동 관련 설정 확실하게 복구
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.avoidancePriority = 50; // 밀릴 수 있게 복구
+                    agent.isStopped = false;      // 이동 정지 해제 (중요!)
+                    agent.ResetPath();            // 기존 경로 삭제 (중요!)
+                }
+
+                HideBubble();
                 break;
         }
     }
@@ -542,6 +621,73 @@ public class StateController : MonoBehaviour
             if (listener.CurrentState == CardinalState.Chatting) listener.ChangeState(CardinalState.Idle);
         }
         if (triggerObj != null) Destroy(triggerObj);
+        ChangeState(CardinalState.Idle);
+    }
+
+    // ---------------------------------------------------------
+    // [신규 기능] 감실(Gamsil) 기도 시퀀스
+    // ---------------------------------------------------------
+
+    /// <summary>
+    /// Gamsil 스크립트에서 호출: 해당 위치로 이동해 기도를 시작하라
+    /// </summary>
+    public void OrderToPray(Vector3 targetPos)
+    {
+        // 1. 상태 변경 (이동 중)
+        ChangeState(CardinalState.ReadyPraying);
+
+        // 2. 시퀀스 코루틴 시작
+        if (praySequenceCoroutine != null) StopCoroutine(praySequenceCoroutine);
+        praySequenceCoroutine = StartCoroutine(ProcessPraySequence(targetPos));
+    }
+
+    private IEnumerator ProcessPraySequence(Vector3 targetPos)
+    {
+        // --- [Step 1] 특정 위치로 이동 (ReadyPraying 상태) ---
+        if (agent.isOnNavMesh)
+        {
+            agent.SetDestination(targetPos);
+            agent.isStopped = false;
+        }
+
+        // 도착 대기
+        yield return new WaitUntil(() =>
+            !agent.pathPending &&
+            agent.remainingDistance <= agent.stoppingDistance &&
+            agent.velocity.sqrMagnitude <= 0.1f
+        );
+
+        if (currentState != CardinalState.ReadyPraying) yield break;
+
+        // --- [Step 2] 도착 후 Praying 상태 전환 ---
+        ChangeState(CardinalState.Praying);
+        // (EnterState에서 agent stop 처리됨)
+
+        // --- [Step 3] 왼쪽 바라보기 & Priority 변경 ---
+
+        // 왼쪽 방향 벡터
+        Vector2 leftDir = Vector2.left;
+
+        // 0.5초 동안 확실하게 방향 전환 (관성 제거 및 애니메이션 갱신)
+        float rotateTimer = 0f;
+        while (rotateTimer < 0.5f)
+        {
+            if (animController != null) animController.SetLookDirection(leftDir);
+            if (agent != null) agent.velocity = Vector3.zero;
+            rotateTimer += Time.deltaTime;
+            yield return null;
+        }
+
+        // NavMesh Priority 변경 (0 = 가장 중요, 밀리지 않음)
+        if (agent != null) agent.avoidancePriority = 0;
+
+
+        // --- [Step 4] 3초 대기 ---
+        yield return new WaitForSeconds(prayDuration);
+
+
+        // --- [Step 5] 종료 및 Idle 복귀 ---
+        // ExitState(Praying)에서 Priority는 50으로 복구됨
         ChangeState(CardinalState.Idle);
     }
 

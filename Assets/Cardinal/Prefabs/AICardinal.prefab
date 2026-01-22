@@ -72,7 +72,9 @@ MonoBehaviour:
   masterBubblePrefab: {fileID: 422924435413508045, guid: 2bbfc970caf29bf4b9efde809562cf3f, type: 3}
   listenerBubblePrefab: {fileID: 5671247930494976962, guid: eb35400212a0c1f43bcd1c1c2a3f56ed, type: 3}
   masterAlertBubblePrefab: {fileID: 6928995857789074070, guid: d553432ab88609b438ec793def78a7ba, type: 3}
+  prayingBubblePrefab: {fileID: 8144235865602989633, guid: cb5d69de717b5254d9513704cec63ade, type: 3}
   bubbleOffset: {x: 0, y: 1, z: 0}
+  prayDuration: 10
 --- !u!195 &2374191198918746138
 NavMeshAgent:
   m_ObjectHideFlags: 0
