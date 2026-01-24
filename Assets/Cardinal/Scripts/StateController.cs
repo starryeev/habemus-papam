@@ -9,6 +9,7 @@ public enum CardinalState
     Idle,
     ReadyPraying,
     Praying,
+    ReadyInSpeech,
     InSpeech,
     ChatMaster,
     Chatting,
@@ -23,6 +24,10 @@ public class StateController : MonoBehaviour
     [Tooltip("현재 캐릭터가 수행 중인 상태")]
     [SerializeField] private CardinalState currentState = CardinalState.CutScene;
 
+    [Header("AI 배회 설정")]
+    [Tooltip("이 오브젝트의 Y좌표가 배회 한계선이 됩니다. (이 선 위로는 안 올라감)")]
+    [SerializeField] private Transform wanderLimitTransform;
+
     [Header("Chat 설정")]
     [Tooltip("채팅 시작을 알리고 NPC를 모으는 트리거(말풍선) 프리팹")]
     [SerializeField] private GameObject chatTriggerPrefab;
@@ -33,7 +38,7 @@ public class StateController : MonoBehaviour
     [Tooltip("Idle 상태에서 ChatMaster(말하기) 상태로 전환될 확률 (%)")]
     [SerializeField] private float ChatMaster = 5f;
 
-    [Header("Chat Visual 설정 (말풍선)")]
+    [Header("말풍선 설정 (디버깅용)")]
     [Tooltip("말하는 사람(Master) 머리 위에 표시될 말풍선 프리팹")]
     [SerializeField] private GameObject masterBubblePrefab;
 
@@ -46,12 +51,19 @@ public class StateController : MonoBehaviour
     [Tooltip("기도(Praying) 상태일 때 표시될 말풍선 프리팹")]
     [SerializeField] private GameObject prayingBubblePrefab;
 
+    [Tooltip("연설(Speeching) 상태일 때 표시될 말풍선 프리팹")]
+    [SerializeField] private GameObject SpeechingBubblePrefab;
+
     [Tooltip("캐릭터 위치를 기준으로 말풍선이 생성될 오프셋 (높이 조절)")]
     [SerializeField] private Vector3 bubbleOffset = new Vector3(0, 2.5f, 0);
 
     [Header("Pray 설정")]
     [Tooltip("기도 상태를 유지할 시간 (초)")]
     [SerializeField] private float prayDuration = 3.0f;
+
+    [Header("Speech 설정")]
+    [Tooltip("연설 상태를 유지할 시간 (초)")]
+    [SerializeField] private float speechDuration = 3.0f;
 
     // 대기열 상태인지 확인하는 플래그
     private bool isWaitingInLine = false;
@@ -72,9 +84,10 @@ public class StateController : MonoBehaviour
 
     // 코루틴
     private Coroutine pathCoroutine;
-    private Coroutine aiWanderCoroutine;
-    private Coroutine chatSequenceCoroutine;
-    private Coroutine praySequenceCoroutine;
+    private Coroutine aiWanderCoroutine;        //Idle
+    private Coroutine chatSequenceCoroutine;    //Chat
+    private Coroutine praySequenceCoroutine;    //Praying
+    private Coroutine speechSequenceCoroutine;  //Speeching
 
     // 프로퍼티
     public bool IsMoving => pathCoroutine != null;
@@ -113,6 +126,12 @@ public class StateController : MonoBehaviour
                 break;
             case CardinalState.Chatting: // 듣는 상태
                 // 필요한 경우 대기 로직
+                break;
+            case CardinalState.InSpeech: // 연설 중 상태
+                
+                break;
+            case CardinalState.ReadyInSpeech: // 연설 준비 상태
+               
                 break;
 
                 // 다른 상태들...
@@ -198,14 +217,11 @@ public class StateController : MonoBehaviour
     {
         while (currentState == CardinalState.Idle)
         {
-            
-
             if (currentState != CardinalState.Idle) yield break;
 
-            // 일정 확률로 ChatMaster 상태 전환 || ChatMaster 상태 1명 이하일때만 
+            // 1. ChatMaster 전환 로직 (기존 유지)
             if (CardinalManager.Instance != null && CardinalManager.Instance.GetCurrentChatMasterCount() < 2)
             {
-                // 설정된 확률(ChatMaster 변수) 체크
                 if (Random.Range(0f, 100f) < ChatMaster)
                 {
                     ChangeState(CardinalState.ChatMaster);
@@ -213,24 +229,76 @@ public class StateController : MonoBehaviour
                 }
             }
 
-            // 2. 이동 로직 (기존과 동일)
-            Vector3 randomOffset = new Vector3(Random.Range(-2f, 2f), Random.Range(-2f, 2f), 0);
-            Vector3 randomDest = transform.position + randomOffset;
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(randomDest, out hit, 1.0f, NavMesh.AllAreas))
+            Vector3 targetPosition;
+            bool isRecoveryMove = false;
+
+            // [변경] 기준이 될 Y좌표 가져오기
+            // 할당된 오브젝트가 없으면 본인의 현재 위치를 기준으로 삼음 (안전장치)
+            float currentLimitY = (wanderLimitTransform != null) ? wanderLimitTransform.position.y : transform.position.y;
+
+            // =========================================================
+            // [로직] Y좌표 체크 및 목적지 설정
+            // =========================================================
+
+            // A. 현재 위치가 기준선(오브젝트)보다 위에 있는 경우 (복귀 로직)
+            if (transform.position.y > currentLimitY)
             {
-                if (agent.isOnNavMesh) agent.SetDestination(hit.position);
+                // 기준선보다 1~3m 아래로 강제 설정
+                float recoveryY = currentLimitY - Random.Range(1.0f, 3.0f);
+                float randomX = transform.position.x + Random.Range(-3.0f, 3.0f);
+
+                targetPosition = new Vector3(randomX, recoveryY, 0);
+                isRecoveryMove = true;
+            }
+            // B. 정상 범위 (기준선 아래)
+            else
+            {
+                Vector2 randomCircle = Random.insideUnitCircle * Random.Range(2.0f, 5.0f);
+                targetPosition = transform.position + new Vector3(randomCircle.x, randomCircle.y, 0);
+
+                // [Clamping] 목적지가 기준선보다 높게 잡히면, 기준선 바로 아래로 깎음
+                if (targetPosition.y > currentLimitY)
+                {
+                    targetPosition.y = currentLimitY - Random.Range(0.1f, 1.0f);
+                }
             }
 
+            // =========================================================
+            // NavMesh 이동 명령 (기존과 동일)
+            // =========================================================
+            NavMeshHit hit;
+            float sampleRange = isRecoveryMove ? 5.0f : 2.0f;
+
+            if (NavMesh.SamplePosition(targetPosition, out hit, sampleRange, NavMesh.AllAreas))
+            {
+                if (agent.isOnNavMesh)
+                {
+                    agent.SetDestination(hit.position);
+                    agent.isStopped = false;
+                }
+            }
+
+            // 3. 이동 대기
             yield return new WaitUntil(() =>
                 currentState != CardinalState.Idle ||
                 (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance && agent.velocity.sqrMagnitude <= 0.1f)
             );
 
+            // 4. 도착 후 대기 (두리번)
             if (currentState == CardinalState.Idle)
             {
-                float waitTime = Random.Range(1f, 3f);
-                yield return new WaitForSeconds(waitTime);
+                float waitTime = isRecoveryMove ? Random.Range(0.5f, 1.5f) : Random.Range(1.5f, 4f);
+                float timer = 0f;
+                Vector2 randomLookDir = Random.insideUnitCircle.normalized;
+
+                while (timer < waitTime)
+                {
+                    if (currentState != CardinalState.Idle) yield break;
+                    if (animController != null) animController.SetLookDirection(randomLookDir);
+                    if (agent != null) agent.velocity = Vector3.zero;
+                    timer += Time.deltaTime;
+                    yield return null;
+                }
             }
         }
     }
@@ -255,6 +323,12 @@ public class StateController : MonoBehaviour
         {
             StopCoroutine(aiWanderCoroutine);
             aiWanderCoroutine = null;
+        }
+
+        if (speechSequenceCoroutine != null)
+        {
+            StopCoroutine(speechSequenceCoroutine);
+            speechSequenceCoroutine = null;
         }
 
         // 말풍선 등 정리
@@ -337,7 +411,7 @@ public class StateController : MonoBehaviour
         switch (state)
         {
             case CardinalState.Idle:
-                // Idle 진입 시 에이전트 상태 강제 초기화 (방어 코드)
+                // Idle 진입 시 에이전트 상태 강제 초기화
                 if (agent != null && agent.isOnNavMesh)
                 {
                     agent.isStopped = false;
@@ -415,6 +489,35 @@ public class StateController : MonoBehaviour
 
                 ShowBubble(prayingBubblePrefab);
                 break;
+            case CardinalState.ReadyInSpeech:
+                if(cardinal != null) cardinal.SetAgentSize(0.1f, 0.1f); // 크기 조절
+
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.isStopped = false;      
+                    agent.avoidancePriority = 50; 
+                }
+                break;
+
+            case CardinalState.InSpeech:
+                if (cardinal != null) cardinal.SetAgentSize(0.1f, 0.1f); // 크기 조절
+
+                // 기존 시퀀스 코루틴 정리 (안전장치)
+                if (speechSequenceCoroutine != null)
+                {
+                    // StopCoroutine(speechSequenceCoroutine); 
+                    // speechSequenceCoroutine = null;
+                }
+
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.ResetPath();            // 경로 삭제
+                    agent.isStopped = true;       // 이동 정지
+                    agent.velocity = Vector3.zero; // 관성 제거
+                    agent.avoidancePriority = 50; // 자리 고수
+                }
+                ShowBubble(SpeechingBubblePrefab);
+                break;
         }
     }
 
@@ -488,7 +591,6 @@ public class StateController : MonoBehaviour
                     praySequenceCoroutine = null;
                 }
 
-                // 기도 상태 해제 시 이동 관련 설정 확실하게 복구
                 if (agent != null && agent.isOnNavMesh)
                 {
                     agent.avoidancePriority = 50; // 밀릴 수 있게 복구
@@ -496,6 +598,25 @@ public class StateController : MonoBehaviour
                     agent.ResetPath();            // 기존 경로 삭제 
                 }
 
+                HideBubble();
+                break;
+            case CardinalState.ReadyInSpeech:
+                if (cardinal != null) cardinal.SetAgentSize(0.5f, 1f); // 원래 크기로
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.avoidancePriority = 50;
+                }
+                break;
+
+            case CardinalState.InSpeech:
+                if (cardinal != null) cardinal.SetAgentSize(0.5f, 1f); // 원래 크기로
+
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.avoidancePriority = 50;
+                    agent.isStopped = false;
+                    agent.ResetPath();
+                }
                 HideBubble();
                 break;
         }
@@ -571,7 +692,7 @@ public class StateController : MonoBehaviour
 
         int totalCount = 1 + listeners.Count;
 
-        // [배치 로직]
+        // 배치 로직
         float radius = (triggerCollider != null) ? Mathf.Max(triggerCollider.size.x, triggerCollider.size.y) * 0.3f : 0.8f;
         List<StateController> allParticipants = new List<StateController>();
         allParticipants.Add(this);
@@ -666,7 +787,7 @@ public class StateController : MonoBehaviour
     }
 
     // ---------------------------------------------------------
-    // 감실(Gamsil) 기도 시퀀스
+    // 기도 시퀀스
     // ---------------------------------------------------------
 
 
@@ -674,7 +795,7 @@ public class StateController : MonoBehaviour
     {
         // 상태 초기화
         isWaitingInLine = isQueueing;
-        finalPrayerPos = Vector3.zero; // 아직 모름
+        finalPrayerPos = Vector3.zero; 
 
         ChangeState(CardinalState.ReadyPraying);
 
@@ -682,7 +803,6 @@ public class StateController : MonoBehaviour
         praySequenceCoroutine = StartCoroutine(ProcessPraySequence(targetPos));
     }
 
-    // 대기 중인 NPC에게 진짜 기도를 하러 가라고 명령
     public void ProceedToRealPrayer(Vector3 realTarget)
     {
         if (currentState == CardinalState.ReadyPraying && isWaitingInLine)
@@ -725,10 +845,9 @@ public class StateController : MonoBehaviour
             // 대기 신호가 꺼질 때까지 계속 루프
             while (isWaitingInLine)
             {
-                // 매 프레임 왼쪽을 보도록 설정 (애니메이션 상태 갱신)
+                // 매 프레임 왼쪽을 보도록 설정
                 if (animController != null) animController.SetLookDirection(waitDir);
 
-                // 물리적으로 확실히 정지 유지
                 if (agent != null) agent.velocity = Vector3.zero;
 
                 yield return null; // 다음 프레임까지 대기
@@ -772,13 +891,11 @@ public class StateController : MonoBehaviour
         float currentPrayTimer = 0f;
         while (currentPrayTimer < prayDuration)
         {
-            // 상태 체크 (안전장치)
             if (currentState != CardinalState.Praying) yield break;
 
-            // 지속적인 방향 보정 (왼쪽)
+            // 지속적인 방향 보정 
             if (animController != null) animController.SetLookDirection(leftDir);
 
-            // 물리적으로 밀림 방지
             if (agent != null) agent.velocity = Vector3.zero;
 
             currentPrayTimer += Time.deltaTime;
@@ -788,7 +905,120 @@ public class StateController : MonoBehaviour
         //기도 함수 호출
         if (cardinal != null)
         {
-            cardinal.Pray(); // 실제 스탯 변화 적용
+            cardinal.Pray(); 
+        }
+
+        ChangeState(CardinalState.Idle);
+    }
+
+    // =================================================================
+    // 연설(Speech) 시퀀스 함수들
+    // =================================================================
+
+    public void OrderToSpeech(Vector3 targetPos, bool isQueueing)
+    {
+        isWaitingInLine = isQueueing;
+        finalPrayerPos = Vector3.zero; 
+
+        ChangeState(CardinalState.ReadyInSpeech);
+
+        if (speechSequenceCoroutine != null) StopCoroutine(speechSequenceCoroutine);
+        speechSequenceCoroutine = StartCoroutine(ProcessSpeechSequence(targetPos));
+    }
+
+    public void ProceedToRealSpeech(Vector3 realTarget)
+    {
+        if (currentState == CardinalState.ReadyInSpeech && isWaitingInLine)
+        {
+            isWaitingInLine = false;
+            finalPrayerPos = realTarget;
+        }
+    }
+
+    private IEnumerator ProcessSpeechSequence(Vector3 firstTargetPos)
+    {
+        // 대기소 이동
+        if (agent.isOnNavMesh)
+        {
+            agent.SetDestination(firstTargetPos);
+            agent.isStopped = false;
+        }
+
+        yield return new WaitUntil(() =>
+            !agent.pathPending &&
+            agent.remainingDistance <= agent.stoppingDistance &&
+            agent.velocity.sqrMagnitude <= 0.1f
+        );
+
+        if (currentState != CardinalState.ReadyInSpeech) yield break;
+
+        // 대기열 대기 (Queueing)
+        if (isWaitingInLine)
+        {
+            if (agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.velocity = Vector3.zero;
+            }
+
+            Vector2 waitDir = Vector2.right; // 대기 방향 (필요 시 수정)
+
+            while (isWaitingInLine)
+            {
+                if (animController != null) animController.SetLookDirection(waitDir);
+                if (agent != null) agent.velocity = Vector3.zero;
+                yield return null;
+            }
+        }
+
+        // 진짜 연설 장소 이동
+        if (finalPrayerPos != Vector3.zero)
+        {
+            if (agent.isOnNavMesh)
+            {
+                agent.isStopped = false;
+                agent.SetDestination(finalPrayerPos);
+            }
+
+            yield return new WaitUntil(() =>
+                !agent.pathPending &&
+                agent.remainingDistance <= agent.stoppingDistance &&
+                agent.velocity.sqrMagnitude <= 0.1f
+            );
+        }
+
+        if (currentState != CardinalState.ReadyInSpeech) yield break;
+
+        // 연설 시작 (InSpeech)
+        ChangeState(CardinalState.InSpeech);
+
+        Vector2 speechDir = Vector2.down;
+
+        float rotateTimer = 0f;
+        while (rotateTimer < 0.5f)
+        {
+            if (currentState != CardinalState.InSpeech) yield break;
+            if (animController != null) animController.SetLookDirection(speechDir);
+            if (agent != null) agent.velocity = Vector3.zero;
+            rotateTimer += Time.deltaTime;
+            yield return null;
+        }
+
+        if (agent != null) agent.avoidancePriority = 0;
+
+        float currentSpeechTimer = 0f;
+        while (currentSpeechTimer < speechDuration) 
+        {
+            if (currentState != CardinalState.InSpeech) yield break;
+            if (animController != null) animController.SetLookDirection(speechDir);
+            if (agent != null) agent.velocity = Vector3.zero;
+            currentSpeechTimer += Time.deltaTime;
+            yield return null;
+        }
+
+        if (cardinal != null)
+        {
+            cardinal.Speech(); // Cardinal.cs의 Speech() 호출
         }
 
         ChangeState(CardinalState.Idle);

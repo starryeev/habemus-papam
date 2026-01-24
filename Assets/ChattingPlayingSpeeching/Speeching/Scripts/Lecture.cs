@@ -1,48 +1,37 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Gamsil : MonoBehaviour
+public class Lecture : MonoBehaviour
 {
-    [Header("À§Ä¡ ¼³Á¤")]
-    [Tooltip("½ÇÁ¦ ±âµµ¸¦ ¼öÇàÇÒ À§Ä¡")]
-    [SerializeField] private Transform prayTargetPoint;
+    [Header("ìœ„ì¹˜ ì„¤ì •")]
+    [Tooltip("ì‹¤ì œ ì—°ì„¤ì„ ìˆ˜í–‰í•  ìœ„ì¹˜")]
+    [SerializeField] private Transform speechTargetPoint;
 
-    [Tooltip("±âµµ ¼ø¼­¸¦ ±â´Ù¸± ´ë±â Àå¼Ò (ÁÙ ¼­´Â °÷)")]
+    [Tooltip("ì—°ì„¤ ìˆœì„œë¥¼ ê¸°ë‹¤ë¦´ ëŒ€ê¸° ì¥ì†Œ")]
     [SerializeField] private Transform waitingPoint;
 
-    [Tooltip("WaitingPoint ¿ÀºêÁ§Æ®¿¡ ºÙ¾îÀÖ´Â PrayerWaitingTrigger ÄÄÆ÷³ÍÆ®")]
-    [SerializeField] private PrayerWaitingTrigger waitingTrigger;
+    [Tooltip("WaitingPoint ì˜¤ë¸Œì íŠ¸ì— ë¶™ì–´ìˆëŠ” SpeechWaitingTrigger ì»´í¬ë„ŒíŠ¸")]
+    [SerializeField] private SpeechWaitingTrigger waitingTrigger;
 
-    [Header("½Ã°£ ¼³Á¤")]
-    [Tooltip("´ë±â¿­ÀÌ ºñ¾úÀ» ¶§ ´ÙÀ½ NPC¸¦ È£ÃâÇÏ±â±îÁö °É¸®´Â ½Ã°£ (ÃÊ)")]
+    [Header("ì‹œê°„ ì„¤ì •")]
     [SerializeField] private float callInterval = 3.0f;
-
-    [Tooltip("°³º° NPC ÀçÈ£Ãâ ´ë±â ½Ã°£ (ÃÊ)")]
     [SerializeField] private float individualCooldownDuration = 30.0f;
 
-    // °¨ÁöµÈ NPC ¸®½ºÆ® 
     private List<StateController> candidates = new List<StateController>();
-
-    // °³º° ÄğÅ¸ÀÓ °ü¸®
     private Dictionary<StateController, float> npcLastCalledTime = new Dictionary<StateController, float>();
 
-    // ´ë±â¿­ Å¥ 
-    private Queue<StateController> prayerQueue = new Queue<StateController>();
-
-    // ÇöÀç ±âµµ¸¦ ¼öÇà ÁßÀÎ ´ë»ó
-    private StateController currentPrayerNPC = null;
-
-    // È£Ãâ Å¸ÀÌ¸Ó
+    // [ë³€ê²½] ì—°ì„¤ í
+    private Queue<StateController> speechQueue = new Queue<StateController>();
+    private StateController currentSpeaker = null;
     private float timer = 0f;
 
     void Update()
     {
         ProcessQueue();
 
-        if (prayerQueue.Count == 0)
+        if (speechQueue.Count == 0)
         {
             timer += Time.deltaTime;
-
             if (timer >= callInterval)
             {
                 CallNewNPCToQueue();
@@ -57,15 +46,13 @@ public class Gamsil : MonoBehaviour
 
     public void RegisterPlayerToQueue(StateController playerSC)
     {
-        if (prayerQueue.Contains(playerSC) || currentPrayerNPC == playerSC) return;
-
+        if (speechQueue.Contains(playerSC) || currentSpeaker == playerSC) return;
         if (playerSC.CurrentState != CardinalState.Idle) return;
 
-        Debug.Log("Player entered Waiting Zone! Added to Queue.");
+        Debug.Log("Player entered Speech Waiting Zone!");
+        speechQueue.Enqueue(playerSC);
 
-        prayerQueue.Enqueue(playerSC);
-
-        playerSC.OrderToPray(waitingPoint.position, true);
+        playerSC.OrderToSpeech(waitingPoint.position, true);
     }
 
     private void CallNewNPCToQueue()
@@ -86,14 +73,12 @@ public class Gamsil : MonoBehaviour
                 continue;
             }
 
-            // ÄğÅ¸ÀÓ Ã¼Å©
             if (npcLastCalledTime.ContainsKey(sc))
             {
                 if (Time.time - npcLastCalledTime[sc] < individualCooldownDuration) continue;
             }
 
-            // Áßº¹ Ã¼Å©
-            if (prayerQueue.Contains(sc) || sc == currentPrayerNPC) continue;
+            if (speechQueue.Contains(sc) || sc == currentSpeaker) continue;
 
             if (sc.CurrentState == CardinalState.Idle)
             {
@@ -108,56 +93,53 @@ public class Gamsil : MonoBehaviour
 
         if (bestCandidate != null)
         {
-            // NPCµµ Å¥¿¡ Ãß°¡
-            prayerQueue.Enqueue(bestCandidate);
+            speechQueue.Enqueue(bestCandidate);
 
             if (npcLastCalledTime.ContainsKey(bestCandidate)) npcLastCalledTime[bestCandidate] = Time.time;
             else npcLastCalledTime.Add(bestCandidate, Time.time);
 
-            // ´ë±â¼Ò·Î ÀÌµ¿ ¸í·É
-            bestCandidate.OrderToPray(waitingPoint.position, true);
+            bestCandidate.OrderToSpeech(waitingPoint.position, true);
 
             if (waitingTrigger != null)
             {
                 waitingTrigger.SetIncomingNPC(bestCandidate);
             }
 
+            Debug.Log($"Lecture added NPC {bestCandidate.name} to queue.");
         }
     }
 
-    // ´ë±â¿­ Ã³¸®
     private void ProcessQueue()
     {
-        if (IsPrayerSpotOccupied()) return;
+        if (IsSpeechSpotOccupied()) return;
 
-        if (prayerQueue.Count > 0)
+        if (speechQueue.Count > 0)
         {
-            StateController nextCandidate = prayerQueue.Dequeue();
+            StateController nextCandidate = speechQueue.Dequeue();
 
-            if (nextCandidate != null && nextCandidate.CurrentState == CardinalState.ReadyPraying)
+            if (nextCandidate != null && nextCandidate.CurrentState == CardinalState.ReadyInSpeech)
             {
-                currentPrayerNPC = nextCandidate;
+                currentSpeaker = nextCandidate;
 
-                nextCandidate.ProceedToRealPrayer(prayTargetPoint.position);
-
+                nextCandidate.ProceedToRealSpeech(speechTargetPoint.position);
             }
         }
     }
 
-    // ÀÚ¸®°¡ Ã¡´ÂÁö È®ÀÎ
-    private bool IsPrayerSpotOccupied()
+    private bool IsSpeechSpotOccupied()
     {
-        if (currentPrayerNPC == null) return false;
+        if (currentSpeaker == null) return false;
 
-        if (currentPrayerNPC.CurrentState == CardinalState.ReadyPraying ||
-            currentPrayerNPC.CurrentState == CardinalState.Praying)
+        if (currentSpeaker.CurrentState == CardinalState.ReadyInSpeech ||
+            currentSpeaker.CurrentState == CardinalState.InSpeech)
         {
             return true;
         }
 
-        currentPrayerNPC = null;
+        currentSpeaker = null;
         return false;
     }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("NPC"))
