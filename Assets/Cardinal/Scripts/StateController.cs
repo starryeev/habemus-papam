@@ -69,7 +69,7 @@ public class StateController : MonoBehaviour
     // 진짜 기도 위치 저장용
     private Vector3 finalPrayerPos;
 
-    // [신규 변수] 이 NPC가 모략(Scheme) 상태에 빠진 NPC인가?
+    // Scheme 상태 NPC
     public bool IsSchemer { get; private set; } = false;
 
     private SpriteRenderer spriteRenderer;
@@ -112,8 +112,6 @@ public class StateController : MonoBehaviour
         EnterState(CardinalState.CutScene);
     }
 
-
-
     void Update()
     {
         switch (currentState)
@@ -141,6 +139,253 @@ public class StateController : MonoBehaviour
                 HandleSchemeState();
                 break;
                 // 다른 상태들...
+        }
+    }
+
+    // ---------------------------------------------------------
+    // 상태 변경 관리
+    // ---------------------------------------------------------
+    public void ChangeState(CardinalState newState)
+    {
+        if (currentState == newState) return;
+        ExitState(currentState);
+        currentState = newState;
+        EnterState(currentState);
+    }
+
+    private void EnterState(CardinalState state)
+    {
+        switch (state)
+        {
+            case CardinalState.Idle:
+                // Idle 진입 시 에이전트 상태 강제 초기화
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.isStopped = false;
+                    agent.ResetPath();
+                }
+
+                if (!CompareTag("Player") && aiWanderCoroutine == null)
+                {
+                    aiWanderCoroutine = StartCoroutine(AIWanderRoutine());
+                }
+                break;
+
+            case CardinalState.ChatMaster:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.1f, 0.1f);
+                }
+
+                if (chatSequenceCoroutine != null) StopCoroutine(chatSequenceCoroutine);
+                chatSequenceCoroutine = StartCoroutine(ProcessChatSequence());
+
+                ShowBubble(masterBubblePrefab); // 말풍선
+                break;
+
+            case CardinalState.Chatting:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.1f, 0.1f);
+                }
+
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.ResetPath();
+                    agent.velocity = Vector3.zero;
+                    agent.isStopped = true; // 이동 정지
+                }
+
+                ShowBubble(listenerBubblePrefab);
+                break;
+
+            case CardinalState.CutScene:
+                // 컷씬 진입 시 이동 방해 요소 제거
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.isStopped = false; // 이동 가능하도록 설정
+                    agent.ResetPath();
+                    agent.avoidancePriority = 50; // 우선순위 복구
+                }
+
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.1f, 0.1f);
+                }
+                break;
+            case CardinalState.ReadyPraying:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.1f, 0.1f);
+                }
+                if (agent.isOnNavMesh) agent.ResetPath(); // 기존 경로 초기화
+                agent.avoidancePriority = 0;
+                break;
+            case CardinalState.Praying:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.1f, 0.1f);
+                }
+
+                if (agent.isOnNavMesh)
+                {
+                    agent.ResetPath();
+                    agent.isStopped = true;
+                    agent.velocity = Vector3.zero;
+                }
+
+                ShowBubble(prayingBubblePrefab);
+                break;
+            case CardinalState.ReadyInSpeech:
+                if (cardinal != null) cardinal.SetAgentSize(0.1f, 0.1f); // 크기 조절
+
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.isStopped = false;
+                    agent.avoidancePriority = 50;
+                }
+                break;
+
+            case CardinalState.InSpeech:
+                if (cardinal != null) cardinal.SetAgentSize(0.1f, 0.1f); // 크기 조절
+
+                // 기존 시퀀스 코루틴 정리 -----> 레거시 함수.. 나중에 버그 발생시 활성화
+
+                if (speechSequenceCoroutine != null)
+                {
+                    // StopCoroutine(speechSequenceCoroutine); 
+                    // speechSequenceCoroutine = null;
+                }
+
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.ResetPath();
+                    agent.isStopped = true;
+                    agent.velocity = Vector3.zero;
+                    agent.avoidancePriority = 50;
+                }
+                ShowBubble(SpeechingBubblePrefab);
+                break;
+            case CardinalState.Scheme:
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.isStopped = false;
+                    agent.ResetPath();
+                }
+                if (aiWanderCoroutine == null)
+                {
+                    aiWanderCoroutine = StartCoroutine(AIWanderRoutine());
+                }
+                break;
+        }
+    }
+
+    private void ExitState(CardinalState state)
+    {
+        switch (state)
+        {
+            case CardinalState.Idle:
+                if (aiWanderCoroutine != null)
+                {
+                    StopCoroutine(aiWanderCoroutine);
+                    aiWanderCoroutine = null;
+                }
+                if (agent != null && agent.isOnNavMesh) agent.ResetPath();
+                break;
+
+            case CardinalState.ChatMaster:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.5f, 1f);
+                }
+
+                // 상태 나갈 때 시퀀스 코루틴 정리
+                if (chatSequenceCoroutine != null)
+                {
+                    StopCoroutine(chatSequenceCoroutine);
+                    chatSequenceCoroutine = null;
+                }
+
+                HideBubble();
+                break;
+
+
+            case CardinalState.Chatting:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.5f, 1f);
+                }
+
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.isStopped = false; // 이동 재개 가능
+                }
+
+                HideBubble();
+                break;
+            case CardinalState.CutScene:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.5f, 1f);
+                }
+                break;
+
+            case CardinalState.ReadyPraying:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.5f, 1f);
+                }
+                if (agent != null) agent.avoidancePriority = 50;
+                break;
+
+            case CardinalState.Praying:
+                if (cardinal != null)
+                {
+                    cardinal.SetAgentSize(0.5f, 1f);
+                }
+
+                if (praySequenceCoroutine != null)
+                {
+                    StopCoroutine(praySequenceCoroutine);
+                    praySequenceCoroutine = null;
+                }
+
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.avoidancePriority = 50;
+                    agent.isStopped = false;
+                    agent.ResetPath();
+                }
+
+                HideBubble();
+                break;
+            case CardinalState.ReadyInSpeech:
+                if (cardinal != null) cardinal.SetAgentSize(0.5f, 1f); // 원래 크기로
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.avoidancePriority = 50;
+                }
+                break;
+
+            case CardinalState.InSpeech:
+                if (cardinal != null) cardinal.SetAgentSize(0.5f, 1f); // 원래 크기로
+
+                if (agent != null && agent.isOnNavMesh)
+                {
+                    agent.avoidancePriority = 50;
+                    agent.isStopped = false;
+                    agent.ResetPath();
+                }
+                HideBubble();
+                break;
+            case CardinalState.Scheme:
+                if (aiWanderCoroutine != null)
+                {
+                    StopCoroutine(aiWanderCoroutine);
+                    aiWanderCoroutine = null;
+                }
+                if (agent != null && agent.isOnNavMesh) agent.ResetPath();
+                break;
         }
     }
 
@@ -175,17 +420,6 @@ public class StateController : MonoBehaviour
             aiWanderCoroutine = StartCoroutine(AIWanderRoutine());
         }
     }
-    public void RestoreStateAfterAction()
-    {
-        if (IsSchemer)
-        {
-            ChangeState(CardinalState.Scheme);
-        }
-        else
-        {
-            ChangeState(CardinalState.Idle);
-        }
-    }
 
     void HandleCutSceneState()
     {
@@ -195,6 +429,23 @@ public class StateController : MonoBehaviour
     // ---------------------------------------------------------
     // 플레이어 입력 처리 (이동속도는 Cardinal.cs 참조)
     // ---------------------------------------------------------
+
+    // 키보드 이동 실행
+    private void MoveByKeyboard(Vector2 direction)
+    {
+        if (agent.hasPath) agent.ResetPath();
+
+        // Cardinal의 MoveSpeed를 참조하여 이동
+        agent.velocity = new Vector3(direction.x, direction.y, 0) * cardinal.MoveSpeed;
+    }
+
+    // 마우스/타겟 이동 실행
+    private void MoveToTargetPos(Vector2 targetPos)
+    {
+        Vector3 destination = new Vector3(targetPos.x, targetPos.y, transform.position.z);
+        if (agent.isOnNavMesh) agent.SetDestination(destination);
+    }
+
     void HandlePlayerInput()
     {
         if (inputController == null || agent == null) return;
@@ -217,22 +468,18 @@ public class StateController : MonoBehaviour
             }
         }
     }
-
-    // 키보드 이동 실행
-    private void MoveByKeyboard(Vector2 direction)
+    public void RestoreStateAfterAction()
     {
-        if (agent.hasPath) agent.ResetPath();
-
-        // Cardinal의 MoveSpeed를 참조하여 이동
-        agent.velocity = new Vector3(direction.x, direction.y, 0) * cardinal.MoveSpeed;
+        if (IsSchemer)
+        {
+            ChangeState(CardinalState.Scheme);
+        }
+        else
+        {
+            ChangeState(CardinalState.Idle);
+        }
     }
-
-    // 마우스/타겟 이동 실행
-    private void MoveToTargetPos(Vector2 targetPos)
-    {
-        Vector3 destination = new Vector3(targetPos.x, targetPos.y, transform.position.z);
-        if (agent.isOnNavMesh) agent.SetDestination(destination);
-    }
+    
 
     // ---------------------------------------------------------
     // [이동 로직] AI 배회 (Idle)
@@ -410,252 +657,24 @@ public class StateController : MonoBehaviour
         pathCoroutine = null;
     }
 
-    // ---------------------------------------------------------
-    // 상태 변경 관리
-    // ---------------------------------------------------------
-    public void ChangeState(CardinalState newState)
+    public void EnterChatListener()
     {
-        if (currentState == newState) return;
-        ExitState(currentState);
-        currentState = newState;
-        EnterState(currentState);
-    }
-
-    private void EnterState(CardinalState state)
-    {
-        switch (state)
+        if (currentState != CardinalState.CutScene && currentState != CardinalState.ChatMaster)
         {
-            case CardinalState.Idle:
-                // Idle 진입 시 에이전트 상태 강제 초기화
-                if (agent != null && agent.isOnNavMesh)
-                {
-                    agent.isStopped = false;
-                    agent.ResetPath();
-                }
-
-                if (!CompareTag("Player") && aiWanderCoroutine == null)
-                {
-                    aiWanderCoroutine = StartCoroutine(AIWanderRoutine());
-                }
-                break;
-
-            case CardinalState.ChatMaster:
-                if (cardinal != null)
-                {
-                    cardinal.SetAgentSize(0.1f, 0.1f);
-                }
-
-                if (chatSequenceCoroutine != null) StopCoroutine(chatSequenceCoroutine);
-                chatSequenceCoroutine = StartCoroutine(ProcessChatSequence());
-
-                ShowBubble(masterBubblePrefab); // 말풍선
-                break;
-
-            case CardinalState.Chatting:
-                if (cardinal != null)
-                {
-                    cardinal.SetAgentSize(0.1f, 0.1f);
-                }
-
-                if (agent != null && agent.isOnNavMesh)
-                {
-                    agent.ResetPath();
-                    agent.velocity = Vector3.zero;
-                    agent.isStopped = true; // 이동 정지
-                }
-
-                ShowBubble(listenerBubblePrefab);
-                break;
-
-            case CardinalState.CutScene:
-                // 컷씬 진입 시 이동 방해 요소 제거
-                if (agent != null && agent.isOnNavMesh)
-                {
-                    agent.isStopped = false; // 이동 가능하도록 설정
-                    agent.ResetPath();
-                    agent.avoidancePriority = 50; // 우선순위 복구
-                }
-
-                if (cardinal != null)
-                {
-                    cardinal.SetAgentSize(0.1f, 0.1f);
-                }
-                break;
-            case CardinalState.ReadyPraying:
-                if (cardinal != null)
-                {
-                    cardinal.SetAgentSize(0.1f, 0.1f);
-                }
-                if (agent.isOnNavMesh) agent.ResetPath(); // 기존 경로 초기화
-                agent.avoidancePriority = 0;
-                break;
-            case CardinalState.Praying:
-                if (cardinal != null)
-                {
-                    cardinal.SetAgentSize(0.1f, 0.1f);
-                }
-
-                if (agent.isOnNavMesh)
-                {
-                    agent.ResetPath();
-                    agent.isStopped = true;
-                    agent.velocity = Vector3.zero;
-                }
-
-                ShowBubble(prayingBubblePrefab);
-                break;
-            case CardinalState.ReadyInSpeech:
-                if(cardinal != null) cardinal.SetAgentSize(0.1f, 0.1f); // 크기 조절
-
-                if (agent != null && agent.isOnNavMesh)
-                {
-                    agent.isStopped = false;      
-                    agent.avoidancePriority = 50; 
-                }
-                break;
-
-            case CardinalState.InSpeech:
-                if (cardinal != null) cardinal.SetAgentSize(0.1f, 0.1f); // 크기 조절
-
-                // 기존 시퀀스 코루틴 정리 -----> 레거시 함수.. 나중에 버그 발생시 활성화
-             
-                if (speechSequenceCoroutine != null)
-                {
-                    // StopCoroutine(speechSequenceCoroutine); 
-                    // speechSequenceCoroutine = null;
-                }
-
-                if (agent != null && agent.isOnNavMesh)
-                {
-                    agent.ResetPath();         
-                    agent.isStopped = true;      
-                    agent.velocity = Vector3.zero; 
-                    agent.avoidancePriority = 50; 
-                }
-                ShowBubble(SpeechingBubblePrefab);
-                break;
-            case CardinalState.Scheme:
-                if (agent != null && agent.isOnNavMesh)
-                {
-                    agent.isStopped = false;
-                    agent.ResetPath();
-                }
-                if (aiWanderCoroutine == null)
-                {
-                    aiWanderCoroutine = StartCoroutine(AIWanderRoutine());
-                }
-                break;
+            ChangeState(CardinalState.Chatting);
         }
     }
 
-    private void ExitState(CardinalState state)
+    public void MoveToPosition(Vector3 targetPos)
     {
-        switch (state)
+        if (agent != null && agent.isOnNavMesh)
         {
-            case CardinalState.Idle:
-                if (aiWanderCoroutine != null)
-                {
-                    StopCoroutine(aiWanderCoroutine);
-                    aiWanderCoroutine = null;
-                }
-                if (agent != null && agent.isOnNavMesh) agent.ResetPath();
-                break;
-
-            case CardinalState.ChatMaster:
-                if (cardinal != null)
-                {
-                    cardinal.SetAgentSize(0.5f, 1f);
-                }
-
-                // 상태 나갈 때 시퀀스 코루틴 정리
-                if (chatSequenceCoroutine != null)
-                {
-                    StopCoroutine(chatSequenceCoroutine);
-                    chatSequenceCoroutine = null;
-                }
-
-                HideBubble();
-                break;
-            
-
-            case CardinalState.Chatting:
-                if (cardinal != null)
-                {
-                    cardinal.SetAgentSize(0.5f, 1f);
-                }
-
-                if (agent != null && agent.isOnNavMesh)
-                {
-                    agent.isStopped = false; // 이동 재개 가능
-                }
-
-                HideBubble();
-                break;
-            case CardinalState.CutScene:
-                if (cardinal != null)
-                {
-                    cardinal.SetAgentSize(0.5f, 1f);
-                }
-                break;
-
-            case CardinalState.ReadyPraying:
-                if (cardinal != null)
-                {
-                    cardinal.SetAgentSize(0.5f, 1f);
-                }
-                if (agent != null) agent.avoidancePriority = 50;
-                break;
-
-            case CardinalState.Praying:
-                if (cardinal != null)
-                {
-                    cardinal.SetAgentSize(0.5f, 1f);
-                }
-
-                if (praySequenceCoroutine != null)
-                {
-                    StopCoroutine(praySequenceCoroutine);
-                    praySequenceCoroutine = null;
-                }
-
-                if (agent != null && agent.isOnNavMesh)
-                {
-                    agent.avoidancePriority = 50; 
-                    agent.isStopped = false;      
-                    agent.ResetPath();           
-                }
-
-                HideBubble();
-                break;
-            case CardinalState.ReadyInSpeech:
-                if (cardinal != null) cardinal.SetAgentSize(0.5f, 1f); // 원래 크기로
-                if (agent != null && agent.isOnNavMesh)
-                {
-                    agent.avoidancePriority = 50;
-                }
-                break;
-
-            case CardinalState.InSpeech:
-                if (cardinal != null) cardinal.SetAgentSize(0.5f, 1f); // 원래 크기로
-
-                if (agent != null && agent.isOnNavMesh)
-                {
-                    agent.avoidancePriority = 50;
-                    agent.isStopped = false;
-                    agent.ResetPath();
-                }
-                HideBubble();
-                break;
-            case CardinalState.Scheme:
-                if (aiWanderCoroutine != null)
-                {
-                    StopCoroutine(aiWanderCoroutine);
-                    aiWanderCoroutine = null;
-                }
-                if (agent != null && agent.isOnNavMesh) agent.ResetPath();
-                break;
+            agent.isStopped = false;
+            agent.SetDestination(targetPos);
         }
     }
+
+
 
     private void ShowBubble(GameObject prefab)
     {
@@ -1093,20 +1112,5 @@ public class StateController : MonoBehaviour
         }
     }
 
-    public void EnterChatListener()
-    {
-        if (currentState != CardinalState.CutScene && currentState != CardinalState.ChatMaster)
-        {
-            ChangeState(CardinalState.Chatting);
-        }
-    }
-
-    public void MoveToPosition(Vector3 targetPos) 
-    {
-        if (agent != null && agent.isOnNavMesh)
-        {
-            agent.isStopped = false; 
-            agent.SetDestination(targetPos);
-        }
-    }
+   
 }

@@ -330,7 +330,7 @@ public class CardinalManager : MonoBehaviour
             if (sc != null)
             {
                 sc.SetSchemerMode(true);
-                Debug.Log($"NPC {c.name} 가 모략가(Scheme)로 지정되었습니다!");
+                Debug.Log($"NPC {c.name} Scheme 상태 적용");
             }
         }
     }

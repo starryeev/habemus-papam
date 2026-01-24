@@ -90,6 +90,7 @@ MonoBehaviour:
   SpeechingBubblePrefab: {fileID: 7420857138657768832, guid: 1dffa87288485bc43ac97834b819a969, type: 3}
   bubbleOffset: {x: 0, y: 1, z: 0}
   prayDuration: 7
+  speechDuration: 3
 --- !u!195 &7058176528115609993
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -146,7 +147,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: 0.07888514}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -156,7 +157,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.6564114, y: 0.8422297}
   m_EdgeRadius: 0
 --- !u!50 &836851999506325358
 Rigidbody2D:
