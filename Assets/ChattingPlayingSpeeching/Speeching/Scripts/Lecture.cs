@@ -48,8 +48,6 @@ public class Lecture : MonoBehaviour
     {
         if (speechQueue.Contains(playerSC) || currentSpeaker == playerSC) return;
         if (playerSC.CurrentState != CardinalState.Idle) return;
-
-        Debug.Log("Player entered Speech Waiting Zone!");
         speechQueue.Enqueue(playerSC);
 
         playerSC.OrderToSpeech(waitingPoint.position, true);
@@ -112,7 +110,6 @@ public class Lecture : MonoBehaviour
                 waitingTrigger.SetIncomingNPC(bestCandidate);
             }
 
-            Debug.Log($"Lecture added NPC {bestCandidate.name} to queue.");
         }
     }
 

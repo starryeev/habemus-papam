@@ -206,7 +206,6 @@ public class CardinalManager : MonoBehaviour
             yield return new WaitForSeconds(2.0f);
         }
 
-        Debug.Log("All cardinals have exited the line.");
         Time.timeScale = 1f;
     }
 
@@ -320,7 +319,6 @@ public class CardinalManager : MonoBehaviour
     // ========================================================================
     private void AssignRandomSchemers()
     {
-        Debug.Log("Assigning Schemers (Scheme Start)...");
 
         var candidates = cardinals.Where(c => c != null && !c.CompareTag("Player")).ToList();
 

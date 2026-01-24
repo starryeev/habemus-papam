@@ -19,7 +19,6 @@ public class SpeechWaitingTrigger : MonoBehaviour
         if (other.CompareTag("NPC"))
         {
             isNpcInside = true;
-            Debug.Log("NPC가 연설 대기열을 선점했습니다.");
 
             StateController arrivedNPC = other.GetComponent<StateController>();
             if (incomingNPC == arrivedNPC)

@@ -61,8 +61,6 @@ public class Gamsil : MonoBehaviour
 
         if (playerSC.CurrentState != CardinalState.Idle) return;
 
-        Debug.Log("Player entered Waiting Zone! Added to Queue.");
-
         prayerQueue.Enqueue(playerSC);
 
         playerSC.OrderToPray(waitingPoint.position, true);
