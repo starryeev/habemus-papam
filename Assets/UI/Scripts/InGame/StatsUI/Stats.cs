@@ -33,4 +33,8 @@ public class Stats : MonoBehaviour
         influence.text = $"{(int)inf}";
         Influence.fillAmount = inf;
     }
+    public void SetName(string str)
+    {
+        name = str;
+    }
 }

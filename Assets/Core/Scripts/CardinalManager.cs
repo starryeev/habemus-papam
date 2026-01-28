@@ -50,6 +50,7 @@ public class CardinalManager : MonoBehaviour
     // 기타 멤버변수
     // 데이터 관리는 여전히 Cardinal 클래스를 통해 합니다.
     private List<Cardinal> cardinals;
+    public IReadOnlyList<Cardinal> Cardinals => cardinals;
 
    
 
@@ -390,7 +391,7 @@ public class CardinalManager : MonoBehaviour
         return result;
     }
 
-    public int GetCardinalPolSum()
+    public float GetCardinalPolSum()
     {
         float result = 0;
 

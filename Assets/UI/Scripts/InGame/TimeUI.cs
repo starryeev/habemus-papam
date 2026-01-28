@@ -48,7 +48,7 @@ public class TimeUI : MonoBehaviour
         LeftText1.text = $"Day {currentDay}";
         LeftText2.text = $"{currentCon}";
         RightText1.text = "남은 시간";
-        RightText2.text = $"{(int)(InGameManager.Instance.Balance.MaxConclaveTime/60)} : {(InGameManager.Instance.Balance.MaxConclaveTime%60).ToString("00.00")}";
+        RightText2.text = $"{(int)(InGameManager.Instance.Balance.MaxConclaveTime/60)} : {(InGameManager.Instance.Balance.MaxConclaveTime%60).ToString("00.0")}";
         ClockHand.transform.rotation = Quaternion.identity;
 
         switch (currentCon)
@@ -94,7 +94,7 @@ public class TimeUI : MonoBehaviour
         LeftText1.text = $"Day {InGameManager.Instance.GetCurrentDay()}";
         LeftText2.text = $"{InGameManager.Instance.GetCurrentConclave()}";
         RightText1.text = "남은 시간";
-        RightText2.text = $"{(int)(InGameManager.Instance.Balance.MaxConclaveTime/60)} : {(InGameManager.Instance.Balance.MaxConclaveTime%60).ToString("00.00")}";
+        RightText2.text = $"{(int)(InGameManager.Instance.Balance.MaxConclaveTime/60)} : {(InGameManager.Instance.Balance.MaxConclaveTime%60).ToString("00.0")}";
         ClockHand.transform.rotation = Quaternion.identity;
         Dawn.sprite = LightList[0];
         Morning.sprite = LightList[0];
@@ -112,6 +112,6 @@ public class TimeUI : MonoBehaviour
         ClockHand.transform.rotation = Quaternion.Euler(0, 0, remain/max*360f);
         LeftText1.text = $"Day {currentDay}";
         LeftText2.text = $"{currentCon}";
-        RightText2.text = $"{(int)(remain/60)} : {(remain%60).ToString("00.00")}";
+        RightText2.text = $"{(int)(remain/60)} : {(remain%60).ToString("00.0")}";
     }
 }
