@@ -64,25 +64,21 @@ public class Gamsil : MonoBehaviour
     {
         bool removed = false;
 
-        // 1. 3번째 자리(Overflow)에 있었다면 제거
         if (overflowPlayer == playerSC)
         {
             overflowPlayer = null;
             removed = true;
             Debug.Log("3번째 대기석 예약 취소됨.");
         }
-        // 2. 대기열(List)에 있었다면 제거
         else if (prayerList.Contains(playerSC))
         {
             prayerList.Remove(playerSC);
             removed = true;
             Debug.Log("대기열 예약 취소됨.");
 
-            // 만약 대기열 1번이었고 트리거 예약자였다면 트리거도 비워줘야 함
             if (waitingTrigger != null) waitingTrigger.SetIncomingNPC(null);
         }
 
-        // 플레이어에게 취소 명령 (하던 행동 멈추기)
         if (removed)
         {
             playerSC.CancelApproach();
@@ -103,7 +99,7 @@ public class Gamsil : MonoBehaviour
         if (isMainSpotAvailable)
         {
             Debug.Log("Player entered Waiting Zone! Added to Queue.");
-            prayerList.Add(playerSC); // 리스트 끝에 추가
+            prayerList.Add(playerSC);
             playerSC.OrderToPray(waitingPoint.position, true);
         }
         else
@@ -142,7 +138,6 @@ public class Gamsil : MonoBehaviour
                 if (Time.time - npcLastCalledTime[sc] < individualCooldownDuration) continue;
             }
 
-            // List로 변경됨에 따라 Contains 체크
             if (prayerList.Contains(sc) || sc == currentPrayerNPC) continue;
 
             if (sc.CurrentState == CardinalState.Idle)
@@ -158,7 +153,7 @@ public class Gamsil : MonoBehaviour
 
         if (bestCandidate != null)
         {
-            prayerList.Add(bestCandidate); // List Add
+            prayerList.Add(bestCandidate); 
 
             if (npcLastCalledTime.ContainsKey(bestCandidate)) npcLastCalledTime[bestCandidate] = Time.time;
             else npcLastCalledTime.Add(bestCandidate, Time.time);
@@ -177,10 +172,8 @@ public class Gamsil : MonoBehaviour
     {
         bool isSpot1Occupied = IsPrayerSpotOccupied();
 
-        // Case A: 대기열(List)에 사람이 있고, 기도석(1번)이 비었을 때
         if (!isSpot1Occupied && prayerList.Count > 0)
         {
-            // List의 0번째 요소 가져오기 (Queue.Dequeue 역할)
             StateController nextCandidate = prayerList[0];
             prayerList.RemoveAt(0);
 
@@ -197,7 +190,6 @@ public class Gamsil : MonoBehaviour
             return;
         }
 
-        // Case B: 대기열은 비어있는데, 3번에 플레이어가 기다릴 때
         if (prayerList.Count == 0 && overflowPlayer != null)
         {
             MoveOverflowPlayerToWaitingSpot();
@@ -210,7 +202,7 @@ public class Gamsil : MonoBehaviour
 
         Debug.Log("대기석이 비어 플레이어가 3순위 -> 2순위로 이동합니다.");
 
-        prayerList.Add(overflowPlayer); // List Add
+        prayerList.Add(overflowPlayer); 
 
         if (waitingTrigger != null)
         {
@@ -221,19 +213,16 @@ public class Gamsil : MonoBehaviour
         overflowPlayer = null;
     }
 
-    // 자리가 찼는지 확인
+
     private bool IsPrayerSpotOccupied()
     {
         if (currentPrayerNPC == null) return false;
 
-        // [수정] 단순히 상태만 보는 게 아니라, 이동 중인지(IsPerformingPrayerAction)까지 확인
-        // StateController에 추가한 프로퍼티 사용
         if (currentPrayerNPC.IsPerformingPrayerAction)
         {
             return true;
         }
 
-        // 여기까지 왔다면 기도가 진짜 끝난 것임
         currentPrayerNPC = null;
         return false;
     }
