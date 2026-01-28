@@ -390,7 +390,7 @@ public class CardinalManager : MonoBehaviour
         return result;
     }
 
-    public int GetCardinalPolSum()
+    public float GetCardinalPolSum()
     {
         float result = 0;
 

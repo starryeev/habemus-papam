@@ -1845,12 +1845,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85eb6d4be6cf4e14da8967b301787c1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Stats
-  HP: {fileID: 0}
+  HP: {fileID: 295356144}
   hp: {fileID: 1668579745}
-  Piety: {fileID: 0}
-  piety: {fileID: 0}
-  Influence: {fileID: 0}
-  influence: {fileID: 0}
+  Piety: {fileID: 893245676}
+  piety: {fileID: 1942908472}
+  Influence: {fileID: 1293057579}
+  influence: {fileID: 320179242}
   Name: {fileID: 410924547}
   Picture: {fileID: 0}
   Description: 
@@ -2735,11 +2735,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IngameUI
   Time: {fileID: 1116547503}
-  Stats: {fileID: 0}
-  Event: {fileID: 0}
-  Item: {fileID: 0}
-  Scheme: {fileID: 0}
-  Hotkeys: {fileID: 0}
+  Stats: {fileID: 1118991176}
+  Event: {fileID: 937297531}
+  Item: {fileID: 1776774286}
+  Scheme: {fileID: 2118752098}
+  Hotkeys: {fileID: 503638746}
 --- !u!1 &337475076
 GameObject:
   m_ObjectHideFlags: 0
@@ -7024,12 +7024,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85eb6d4be6cf4e14da8967b301787c1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Stats
-  HP: {fileID: 0}
+  HP: {fileID: 731070589}
   hp: {fileID: 2073192310}
-  Piety: {fileID: 0}
-  piety: {fileID: 0}
-  Influence: {fileID: 0}
-  influence: {fileID: 0}
+  Piety: {fileID: 1224603868}
+  piety: {fileID: 1562120828}
+  Influence: {fileID: 1063261841}
+  influence: {fileID: 159240450}
   Name: {fileID: 1421042621}
   Picture: {fileID: 0}
   Description: 
@@ -9603,6 +9603,13 @@ MonoBehaviour:
   - {fileID: 2001984387}
   - {fileID: 833699545}
   - {fileID: 1369255006}
+  conclavePaths: []
+  leftLineStart: {fileID: 0}
+  leftLineEnd: {fileID: 0}
+  rightLineStart: {fileID: 0}
+  rightLineEnd: {fileID: 0}
+  leftExitPoint: {fileID: 0}
+  rightExitPoint: {fileID: 0}
 --- !u!1 &1607070530
 GameObject:
   m_ObjectHideFlags: 0
