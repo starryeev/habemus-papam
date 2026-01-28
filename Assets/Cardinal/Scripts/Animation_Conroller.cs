@@ -80,4 +80,18 @@ public class Animation_Controller : MonoBehaviour
             animator.SetBool("IsMoving", false);
         }
     }
+
+    public void SetLookDirection(Vector2 direction)
+    {
+        if (direction != Vector2.zero)
+        {
+            lastMoveDirection = direction.normalized;
+            // 즉시 애니메이터에 반영하여 회전 딜레이 제거
+            if (animator != null)
+            {
+                animator.SetFloat("InputX", lastMoveDirection.x);
+                animator.SetFloat("InputY", lastMoveDirection.y);
+            }
+        }
+    }
 }

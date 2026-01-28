@@ -117,9 +117,11 @@ public class InGameManager : MonoBehaviour
             // 임시 로직
             case GameContext.GameContextEvent.ConclaveStart:
                 Debug.Log("콘클라베 시작");
+                //CardinalManager.Instance.StartConClave();
                 break;
             case GameContext.GameContextEvent.ConclaveEnd:
                 Debug.Log("콘클라베 끝");
+                //CardinalManager.Instance.StopConClave();
                 break;
         }
     }

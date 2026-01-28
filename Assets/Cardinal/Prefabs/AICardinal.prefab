@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 8538249392295330253}
   m_Layer: 0
   m_Name: AICardinal
-  m_TagString: AI_NPC
+  m_TagString: NPC
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -66,6 +66,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StateController
   currentState: 7
+  wanderLimitTransform: {fileID: 8318961562149058614, guid: 21cfef929b38d1f4cb1afe664375a732, type: 3}
+  chatTriggerPrefab: {fileID: 514387043094388030, guid: cb97f0690c6abfc41b6f150d24db3dd3, type: 3}
+  chatDuration: 10
+  ChatMaster: 7.15
+  masterBubblePrefab: {fileID: 422924435413508045, guid: 2bbfc970caf29bf4b9efde809562cf3f, type: 3}
+  listenerBubblePrefab: {fileID: 5671247930494976962, guid: eb35400212a0c1f43bcd1c1c2a3f56ed, type: 3}
+  masterAlertBubblePrefab: {fileID: 6928995857789074070, guid: d553432ab88609b438ec793def78a7ba, type: 3}
+  prayingBubblePrefab: {fileID: 8144235865602989633, guid: cb5d69de717b5254d9513704cec63ade, type: 3}
+  SpeechingBubblePrefab: {fileID: 7420857138657768832, guid: 1dffa87288485bc43ac97834b819a969, type: 3}
+  bubbleOffset: {x: 0, y: 1, z: 0}
+  prayDuration: 7
+  speechDuration: 3
 --- !u!195 &2374191198918746138
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -145,11 +157,11 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: -0.0357199, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -159,7 +171,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.63181037, y: 1}
   m_EdgeRadius: 0
 --- !u!1 &7542701617976547285
 GameObject:
