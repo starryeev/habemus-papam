@@ -10,6 +10,9 @@ public class Gamsil : MonoBehaviour
     [Tooltip("기도 순서를 기다릴 대기 장소 (줄 서는 곳)")]
     [SerializeField] private Transform waitingPoint;
 
+    [Tooltip("자리가 꽉 찼을 때 플레이어가 대기할 3번째 장소")]
+    [SerializeField] private Transform playerOverflowPoint;
+
     [Tooltip("WaitingPoint 오브젝트에 붙어있는 PrayerWaitingTrigger 컴포넌트")]
     [SerializeField] private PrayerWaitingTrigger waitingTrigger;
 
@@ -27,10 +30,12 @@ public class Gamsil : MonoBehaviour
     private Dictionary<StateController, float> npcLastCalledTime = new Dictionary<StateController, float>();
 
     // 대기열 큐 
-    private Queue<StateController> prayerQueue = new Queue<StateController>();
-
+    private List<StateController> prayerList = new List<StateController>();
     // 현재 기도를 수행 중인 대상
     private StateController currentPrayerNPC = null;
+    
+    // 3번째 자리에 대기 중인 플레이어 저장용
+    private StateController overflowPlayer = null;
 
     // 호출 타이머
     private float timer = 0f;
@@ -39,7 +44,7 @@ public class Gamsil : MonoBehaviour
     {
         ProcessQueue();
 
-        if (prayerQueue.Count == 0)
+        if (prayerList.Count == 0 && overflowPlayer == null)
         {
             timer += Time.deltaTime;
 
@@ -55,19 +60,62 @@ public class Gamsil : MonoBehaviour
         }
     }
 
+    public void CancelPlayerRegistration(StateController playerSC)
+    {
+        bool removed = false;
+
+        if (overflowPlayer == playerSC)
+        {
+            overflowPlayer = null;
+            removed = true;
+            Debug.Log("3번째 대기석 예약 취소됨.");
+        }
+        else if (prayerList.Contains(playerSC))
+        {
+            prayerList.Remove(playerSC);
+            removed = true;
+            Debug.Log("대기열 예약 취소됨.");
+
+            if (waitingTrigger != null) waitingTrigger.SetIncomingNPC(null);
+        }
+
+        if (removed)
+        {
+            playerSC.CancelApproach();
+        }
+    }
+
     public void RegisterPlayerToQueue(StateController playerSC)
     {
-        if (prayerQueue.Contains(playerSC) || currentPrayerNPC == playerSC) return;
-
+        if (prayerList.Contains(playerSC) || currentPrayerNPC == playerSC || overflowPlayer == playerSC) return;
         if (playerSC.CurrentState != CardinalState.Idle) return;
 
-        prayerQueue.Enqueue(playerSC);
+        bool isMainSpotAvailable = false;
+        if (waitingTrigger != null)
+        {
+            isMainSpotAvailable = waitingTrigger.TryReserveSpotForPlayer();
+        }
 
-        playerSC.OrderToPray(waitingPoint.position, true);
+        if (isMainSpotAvailable)
+        {
+            Debug.Log("Player entered Waiting Zone! Added to Queue.");
+            prayerList.Add(playerSC);
+            playerSC.OrderToPray(waitingPoint.position, true);
+        }
+        else
+        {
+            if (playerOverflowPoint != null)
+            {
+                Debug.Log("대기석이 꽉 차서 플레이어 전용 대기석(3순위)으로 이동합니다.");
+                overflowPlayer = playerSC;
+                playerSC.OrderToPray(playerOverflowPoint.position, true);
+            }
+        }
     }
 
     private void CallNewNPCToQueue()
     {
+        if (overflowPlayer != null) return;
         if (candidates.Count == 0 || waitingPoint == null) return;
 
         StateController bestCandidate = null;
@@ -76,11 +124,7 @@ public class Gamsil : MonoBehaviour
         for (int i = candidates.Count - 1; i >= 0; i--)
         {
             StateController sc = candidates[i];
-
-            if (sc.CurrentState == CardinalState.Scheme || sc.IsSchemer)
-            {
-                continue;
-            }
+            if (sc.CurrentState == CardinalState.Scheme || sc.IsSchemer) continue;
 
             if (sc == null || sc.CompareTag("Player"))
             {
@@ -89,14 +133,12 @@ public class Gamsil : MonoBehaviour
                 continue;
             }
 
-            // 쿨타임 체크
             if (npcLastCalledTime.ContainsKey(sc))
             {
                 if (Time.time - npcLastCalledTime[sc] < individualCooldownDuration) continue;
             }
 
-            // 중복 체크
-            if (prayerQueue.Contains(sc) || sc == currentPrayerNPC) continue;
+            if (prayerList.Contains(sc) || sc == currentPrayerNPC) continue;
 
             if (sc.CurrentState == CardinalState.Idle)
             {
@@ -111,49 +153,72 @@ public class Gamsil : MonoBehaviour
 
         if (bestCandidate != null)
         {
-            // NPC도 큐에 추가
-            prayerQueue.Enqueue(bestCandidate);
+            prayerList.Add(bestCandidate); 
 
             if (npcLastCalledTime.ContainsKey(bestCandidate)) npcLastCalledTime[bestCandidate] = Time.time;
             else npcLastCalledTime.Add(bestCandidate, Time.time);
 
-            // 대기소로 이동 명령
             bestCandidate.OrderToPray(waitingPoint.position, true);
 
             if (waitingTrigger != null)
             {
                 waitingTrigger.SetIncomingNPC(bestCandidate);
             }
-
         }
     }
 
     // 대기열 처리
     private void ProcessQueue()
     {
-        if (IsPrayerSpotOccupied()) return;
+        bool isSpot1Occupied = IsPrayerSpotOccupied();
 
-        if (prayerQueue.Count > 0)
+        if (!isSpot1Occupied && prayerList.Count > 0)
         {
-            StateController nextCandidate = prayerQueue.Dequeue();
+            StateController nextCandidate = prayerList[0];
+            prayerList.RemoveAt(0);
 
-            if (nextCandidate != null && nextCandidate.CurrentState == CardinalState.ReadyPraying)
+            if (nextCandidate != null)
             {
                 currentPrayerNPC = nextCandidate;
-
                 nextCandidate.ProceedToRealPrayer(prayTargetPoint.position);
 
+                if (overflowPlayer != null)
+                {
+                    MoveOverflowPlayerToWaitingSpot();
+                }
             }
+            return;
+        }
+
+        if (prayerList.Count == 0 && overflowPlayer != null)
+        {
+            MoveOverflowPlayerToWaitingSpot();
         }
     }
 
-    // 자리가 찼는지 확인
+    private void MoveOverflowPlayerToWaitingSpot()
+    {
+        if (overflowPlayer == null) return;
+
+        Debug.Log("대기석이 비어 플레이어가 3순위 -> 2순위로 이동합니다.");
+
+        prayerList.Add(overflowPlayer); 
+
+        if (waitingTrigger != null)
+        {
+            waitingTrigger.SetIncomingNPC(overflowPlayer);
+        }
+
+        overflowPlayer.OrderToPray(waitingPoint.position, true);
+        overflowPlayer = null;
+    }
+
+
     private bool IsPrayerSpotOccupied()
     {
         if (currentPrayerNPC == null) return false;
 
-        if (currentPrayerNPC.CurrentState == CardinalState.ReadyPraying ||
-            currentPrayerNPC.CurrentState == CardinalState.Praying)
+        if (currentPrayerNPC.IsPerformingPrayerAction)
         {
             return true;
         }

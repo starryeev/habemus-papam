@@ -8,13 +8,34 @@ public class PrayerWaitingTrigger : MonoBehaviour
     private bool isNpcInside = false;
 
     private StateController incomingNPC;
+
     public void SetIncomingNPC(StateController npc)
     {
         incomingNPC = npc;
     }
 
+    public bool TryReserveSpotForPlayer()
+    {
+        if (isNpcInside)
+        {
+            Debug.Log("누군가 서 있어서 기도를 신청할 수 없습니다.");
+            return false;
+        }
+
+        if (incomingNPC != null)
+        {
+            incomingNPC.ChangeState(CardinalState.Idle);
+            incomingNPC = null;
+            Debug.Log("오고 있던 NPC의 예약을 취소하고 플레이어가 자리를 차지합니다.");
+        }
+
+        return true; // 입장 가능
+    }
+
+
     private void OnTriggerEnter2D(Collider2D other)
     {
+
 
         if (other.CompareTag("NPC"))
         {
@@ -25,35 +46,6 @@ public class PrayerWaitingTrigger : MonoBehaviour
             {
                 incomingNPC = null;
             }
-
-            return;
-        }
-        if (other.CompareTag("Player"))
-        {
- 
-            if (isNpcInside)
-            {
-               
-                return;
-            }
-
-            StateController playerSC = other.GetComponent<StateController>();
-
-            // B. 조건 확인
-            if (playerSC != null && playerSC.CurrentState == CardinalState.Idle && gamsilManager != null)
-            {
-               
-                if (incomingNPC != null)
-                {
-
-                    incomingNPC.ChangeState(CardinalState.Idle);
-
-                    incomingNPC = null;
-                }
-
-                // 플레이어를 대기열에 등록
-                gamsilManager.RegisterPlayerToQueue(playerSC);
-            }
         }
     }
 
@@ -62,6 +54,7 @@ public class PrayerWaitingTrigger : MonoBehaviour
         if (other.CompareTag("NPC"))
         {
             isNpcInside = false;
+
             StateController exitingNPC = other.GetComponent<StateController>();
             if (incomingNPC == exitingNPC)
             {

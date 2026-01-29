@@ -28,6 +28,8 @@ public class CardinalManager : MonoBehaviour
     [Header("콘클라베 설정")]
     [Tooltip("AI 스폰 및 이동 경로 데이터")]
     [SerializeField] private List<ConclavePathData> conclavePaths;
+    [Tooltip("콘클라베 시작시 입장하는 NPC 수")]
+    [SerializeField] private int SpwanNPC;
 
     [Header("퇴장 줄세우기 좌표 설정 (Line Up)")]
     [SerializeField] private Transform leftLineStart;  // 왼쪽 줄 시작점 (a)
@@ -230,7 +232,7 @@ public class CardinalManager : MonoBehaviour
     //콘클라베 시작 함수 입장 로직 시작
     public void StartConClave()
     {
-        StartCoroutine(SpawnAndMoveAISequence(20));
+        StartCoroutine(SpawnAndMoveAISequence(SpwanNPC));
     }
 
     //콘클라베 시작 코루틴
