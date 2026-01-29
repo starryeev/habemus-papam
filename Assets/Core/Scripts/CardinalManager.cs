@@ -50,7 +50,7 @@ public class CardinalManager : MonoBehaviour
 
     // Cardinal 관리 리스트
     private List<Cardinal> cardinals;
-
+    public List<Cardinal> Cardinals => cardinals;
    
 
     void Awake()
@@ -419,13 +419,13 @@ public class CardinalManager : MonoBehaviour
         return result;
     }
 
-    public float GetCardinalPietySum()
+    public float GetCardinalPolSum()
     {
         float result = 0;
 
         foreach (var cardinal in cardinals)
         {
-            result += cardinal.Piety;
+            result += cardinal.Influence;
         }
 
         return result;

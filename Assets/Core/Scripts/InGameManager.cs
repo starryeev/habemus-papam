@@ -71,6 +71,7 @@ public class InGameManager : MonoBehaviour
 
     // 프로퍼티
     public GameBalance Balance => balance;
+    public GameContext Context => gameContext;
 
     void Awake()
     {
@@ -133,10 +134,22 @@ public class InGameManager : MonoBehaviour
 
         int dayFactor = (gameContext.CurrentDay - 1) * 10;
         int hpFactor = Mathf.RoundToInt(Mathf.Clamp((400 - cardinalManager.GetCardinalHpSum()) * 0.025f, 0, 10));
-        int pietyFactor = Mathf.RoundToInt(Mathf.Clamp(cardinalManager.GetCardinalPietySum() * 0.075f, 0, 30));
+        int polFactor = Mathf.RoundToInt(Mathf.Clamp(cardinalManager.GetCardinalPolSum() * 0.075f, 0, 30));
 
-        result = dayFactor + hpFactor + pietyFactor;
+        result = dayFactor + hpFactor + polFactor;
 
         return result;
+    }
+    public int GetCurrentDay()
+    {
+        return gameContext.CurrentDay;
+    }
+    public GameContext.Conclave GetCurrentConclave()
+    {
+        return gameContext.CurrentConclave;
+    }
+    public float GetRemainingTime()
+    {
+        return gameContext.RemainingTime;
     }
 }
