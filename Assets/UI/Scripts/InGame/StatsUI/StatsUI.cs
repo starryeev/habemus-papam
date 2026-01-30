@@ -25,10 +25,12 @@ public class StatsUI : MonoBehaviour
 
     private Cardinal[] linkedCardinals = new Cardinal[4];
     private float[] MaxStats = new float[4]; 
+    private float[] SubStats = new float[4];
     private Coroutine[] moveCoroutines = new Coroutine[4];
     private bool isInitialized = false;
+    private int closeupIndex = -1;
 
-    // 기존 for 문에서 init 함수로 변경했습니다!
+
     public void Initialize(List<Cardinal> allCardinals)
     {
         if (allCardinals == null || allCardinals.Count == 0) return;
@@ -63,13 +65,21 @@ public class StatsUI : MonoBehaviour
             }
         }
 
+        HideCloseup();
+
         isInitialized = true;
     }
     void Update()
     {
         if (!isInitialized) return;
 
-        CalculateAndMoveStats();
+        if (closeup.gameObject.activeSelf)
+        {
+            closeup.SetStats(linkedCardinals[closeupIndex].Hp,
+            linkedCardinals[closeupIndex].Piety,
+            linkedCardinals[closeupIndex].Influence);
+        }
+        else CalculateAndMoveStats();
     }
 
     void CalculateAndMoveStats()
@@ -96,6 +106,13 @@ public class StatsUI : MonoBehaviour
                     highestVal = tempMaxStats[i];
                     targetIndex = i;
                 }
+                else if(tempMaxStats[i] == highestVal)
+                {
+                    if(SubStats[i] > SubStats[targetIndex])
+                    {
+                        targetIndex = i;
+                    }
+                }
             }
 
             if (targetIndex != -1)
@@ -105,7 +122,7 @@ public class StatsUI : MonoBehaviour
                 // top에서 시작하여 간격을 더함
                 // 현재 MaxStats[0]을 처리 중이라면 MoveY = top + i*length + playerLength/2
                 // ex : NPC 이후 플레이어 처리 차례라면 MoveStats(1)이므로 top + NPC 길이 + 플레이어 길이 절반
-                // MaxStats[0] == -1f라면 플레이어가 이미 처리되어 있으므로 top + (i-1/2)*length + playerLength 
+                // MaxStats[0] == -99999f라면 플레이어가 이미 처리되어 있으므로 top + (i-1/2)*length + playerLength 
                 // ex : NPC -> 플레이어 이후 NPC 처리 차례라면 MoveStats(2)이므로 top + 1.5 NPC 길이 + 플레이어 길이
                 // 아니라면 top + (i+1/2) * length ex : 3번째 배치 차례라면 MoveStats(2)이고 top + NPC 5/2개
 
@@ -151,14 +168,11 @@ public class StatsUI : MonoBehaviour
         StatsList[i].SetPiety(pie);
 
         MaxStats[i] = Math.Max(inf, pie);
+        SubStats[i] = Math.Min(inf, pie);
     }
 
-
-    
-    
     void MoveStat(int uiIndex, float targetY)
     {
-        //기존 MoveStat 에서 처리하던 로직  CalculateAndMoveStats() 옮겼습니다.
         //target으로 부드럽게 이동
 
         if (moveCoroutines[uiIndex] != null) StopCoroutine(moveCoroutines[uiIndex]);
@@ -190,5 +204,34 @@ public class StatsUI : MonoBehaviour
         }
 
         st.transform.localPosition = new Vector3(startX, target, 0);
+    }
+    public void ShowCloseup(int idx)
+    {
+        if (linkedCardinals[idx] != null)
+        {
+            //먼저 플레이어를 맨 위에 배치하고 나머지 UI 비활성화
+            MoveStat(0, top - playerLength/2);
+            StatsList[1].gameObject.SetActive(false);
+            StatsList[2].gameObject.SetActive(false);
+            StatsList[3].gameObject.SetActive(false);
+
+            closeup.gameObject.SetActive(true);
+            closeupIndex = idx;
+            closeup.SetCardinal(linkedCardinals[idx], closeupIndex);
+            Debug.Log($"Show Closeup for Cardinal Index: {idx}");
+        }
+    }
+
+    public void HideCloseup()
+    {
+        //모든 UI 활성화
+        for (int i = 1; i < 4; i++)
+        {
+            StatsList[i].gameObject.SetActive(true);
+        }
+
+        closeup.gameObject.SetActive(false);
+        closeupIndex = -1;
+        Debug.Log("Hide Closeup");
     }
 }
