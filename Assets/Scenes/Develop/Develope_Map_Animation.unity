@@ -6619,10 +6619,9 @@ MonoBehaviour:
   - {fileID: 748422495}
   - {fileID: 705130802}
   closeup: {fileID: 0}
-  top: 345
+  top: 353
   playerLength: 250
   length: 180
-  padding: 10
   moveTime: 0.3
 --- !u!1 &874816969
 GameObject:
@@ -15726,6 +15725,7 @@ MonoBehaviour:
   rightLineEnd: {fileID: 96035005}
   leftExitPoint: {fileID: 149027208}
   rightExitPoint: {fileID: 2044986160}
+  statsUI: {fileID: 874109213}
 --- !u!1 &1923774115
 GameObject:
   m_ObjectHideFlags: 0
