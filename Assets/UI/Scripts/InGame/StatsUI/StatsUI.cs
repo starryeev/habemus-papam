@@ -17,23 +17,23 @@ public class StatsUI : MonoBehaviour
     //콘클라베 입장 전에 Cardinals가 없는 문제가 있어서 나중에 해결.
     void Start()
     {
-        /*
-        for (int i = 0; i < 4; i++)
+        
+        /*for (int i = 0; i < 4; i++)
         {
             SetStats(i);
             MoveStats(i);
-        }
-        */
+        }*/
+        
     }
     void Update()
     {
-        /*
-        for (int i = 0; i < 4; i++)
+        
+        /*for (int i = 0; i < 4; i++)
         {
             SetStats(i);
             MoveStats(i);
-        }
-        */
+        }*/
+        
     }
     //스탯 가져오기
     void SetStats(int i)
