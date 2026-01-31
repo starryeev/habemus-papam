@@ -189,9 +189,12 @@ public class CardinalManager : MonoBehaviour
         //공작
         AssignRandomSchemers();
 
+        //스탯 연동과 타이머 연동
         if (statsUI != null)
         {
             statsUI.Initialize(cardinals);
+
+            InGameManager.Instance.StartTimer();
         }
     }
     private void ResetCardinalState(Cardinal c, Vector3 startPos)

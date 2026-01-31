@@ -29,6 +29,9 @@ public class TimeUI : MonoBehaviour
     [Header("이미지")]
     [SerializeField] List<Sprite> LightList;
 
+    // 한 번만 호출하기 위한 플래그
+    private bool hasConclaveEnded = false;
+
     void Start()
     {
         InGameManager.Instance.Context.OnGameContextEvent += OnConclaveStart;
@@ -37,6 +40,8 @@ public class TimeUI : MonoBehaviour
     private void OnConclaveStart(GameContext.GameContextEvent evt)
     {
         Reset();
+        hasConclaveEnded = false;
+
         Debug.Log("Currentcon = " + InGameManager.Instance.GetCurrentConclave());
     }
 
@@ -87,6 +92,8 @@ public class TimeUI : MonoBehaviour
                 }
             
         }
+        // 시작 시 종료 플래그 초기화
+        hasConclaveEnded = false;
     }
 
     public void EndConclave()
@@ -113,5 +120,19 @@ public class TimeUI : MonoBehaviour
         LeftText1.text = $"Day {currentDay}";
         LeftText2.text = $"{currentCon}";
         RightText2.text = $"{(int)(remain/60)} : {(remain%60).ToString("00.00")}";
+
+
+        //시간이 0이 되었을 경우, StopConClave() 호출
+        if (!hasConclaveEnded && remain <= 0f)
+        {
+            hasConclaveEnded = true; 
+
+            InGameManager.Instance.StopTimer();
+
+            if (CardinalManager.Instance != null)
+            {
+                CardinalManager.Instance.StopConClave();
+            }
+        }
     }
 }

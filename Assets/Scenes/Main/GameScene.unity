@@ -6869,7 +6869,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CardinalManager
   cardinalPrefabPlayer: {fileID: 7455590352920837333, guid: 200a091d592ce47e98b2639233ba2402, type: 3}
   cardinalPrefabAI: {fileID: 7455590352920837333, guid: 556d74d1d6f4045bba355364974931e1, type: 3}
-  spawnNPCCount: 20
+  spawnNPCCount: 30
   conclavePaths:
   - groupName: Left
     spawnPoint: {fileID: 1869815122}
