@@ -18,13 +18,15 @@ public class Book : MonoBehaviour {
     RectTransform BookPanel;
     public Sprite background;
     public Sprite[] bookPages;
+    public bool usePagePanels=false;
+    public RectTransform[] pagePanels;
     public bool interactable=true;
     public bool enableShadowEffect=true;
     //represent the index of the sprite shown in the right page
     public int currentPage = 0;
     public int TotalPageCount
     {
-        get { return bookPages.Length; }
+        get { return PageCount; }
     }
     public Vector3 EndBottomLeft
     {
@@ -66,6 +68,7 @@ public class Book : MonoBehaviour {
     bool pageDragging = false;
     //current flip mode
     FlipMode mode;
+    BookPageContentRenderer pageContentRenderer = new BookPageContentRenderer();
 
     void Start()
     {
@@ -74,6 +77,7 @@ public class Book : MonoBehaviour {
 
         Left.gameObject.SetActive(false);
         Right.gameObject.SetActive(false);
+        ConfigurePageContentRenderer();
         UpdateSprites();
         CalcCurlCriticalPoints();
 
@@ -276,7 +280,7 @@ public class Book : MonoBehaviour {
     }
     public void DragRightPageToPoint(Vector3 point)
     {
-        if (currentPage >= bookPages.Length) return;
+        if (currentPage >= PageCount) return;
         pageDragging = true;
         mode = FlipMode.RightToLeft;
         f = point;
@@ -289,15 +293,15 @@ public class Book : MonoBehaviour {
         Left.rectTransform.pivot = new Vector2(0, 0);
         Left.transform.position = RightNext.transform.position;
         Left.transform.eulerAngles = new Vector3(0, 0, 0);
-        Left.sprite = (currentPage < bookPages.Length) ? bookPages[currentPage] : background;
+        SetPageContent(Left, currentPage);
         Left.transform.SetAsFirstSibling();
         
         Right.gameObject.SetActive(true);
         Right.transform.position = RightNext.transform.position;
         Right.transform.eulerAngles = new Vector3(0, 0, 0);
-        Right.sprite = (currentPage < bookPages.Length - 1) ? bookPages[currentPage + 1] : background;
+        SetPageContent(Right, currentPage + 1);
 
-        RightNext.sprite = (currentPage < bookPages.Length - 2) ? bookPages[currentPage + 2] : background;
+        SetPageContent(RightNext, currentPage + 2);
 
         LeftNext.transform.SetAsFirstSibling();
         if (enableShadowEffect) Shadow.gameObject.SetActive(true);
@@ -321,7 +325,7 @@ public class Book : MonoBehaviour {
 
         Right.gameObject.SetActive(true);
         Right.transform.position = LeftNext.transform.position;
-        Right.sprite = bookPages[currentPage - 1];
+        SetPageContent(Right, currentPage - 1);
         Right.transform.eulerAngles = new Vector3(0, 0, 0);
         Right.transform.SetAsFirstSibling();
 
@@ -329,9 +333,9 @@ public class Book : MonoBehaviour {
         Left.rectTransform.pivot = new Vector2(1, 0);
         Left.transform.position = LeftNext.transform.position;
         Left.transform.eulerAngles = new Vector3(0, 0, 0);
-        Left.sprite = (currentPage >= 2) ? bookPages[currentPage - 2] : background;
+        SetPageContent(Left, currentPage - 2);
 
-        LeftNext.sprite = (currentPage >= 3) ? bookPages[currentPage - 3] : background;
+        SetPageContent(LeftNext, currentPage - 3);
 
         RightNext.transform.SetAsFirstSibling();
         if (enableShadowEffect) ShadowLTR.gameObject.SetActive(true);
@@ -364,10 +368,31 @@ public class Book : MonoBehaviour {
         }
     }
     Coroutine currentCoroutine;
+    int PageCount
+    {
+        get
+        {
+            ConfigurePageContentRenderer();
+            return pageContentRenderer.PageCount;
+        }
+    }
+    void ConfigurePageContentRenderer()
+    {
+        pageContentRenderer.Configure(background, bookPages, usePagePanels, pagePanels);
+    }
     void UpdateSprites()
     {
-        LeftNext.sprite= (currentPage > 0 && currentPage <= bookPages.Length) ? bookPages[currentPage-1] : background;
-        RightNext.sprite=(currentPage>=0 &&currentPage<bookPages.Length) ? bookPages[currentPage] : background;
+        SetPageContent(LeftNext, currentPage - 1);
+        SetPageContent(RightNext, currentPage);
+    }
+    void SetPageContent(Image pageSlot, int pageIndex)
+    {
+        ConfigurePageContentRenderer();
+        pageContentRenderer.SetPageContent(pageSlot, pageIndex);
+    }
+    void ClearPageContent(Image pageSlot)
+    {
+        pageContentRenderer.ClearPageContent(pageSlot);
     }
     public void TweenForward()
     {
@@ -385,6 +410,7 @@ public class Book : MonoBehaviour {
         LeftNext.transform.SetParent(BookPanel.transform, true);
         Left.transform.SetParent(BookPanel.transform, true);
         LeftNext.transform.SetParent(BookPanel.transform, true);
+        ClearTurningPageContent();
         Left.gameObject.SetActive(false);
         Right.gameObject.SetActive(false);
         Right.transform.SetParent(BookPanel.transform, true);
@@ -406,6 +432,7 @@ public class Book : MonoBehaviour {
                     RightNext.transform.SetParent(BookPanel.transform);
                     Right.transform.SetParent(BookPanel.transform);
 
+                    ClearTurningPageContent();
                     Left.gameObject.SetActive(false);
                     Right.gameObject.SetActive(false);
                     pageDragging = false;
@@ -422,12 +449,18 @@ public class Book : MonoBehaviour {
                     LeftNext.transform.SetParent(BookPanel.transform);
                     Left.transform.SetParent(BookPanel.transform);
 
+                    ClearTurningPageContent();
                     Left.gameObject.SetActive(false);
                     Right.gameObject.SetActive(false);
                     pageDragging = false;
                 }
                 ));
         }
+    }
+    void ClearTurningPageContent()
+    {
+        ClearPageContent(Left);
+        ClearPageContent(Right);
     }
     public IEnumerator TweenTo(Vector3 to, float duration, System.Action onFinish)
     {
