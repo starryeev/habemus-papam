@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ending Event Flag Guide</title>
+  <style>
+    body {
+      margin: 32px;
+      color: #222;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      background: #fafafa;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 28px;
+    }
+    h1, h2 {
+      line-height: 1.25;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+    h2 {
+      margin-top: 32px;
+      font-size: 20px;
+      border-bottom: 1px solid #e5e5e5;
+      padding-bottom: 6px;
+    }
+    code, pre {
+      font-family: Consolas, Monaco, "Courier New", monospace;
+    }
+    pre {
+      overflow-x: auto;
+      background: #1f2933;
+      color: #eef4ff;
+      border-radius: 6px;
+      padding: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f0f2f5;
+    }
+    .note {
+      padding: 12px 14px;
+      background: #fff8d8;
+      border: 1px solid #e8d37a;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>이벤트에서 엔딩 플래그 넣는 방식</h1>
+
+    <p>
+      이벤트 선택지에서 특정 엔딩으로 바로 보내려면
+      <code>OnChoiceOption1</code> 또는 <code>OnChoiceOption2</code> 안에서 아래 순서로 호출하면 된다.
+    </p>
+
+    <h2>기본 호출 순서</h2>
+    <pre><code>EndingContext.CaptureFromCurrentGame();
+EndingContext.SetEventTrigger("이벤트ID", 선택지번호);
+EndingResult.Set(EndingType.엔딩종류);
+Time.timeScale = 1f;
+SceneManager.LoadScene("EndingScene");</code></pre>
+
+    <p class="note">
+      <code>SceneManager.LoadScene</code>을 쓰려면 이벤트 스크립트 상단에
+      <code>using UnityEngine.SceneManagement;</code>를 추가해야 한다.
+    </p>
+
+    <h2>이벤트 스크립트 예시</h2>
+    <pre><code>using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public override bool OnChoiceOption1(Cardinal performer)
+{
+    if (!CanChoiceOption1(performer)) return false;
+
+    EndingContext.CaptureFromCurrentGame();
+    EndingContext.SetEventTrigger("E31101", 1);
+    EndingResult.Set(EndingType.GreatSage);
+    Time.timeScale = 1f;
+    SceneManager.LoadScene("EndingScene");
+
+    return true;
+}</code></pre>
+
+    <h2>엔딩별로 넣을 값</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>조건</th>
+          <th>호출할 값</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>E31101 선택지 1</td>
+          <td><code>SetEventTrigger("E31101", 1)</code><br><code>EndingResult.Set(EndingType.GreatSage)</code></td>
+        </tr>
+        <tr>
+          <td>E31101 선택지 2</td>
+          <td><code>SetEventTrigger("E31101", 2)</code><br><code>EndingResult.Set(EndingType.PolarBear)</code></td>
+        </tr>
+        <tr>
+          <td>E31212 선택지 1</td>
+          <td><code>SetEventTrigger("E31212", 1)</code><br><code>EndingResult.Set(EndingType.Ascension)</code></td>
+        </tr>
+        <tr>
+          <td>E32002 선택지 2</td>
+          <td><code>SetEventTrigger("E32002", 2)</code><br><code>EndingResult.Set(EndingType.DiplomaticVictory)</code></td>
+        </tr>
+        <tr>
+          <td>E21101 선택지 1</td>
+          <td><code>SetEventTrigger("E21101", 1)</code><br><code>EndingResult.Set(EndingType.Crusade)</code></td>
+        </tr>
+        <tr>
+          <td>E31100 선택지 2</td>
+          <td><code>SetEventTrigger("E31100", 2)</code><br><code>EndingResult.Set(EndingType.Crusade)</code></td>
+        </tr>
+        <tr>
+          <td>E31211 선택지 1</td>
+          <td><code>SetEventTrigger("E31211", 1)</code><br><code>EndingResult.Set(EndingType.Crusade)</code></td>
+        </tr>
+        <tr>
+          <td>E32001 선택지 2</td>
+          <td><code>SetEventTrigger("E32001", 2)</code><br><code>EndingResult.Set(EndingType.Crusade)</code></td>
+        </tr>
+        <tr>
+          <td>E32002 선택지 1</td>
+          <td><code>SetEventTrigger("E32002", 1)</code><br><code>EndingResult.Set(EndingType.Crusade)</code></td>
+        </tr>
+        <tr>
+          <td>연막탄 아이템 사용 실패</td>
+          <td><code>EndingContext.CaptureFromCurrentGame()</code><br><code>EndingResult.Set(EndingType.SmokeBomb)</code><br>이벤트 ID는 필요 없으면 생략 가능</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>성전 게임오버 분기</h2>
+    <p>
+      <code>E31201</code>, <code>E31202</code>가 켜진 상태에서 게임오버가 날 때는
+      아래처럼 이벤트 ID를 넣고 성전 엔딩으로 보내면 된다.
+    </p>
+    <pre><code>EndingContext.CaptureFromCurrentGame();
+EndingContext.SetEventTrigger("E31201", 1);
+EndingResult.Set(EndingType.Crusade);
+Time.timeScale = 1f;
+SceneManager.LoadScene("EndingScene");</code></pre>
+
+    <h2>공통 함수로 빼고 싶을 때</h2>
+    <p>
+      여러 이벤트에서 반복될 예정이면 public helper를 하나 만드는 편이 좋다.
+      현재 <code>DebugEndingFlagController.TriggerEnding(...)</code>은 private이라 이벤트에서 직접 호출할 수 없다.
+    </p>
+    <pre><code>public static void LoadEnding(
+    EndingType endingType,
+    string triggerEventId = "",
+    int optionIndex = 0)
+{
+    EndingContext.CaptureFromCurrentGame();
+
+    if (!string.IsNullOrWhiteSpace(triggerEventId))
+    {
+        EndingContext.SetEventTrigger(triggerEventId, optionIndex);
+    }
+
+    EndingResult.Set(endingType);
+    Time.timeScale = 1f;
+    SceneManager.LoadScene("EndingScene");
+}</code></pre>
+  </main>
+</body>
+</html>

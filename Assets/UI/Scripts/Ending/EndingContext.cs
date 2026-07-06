@@ -22,7 +22,7 @@ public static class EndingContext
 
         if (electedCandidate != null && !electedCandidate.CompareTag("Player"))
         {
-            ElectedNpcName = electedCandidate.name;
+            ElectedNpcName = ResolveCardinalDisplayName(electedCandidate);
         }
     }
 
@@ -109,7 +109,7 @@ public static class EndingContext
 
         foreach (Cardinal candidate in candidates)
         {
-            RankedCandidateNames.Add(candidate.name);
+            RankedCandidateNames.Add(ResolveCardinalDisplayName(candidate));
         }
     }
 
@@ -137,5 +137,70 @@ public static class EndingContext
         }
 
         return null;
+    }
+
+    private static string ResolveCardinalDisplayName(Cardinal cardinal)
+    {
+        if (cardinal == null)
+        {
+            return string.Empty;
+        }
+
+        GameNameSaveData names = SaveManager.Instance != null ? SaveManager.Instance.CurrentGameNames : null;
+        int linkedIndex = FindLinkedCardinalIndex(cardinal);
+
+        if (names != null)
+        {
+            if (linkedIndex == 0)
+            {
+                return GetFallback(names.playerName, cardinal.name);
+            }
+
+            if (linkedIndex > 0 && names.npcNames != null)
+            {
+                int npcIndex = linkedIndex - 1;
+                if (npcIndex >= 0 && npcIndex < names.npcNames.Count)
+                {
+                    return GetFallback(names.npcNames[npcIndex], cardinal.name);
+                }
+            }
+        }
+
+        if (cardinal.CompareTag("Player"))
+        {
+            return GetFallback(PlayerName, cardinal.name);
+        }
+
+        return cardinal.name;
+    }
+
+    private static int FindLinkedCardinalIndex(Cardinal cardinal)
+    {
+        StatsUI statsUI = CardinalManager.Instance != null ? CardinalManager.Instance.StatsUI : null;
+        if (statsUI == null && UIManager.Instance != null && UIManager.Instance.Ingame != null)
+        {
+            statsUI = UIManager.Instance.Ingame.Stats;
+        }
+
+        Cardinal[] linkedCardinals = statsUI != null ? statsUI.LinkedCardinals : null;
+        if (linkedCardinals == null)
+        {
+            return -1;
+        }
+
+        for (int i = 0; i < linkedCardinals.Length; i++)
+        {
+            if (linkedCardinals[i] == cardinal)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static string GetFallback(string value, string fallback)
+    {
+        return string.IsNullOrWhiteSpace(value) ? fallback : value;
     }
 }
