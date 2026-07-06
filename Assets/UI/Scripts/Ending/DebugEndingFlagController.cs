@@ -1,0 +1,183 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public class DebugEndingFlagController : MonoBehaviour
+{
+    [SerializeField] private string endingSceneName = "EndingScene";
+    [SerializeField] private bool startHidden = true;
+
+    private RectTransform debugRoot;
+    private bool isVisible;
+    private bool isHereticWarGameOverFlag;
+
+    private void Awake()
+    {
+        debugRoot = GetComponent<RectTransform>();
+        WireButtons();
+        SetVisible(!startHidden);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha8) || Input.GetKeyDown(KeyCode.Keypad8))
+        {
+            SetVisible(!isVisible);
+        }
+    }
+
+    public void TriggerPlayerPope()
+    {
+        TriggerEnding(EndingType.PlayerPope);
+    }
+
+    public void TriggerNpcPope()
+    {
+        TriggerEnding(EndingType.NpcPope);
+    }
+
+    public void TriggerCrusadeE21101()
+    {
+        TriggerEnding(EndingType.Crusade, "E21101", 1);
+    }
+
+    public void TriggerCrusadeE31211()
+    {
+        TriggerEnding(EndingType.Crusade, "E31211", 1);
+    }
+
+    public void EnableHereticWarGameOverFlag()
+    {
+        isHereticWarGameOverFlag = true;
+        Debug.Log("[Ending Debug] E31201/E31202 game-over flag enabled.");
+    }
+
+    public void TriggerGreatSage()
+    {
+        TriggerEnding(EndingType.GreatSage, "E31101", 1);
+    }
+
+    public void TriggerPolarBear()
+    {
+        TriggerEnding(EndingType.PolarBear, "E31101", 2);
+    }
+
+    public void TriggerAscension()
+    {
+        TriggerEnding(EndingType.Ascension, "E31212", 1);
+    }
+
+    public void TriggerDiplomaticVictory()
+    {
+        TriggerEnding(EndingType.DiplomaticVictory, "E32002", 2);
+    }
+
+    public void TriggerSmokeBombFail()
+    {
+        TriggerEnding(EndingType.SmokeBomb);
+    }
+
+    public void TriggerGameOver()
+    {
+        SetPlayerHpToOne();
+
+        if (!isHereticWarGameOverFlag)
+        {
+            return;
+        }
+
+        isHereticWarGameOverFlag = false;
+        TriggerEnding(EndingType.Crusade, "E31201", 1);
+    }
+
+    private void WireButtons()
+    {
+        AddClick("E21101_Flag", TriggerCrusadeE21101);
+        AddClick("E31211_Flag", TriggerCrusadeE31211);
+        AddClick("E31201, E31202_Flag", EnableHereticWarGameOverFlag);
+        AddClick("E31101_1_Flag", TriggerGreatSage);
+        AddClick("E31101_2_Flag", TriggerPolarBear);
+        AddClick("E31212_1_Flag", TriggerAscension);
+        AddClick("E32002_2_Flag", TriggerDiplomaticVictory);
+        AddClick("GameOver", TriggerGameOver);
+        AddClick("smoke_shell_Fail", TriggerSmokeBombFail);
+    }
+
+    private void AddClick(string buttonName, UnityEngine.Events.UnityAction action)
+    {
+        Transform buttonTransform = transform.Find(buttonName);
+        if (buttonTransform == null)
+        {
+            Debug.LogWarning($"[Ending Debug] Button was not found: {buttonName}");
+            return;
+        }
+
+        Button button = buttonTransform.GetComponent<Button>();
+        if (button == null)
+        {
+            Debug.LogWarning($"[Ending Debug] Button component was not found: {buttonName}");
+            return;
+        }
+
+        button.onClick.AddListener(action);
+    }
+
+    private void TriggerEnding(EndingType endingType, string triggerEventId = "", int optionIndex = 0)
+    {
+        EndingContext.CaptureFromCurrentGame();
+
+        if (!string.IsNullOrWhiteSpace(triggerEventId))
+        {
+            EndingContext.SetEventTrigger(triggerEventId, optionIndex);
+        }
+
+        EndingResult.Set(endingType);
+        Time.timeScale = 1f;
+
+        if (!string.IsNullOrWhiteSpace(endingSceneName))
+        {
+            SceneManager.LoadScene(endingSceneName);
+        }
+    }
+
+    private void SetPlayerHpToOne()
+    {
+        Cardinal player = FindPlayerCardinal();
+        if (player == null)
+        {
+            Debug.LogWarning("[Ending Debug] Player cardinal was not found. Cannot set HP to 1.");
+            return;
+        }
+
+        player.ChangeHp(1f - player.Hp);
+        Debug.Log($"[Ending Debug] Player HP set to {player.Hp}.");
+    }
+
+    private Cardinal FindPlayerCardinal()
+    {
+        if (CardinalManager.Instance == null || CardinalManager.Instance.Cardinals == null)
+        {
+            return null;
+        }
+
+        foreach (Cardinal cardinal in CardinalManager.Instance.Cardinals)
+        {
+            if (cardinal != null && cardinal.CompareTag("Player"))
+            {
+                return cardinal;
+            }
+        }
+
+        return null;
+    }
+
+    private void SetVisible(bool visible)
+    {
+        isVisible = visible;
+
+        if (debugRoot != null)
+        {
+            debugRoot.localScale = visible ? Vector3.one : Vector3.zero;
+        }
+    }
+}

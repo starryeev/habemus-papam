@@ -20,6 +20,7 @@ public class EndingCutscenePlayer : MonoBehaviour
     [Header("Dialogue")]
     [SerializeField] private EndingDialogueTable dialogueTable;
     [SerializeField] private TextMeshProUGUI endingText;
+    [SerializeField] private TextMeshProUGUI subText;
     [SerializeField] private TMP_FontAsset regularFont;
     [SerializeField] private TMP_FontAsset boldFont;
     [SerializeField] private float fadeInDuration = 1f;
@@ -34,7 +35,7 @@ public class EndingCutscenePlayer : MonoBehaviour
     [SerializeField] private Button goToMainSceneButton;
     [SerializeField] private float goToMainSceneButtonFadeDuration = 1f;
 
-    private readonly List<string> preparedLines = new List<string>();
+    private readonly List<EndingTextPage> preparedLines = new List<EndingTextPage>();
     private CanvasGroup goToMainSceneButtonCanvasGroup;
     private Coroutine textSequenceCoroutine;
     private Coroutine buttonFadeCoroutine;
@@ -124,10 +125,21 @@ public class EndingCutscenePlayer : MonoBehaviour
             endingText = textObject != null ? textObject.GetComponent<TextMeshProUGUI>() : null;
         }
 
-        if (endingText != null && regularFont != null)
+        if (subText == null)
         {
-            endingText.font = regularFont;
+            GameObject subTextObject = GameObject.Find("UI/EndingUI/SubText");
+            if (subTextObject == null)
+            {
+                subTextObject = GameObject.Find("SubText");
+            }
+
+            subText = subTextObject != null ? subTextObject.GetComponent<TextMeshProUGUI>() : null;
         }
+
+        RegisterFontAssets();
+        ConfigureText(endingText);
+        ConfigureText(subText);
+        ClearText(subText);
 
         if (skipButton == null)
         {
@@ -192,7 +204,22 @@ public class EndingCutscenePlayer : MonoBehaviour
                 continue;
             }
 
-            preparedLines.Add(FormatLine(rawText));
+            string formattedText = FormatLine(rawText);
+            if (line.DisplayMode == EndingLineDisplayMode.SubTextWithPrevious)
+            {
+                if (preparedLines.Count == 0)
+                {
+                    preparedLines.Add(new EndingTextPage(string.Empty, formattedText));
+                }
+                else
+                {
+                    preparedLines[preparedLines.Count - 1].SubText = formattedText;
+                }
+
+                continue;
+            }
+
+            preparedLines.Add(new EndingTextPage(formattedText, string.Empty));
         }
     }
 
@@ -223,8 +250,7 @@ public class EndingCutscenePlayer : MonoBehaviour
 
         for (currentLineIndex = 0; currentLineIndex < preparedLines.Count; currentLineIndex++)
         {
-            endingText.text = preparedLines[currentLineIndex];
-            endingText.alpha = 0f;
+            ApplyTextPage(preparedLines[currentLineIndex], 0f);
 
             completeCurrentFade = false;
             advanceRequested = false;
@@ -236,11 +262,11 @@ public class EndingCutscenePlayer : MonoBehaviour
             while (fadeElapsed < fadeDuration && !completeCurrentFade)
             {
                 fadeElapsed += Time.unscaledDeltaTime;
-                endingText.alpha = fadeDuration <= 0f ? 1f : Mathf.Clamp01(fadeElapsed / fadeDuration);
+                SetTextAlpha(fadeDuration <= 0f ? 1f : Mathf.Clamp01(fadeElapsed / fadeDuration));
                 yield return null;
             }
 
-            endingText.alpha = 1f;
+            SetTextAlpha(1f);
             completeCurrentFade = false;
             playState = TextPlayState.Holding;
 
@@ -295,8 +321,7 @@ public class EndingCutscenePlayer : MonoBehaviour
         if (endingText != null && preparedLines.Count > 0)
         {
             currentLineIndex = preparedLines.Count - 1;
-            endingText.text = preparedLines[currentLineIndex];
-            endingText.alpha = 1f;
+            ApplyTextPage(preparedLines[currentLineIndex], 1f);
         }
 
         playState = TextPlayState.Finished;
@@ -307,6 +332,108 @@ public class EndingCutscenePlayer : MonoBehaviour
         }
 
         ShowGoToMainSceneButton();
+    }
+
+    private void ApplyTextPage(EndingTextPage page, float alpha)
+    {
+        if (endingText != null)
+        {
+            endingText.text = page.MainText;
+            endingText.alpha = alpha;
+        }
+
+        if (subText != null)
+        {
+            subText.text = page.SubText;
+            subText.alpha = string.IsNullOrEmpty(page.SubText) ? 0f : alpha;
+        }
+    }
+
+    private void SetTextAlpha(float alpha)
+    {
+        if (endingText != null)
+        {
+            endingText.alpha = alpha;
+        }
+
+        if (subText != null && !string.IsNullOrEmpty(subText.text))
+        {
+            subText.alpha = alpha;
+        }
+    }
+
+    private void ConfigureText(TextMeshProUGUI targetText)
+    {
+        if (targetText == null)
+        {
+            return;
+        }
+
+        if (regularFont != null)
+        {
+            targetText.font = regularFont;
+        }
+
+        targetText.richText = true;
+    }
+
+    private static void ClearText(TextMeshProUGUI targetText)
+    {
+        if (targetText == null)
+        {
+            return;
+        }
+
+        targetText.text = string.Empty;
+        targetText.alpha = 0f;
+    }
+
+    private void RegisterFontAssets()
+    {
+        if (regularFont != null)
+        {
+            MaterialReferenceManager.AddFontAsset(regularFont);
+        }
+
+        if (boldFont != null)
+        {
+            MaterialReferenceManager.AddFontAsset(boldFont);
+        }
+
+        RegisterFallbackFont(regularFont, boldFont);
+
+        if (boldFont != null)
+        {
+            List<TMP_FontAsset> fallbackFonts = TMP_Settings.fallbackFontAssets;
+            if (fallbackFonts == null)
+            {
+                fallbackFonts = new List<TMP_FontAsset>();
+                TMP_Settings.fallbackFontAssets = fallbackFonts;
+            }
+
+            if (!fallbackFonts.Contains(boldFont))
+            {
+                fallbackFonts.Add(boldFont);
+            }
+        }
+    }
+
+    private static void RegisterFallbackFont(TMP_FontAsset baseFont, TMP_FontAsset fallbackFont)
+    {
+        if (baseFont == null || fallbackFont == null || baseFont == fallbackFont)
+        {
+            return;
+        }
+
+        if (baseFont.fallbackFontAssetTable == null)
+        {
+            baseFont.fallbackFontAssetTable = new List<TMP_FontAsset>();
+        }
+
+        if (!baseFont.fallbackFontAssetTable.Contains(fallbackFont))
+        {
+            baseFont.fallbackFontAssetTable.Add(fallbackFont);
+        }
     }
 
     private string FormatLine(string rawText)
@@ -368,7 +495,12 @@ public class EndingCutscenePlayer : MonoBehaviour
             return string.Empty;
         }
 
-        string boldFontName = boldFont != null ? boldFont.name : "조선일보굵음 SDF";
+        string boldFontName = boldFont != null ? boldFont.name : string.Empty;
+        if (string.IsNullOrEmpty(boldFontName))
+        {
+            return text;
+        }
+
         StringBuilder builder = new StringBuilder();
         int braceDepth = 0;
 
@@ -573,4 +705,16 @@ public class EndingCutscenePlayer : MonoBehaviour
             SceneManager.LoadScene(mainMenuSceneName);
         }
     }
+}
+
+internal class EndingTextPage
+{
+    public EndingTextPage(string mainText, string subText)
+    {
+        MainText = mainText;
+        SubText = subText;
+    }
+
+    public string MainText { get; }
+    public string SubText { get; set; }
 }

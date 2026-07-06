@@ -28,6 +28,7 @@ MonoBehaviour:
       triggerEventId: 
       triggerOptionIndex: 0
     - rawText: "기도 {기도 횟수}회"
+      displayMode: 1
       condition: 0
       triggerEventId: 
       triggerOptionIndex: 0
@@ -36,6 +37,7 @@ MonoBehaviour:
       triggerEventId: 
       triggerOptionIndex: 0
     - rawText: "연설 {연설 횟수}회"
+      displayMode: 1
       condition: 0
       triggerEventId: 
       triggerOptionIndex: 0
@@ -90,6 +92,7 @@ MonoBehaviour:
       triggerEventId: 
       triggerOptionIndex: 0
     - rawText: "기도 {기도 횟수}회"
+      displayMode: 1
       condition: 0
       triggerEventId: 
       triggerOptionIndex: 0
@@ -98,6 +101,7 @@ MonoBehaviour:
       triggerEventId: 
       triggerOptionIndex: 0
     - rawText: "연설 {연설 횟수}회"
+      displayMode: 1
       condition: 0
       triggerEventId: 
       triggerOptionIndex: 0
@@ -170,6 +174,22 @@ MonoBehaviour:
     - rawText: "이교도들은 교주가 없는 틈을 타 교단을 휘저었다."
       condition: 3
       triggerEventId: E32002
+      triggerOptionIndex: 1
+    - rawText: "교단은 (심각한 위협)에 직면했다."
+      condition: 3
+      triggerEventId: E31201
+      triggerOptionIndex: 1
+    - rawText: "이교도들은 교주가 없는 틈을 타 교단을 휘저었다."
+      condition: 3
+      triggerEventId: E31201
+      triggerOptionIndex: 1
+    - rawText: "교단은 (심각한 위협)에 직면했다."
+      condition: 3
+      triggerEventId: E31202
+      triggerOptionIndex: 1
+    - rawText: "이교도들은 교주가 없는 틈을 타 교단을 휘저었다."
+      condition: 3
+      triggerEventId: E31202
       triggerOptionIndex: 1
     - rawText: "하지만 우리는 굴하지 않았다."
       condition: 0

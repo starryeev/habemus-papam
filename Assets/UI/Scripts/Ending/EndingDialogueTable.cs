@@ -36,14 +36,22 @@ public class EndingDialogueLine
 {
     [TextArea(1, 4)]
     [SerializeField] private string rawText;
+    [SerializeField] private EndingLineDisplayMode displayMode;
     [SerializeField] private EndingLineCondition condition;
     [SerializeField] private string triggerEventId;
     [SerializeField] private int triggerOptionIndex;
 
     public string RawText => rawText;
+    public EndingLineDisplayMode DisplayMode => displayMode;
     public EndingLineCondition Condition => condition;
     public string TriggerEventId => triggerEventId;
     public int TriggerOptionIndex => triggerOptionIndex;
+}
+
+public enum EndingLineDisplayMode
+{
+    Main,
+    SubTextWithPrevious
 }
 
 public enum EndingLineCondition
