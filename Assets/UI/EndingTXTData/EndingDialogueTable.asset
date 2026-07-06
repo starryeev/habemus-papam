@@ -1,0 +1,307 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a7dbec328141718ac23374cfa4f160, type: 3}
+  m_Name: EndingDialogueTable
+  m_EditorClassIdentifier: Assembly-CSharp::EndingDialogueTable
+  entries:
+  - endingType: 1
+    lines:
+    - rawText: "굴뚝에 (하얀 연기)가 피어오르고"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "({콘클라베 DAY}일간)의 기나긴 썬ㅡ클라베가 끝을 맺습니다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "태양을 향한 (절실한 기도)와"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "기도 {기도 횟수}회"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "(모든 장로들의 마음)을 모아"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "연설 {연설 횟수}회"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "제 {데이터에 저장되어 있는 몇번째 교주인지}대 교주"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "({플레이어의 이름} {데이터에 저장되어 있는 몇번째 교주인지}세)가 즉위하였습니다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "태양처럼 온화한 미소를 띄며"
+      condition: 1
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "태양처럼 굳센 주먹을 쥐고"
+      condition: 2
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "당신은 화려한 태양의 옷을 입고 모두의 환호 아래 연단에 오릅니다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "당신은 (쉼없이) 태양을 찬미하고"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "(목숨을 다해 신도들을 위해 봉사할 것을 맹세합니다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "이 한 몸 사그라들 때까지."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "(영원히.)"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+  - endingType: 2
+    lines:
+    - rawText: "굴뚝에 (하얀 연기)가 피어오르고"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "{콘클라베 DAY}일간의 장엄한 썬ㅡ클라베가 끝을 맺는다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "태양을 향한 (절실한 기도)와"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "기도 {기도 횟수}회"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "모든 장로들의 마음을 모아"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "연설 {연설 횟수}회"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "제 ({데이터에 저장되어 있는 몇번째 교주인지}대) 교주"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "({당선된 NPC 의 이름} {데이터에 저장되어 있는 몇번째 교주인지}세)가 즉위하였다!"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "태양의 축복을 받아 빛나는 {당선된 NPC 의 이름}을 바라보며"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "당신은 새 교주를 내려 주심에 감사의 기도를 올린다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "그리운 고향과 편안한 노후를 기대하며"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "당신은 {당선된 NPC 의 이름}을 보고 의미심장한 미소를 짓는다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "(…뺑이쳐라!)"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+  - endingType: 3
+    lines:
+    - rawText: "교단이 (커다란 공포) 아래 얼어붙었다."
+      condition: 3
+      triggerEventId: E21101
+      triggerOptionIndex: 1
+    - rawText: "{(후보 2)}(이)가 싸늘한 주검으로 발견되었다."
+      condition: 3
+      triggerEventId: E21101
+      triggerOptionIndex: 1
+    - rawText: "교단이 (혼돈의 도가니)에 빠졌다."
+      condition: 3
+      triggerEventId: E31100
+      triggerOptionIndex: 2
+    - rawText: "{(엔딩 기준 2순위의 이름)}의 (종교개혁 선언)에 교단이 반으로 갈라졌다."
+      condition: 3
+      triggerEventId: E31100
+      triggerOptionIndex: 2
+    - rawText: "교단이 (혼돈의 도가니)에 빠졌다."
+      condition: 3
+      triggerEventId: E31211
+      triggerOptionIndex: 1
+    - rawText: "{(엔딩 기준 2순위의 이름)}의 (종교개혁 선언)에 교단이 반으로 갈라졌다."
+      condition: 3
+      triggerEventId: E31211
+      triggerOptionIndex: 1
+    - rawText: "교단은 (심각한 위협)에 직면했다."
+      condition: 3
+      triggerEventId: E32001
+      triggerOptionIndex: 2
+    - rawText: "이교도들은 교주가 없는 틈을 타 교단을 휘저었다."
+      condition: 3
+      triggerEventId: E32001
+      triggerOptionIndex: 2
+    - rawText: "교단은 (심각한 위협)에 직면했다."
+      condition: 3
+      triggerEventId: E32002
+      triggerOptionIndex: 1
+    - rawText: "이교도들은 교주가 없는 틈을 타 교단을 휘저었다."
+      condition: 3
+      triggerEventId: E32002
+      triggerOptionIndex: 1
+    - rawText: "하지만 우리는 굴하지 않았다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "우리는 태양과 {엔딩 기준 1순위의 이름}의 이름 아래에"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "결연히 맞서 (성전)을 일으킬 것이다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "(누구도 태양을 막을 수는 없다.)"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+  - endingType: 4
+    lines:
+    - rawText: "연기가 피어오르기는 했는데?"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "{콘클라베 DAY}일간의 기나긴 썬ㅡ클라베가"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "(끝났…나?)"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "어…"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "다 때려치우고 점심이나 먹으러 가죠?"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+  - endingType: 5
+    lines:
+    - rawText: "우워어엉."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "크르릉 크워어엉? 우워 우워엉."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "크르릉…"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "우오워."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "(…코카콜라!)"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+  - endingType: 6
+    lines:
+    - rawText: "교단은 (심각한 위협)에 직면했다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "이교도들은 교주가 없는 틈을 타 교단을 휘저었다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "하지만 우리는 굴하지 않았다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "우리는 태양과 {엔딩 기준 3순위의 이름}의 이름으로"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "우리를 해친 이교도들마저 자비로 품어 용서하였다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "온 세상이 태양의 힘과 {엔딩 기준 3순위의 이름}의 자비를 칭송하였고"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "당신은 그 모습을 바라보며 의미심장한 미소를 짓는다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "(…뺑이쳐라!)"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+  - endingType: 7
+    lines:
+    - rawText: "황금 경판을 읽자, 오묘한 메세₩%#지가₩@"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "#%@₩!!%&@"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "태양을#@&!!태양을"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+  - endingType: 8
+    lines:
+    - rawText: "교단이 가장 큰 위험에 처했을 때"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "모두가 도망치고 겁먹었을 때"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "당신은 홀로 남아 맞섰다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "전능한 태양의 힘이 당신의 입을 빌어 말한다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "북극곰들마저 감화되어 태양을 찬양한다."
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0
+    - rawText: "(쿠워엉.)"
+      condition: 0
+      triggerEventId: 
+      triggerOptionIndex: 0

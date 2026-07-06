@@ -37,7 +37,7 @@ public class ElectionManager : MonoBehaviour
             return;
         }
 
-        ForceElectCandidate(playerCandidate, EndingType.Bad);
+        ForceElectCandidate(playerCandidate, EndingType.PlayerPope);
     }
 
     public void DebugElectNpc()
@@ -49,7 +49,7 @@ public class ElectionManager : MonoBehaviour
             return;
         }
 
-        ForceElectCandidate(npcCandidate, EndingType.Normal);
+        ForceElectCandidate(npcCandidate, EndingType.NpcPope);
     }
 
     void Awake()
@@ -148,6 +148,8 @@ public class ElectionManager : MonoBehaviour
                 else
                 {
                     Debug.Log("<color=red>연막탄 실패... 그대로 게임 오버 판정으로 넘어갑니다.</color>");
+                    LoadEndingScene(EndingType.SmokeBomb);
+                    return;
                 }
             }
         }
@@ -161,12 +163,12 @@ public class ElectionManager : MonoBehaviour
             if (currentWinnerCandidate.CompareTag("Player"))
             {
                 Debug.Log($"[Election] Player elected: {currentWinnerCandidate.name}");
-                //LoadEndingScene(EndingType.Bad);
+                LoadEndingScene(EndingType.PlayerPope);
             }
             else
             {
                 Debug.Log($"[Election] NPC elected: {currentWinnerCandidate.name}");
-                //LoadEndingScene(EndingType.Normal);
+                LoadEndingScene(EndingType.NpcPope);
             }
         }
         else
@@ -274,11 +276,13 @@ public class ElectionManager : MonoBehaviour
 
     private void LoadEndingScene(EndingType endingType)
     {
-        if (ActionRecordManager.Instance != null)
+        if (ActionRecordManager.Instance != null &&
+            (endingType == EndingType.PlayerPope || endingType == EndingType.NpcPope))
         {
             ActionRecordManager.Instance.RecordPapalElection(endingType);
         }
 
+        EndingContext.CaptureFromCurrentGame(currentWinnerCandidate);
         EndingResult.Set(endingType);
         Time.timeScale = 1f;
         SceneManager.LoadScene(endingSceneName);

@@ -150,19 +150,24 @@ public class ActionRecordManager : MonoBehaviour
 
     public void RecordPapalElection(EndingType endingType)
     {
-        currentRunStats.papalElectionCount++;
-        persistentStats.papalElectionCount++;
+        bool isPapalElectionEnding = endingType == EndingType.PlayerPope || endingType == EndingType.NpcPope;
 
-        persistentStats.currentPopeGeneration++;
-        currentRunStats.currentPopeGeneration = persistentStats.currentPopeGeneration;
+        if (isPapalElectionEnding)
+        {
+            currentRunStats.papalElectionCount++;
+            persistentStats.papalElectionCount++;
+
+            persistentStats.currentPopeGeneration++;
+            currentRunStats.currentPopeGeneration = persistentStats.currentPopeGeneration;
+        }
 
         switch (endingType)
         {
-            case EndingType.Bad:
+            case EndingType.PlayerPope:
                 currentRunStats.badEndingCount++;
                 persistentStats.badEndingCount++;
                 break;
-            case EndingType.Normal:
+            case EndingType.NpcPope:
                 currentRunStats.happyEndingCount++;
                 persistentStats.happyEndingCount++;
                 break;
