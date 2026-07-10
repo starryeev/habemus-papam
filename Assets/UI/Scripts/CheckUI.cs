@@ -49,6 +49,7 @@ public class CheckUI : MonoBehaviour
         SetSprite(0);
         isClicked = false;
         text.text = "";
+        subText.text = "";
         probabilityText.text = "";
         miscText.text = "";
     }

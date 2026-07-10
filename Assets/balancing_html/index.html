@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Habemus Papam Balancing Simulator</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" id="screenEyebrow">Manual Play Simulator</p>
+        <h1 id="screenTitle">썬클라베 수동 플레이</h1>
+      </div>
+      <nav class="screen-nav" aria-label="시뮬레이터 화면 선택">
+        <button type="button" class="screen-tab is-active" data-screen-target="manual">수동 플레이</button>
+        <button type="button" class="screen-tab" data-screen-target="metrics">수치 분석</button>
+      </nav>
+      <div class="turn-pill" id="phaseSummary">설정 대기</div>
+    </header>
+
+    <section class="screen is-active" id="manualScreen" data-screen-panel="manual">
+      <section class="layout">
+      <aside class="panel config-panel" aria-label="시뮬레이션 설정">
+        <div class="panel-title-row">
+          <h2>초기 설정</h2>
+          <button type="button" id="resetButton">새 시뮬레이션</button>
+        </div>
+
+        <div class="config-grid compact">
+          <label>
+            <span>썬클라베 턴</span>
+            <input id="conclaveTurns" type="number" min="1" max="30" step="1" value="4" />
+          </label>
+          <label>
+            <span>체력 감소 주기</span>
+            <input id="decayEvery" type="number" min="1" max="30" step="1" value="2" />
+          </label>
+          <label>
+            <span>체력 감소량</span>
+            <input id="decayAmount" type="number" min="0" max="10" step="1" value="1" />
+          </label>
+        </div>
+
+        <div class="candidate-editor" id="candidateEditor"></div>
+      </aside>
+
+      <section class="main-column">
+        <section class="panel status-panel">
+          <div class="panel-title-row">
+            <h2>후보 상태</h2>
+            <div class="small-note">능력치 범위: 0~10 정수</div>
+          </div>
+          <div class="candidate-grid" id="candidateGrid"></div>
+        </section>
+
+        <section class="panel action-panel">
+          <div class="panel-title-row">
+            <h2>턴 행동</h2>
+            <div class="small-note" id="actionCounter">행동 0 / 2</div>
+          </div>
+
+          <div class="action-board">
+            <label>
+              <span>행동</span>
+              <select id="actionSelect"></select>
+            </label>
+            <label>
+              <span>대상</span>
+              <select id="targetSelect"></select>
+            </label>
+            <button type="button" id="applyActionButton">행동 실행</button>
+            <button type="button" id="resolveEventButton" disabled>이벤트 확인</button>
+          </div>
+
+          <div class="event-box" id="eventBox">행동 2회를 실행하면 이벤트가 발생합니다.</div>
+        </section>
+      </section>
+
+      <aside class="panel log-panel" aria-label="진행 로그">
+        <div class="panel-title-row">
+          <h2>진행 로그</h2>
+          <button type="button" id="clearLogButton">로그 지우기</button>
+        </div>
+        <ol id="logList" class="log-list"></ol>
+      </aside>
+    </section>
+
+    </section>
+    <section class="screen metrics-module panel" id="metricsScreen" data-screen-panel="metrics" hidden aria-label="수치 모듈">
+      <div class="panel-title-row">
+        <div>
+          <p class="eyebrow">Numeric Module</p>
+          <h2>기도/연설 행동 수치 분석</h2>
+        </div>
+        <div class="small-note" id="metricWarning">입력 변경 시 즉시 계산</div>
+      </div>
+
+      <div class="metrics-layout">
+        <section class="metric-block">
+          <h3>입력 1: 분석 규칙</h3>
+          <div class="metric-input-grid">
+            <label><span>분석 일수</span><input data-metric="analysisDays" type="number" min="1" max="14" step="1" value="7" /></label>
+            <label><span>콘클라베 당 턴 수</span><input data-metric="turns" type="number" min="1" max="60" step="1" value="4" /></label>
+            <label><span>턴당 행동 수</span><input data-metric="actionsPerTurn" type="number" min="1" max="20" step="1" value="2" /></label>
+            <label><span>X턴당 체력 감소</span><input data-metric="decayEvery" type="number" min="1" max="60" step="1" value="2" /></label>
+            <label><span>체력 감소 Y</span><input data-metric="decayAmount" type="number" min="0" max="10" step="1" value="1" /></label>
+            <label><span>시작 체력</span><input data-metric="startHealth" type="number" min="1" max="10" step="1" value="8" /></label>
+            <label><span>시작 정치</span><input data-metric="startPolitics" type="number" min="0" max="10" step="1" value="4" /></label>
+            <label><span>시작 경건</span><input data-metric="startPiety" type="number" min="0" max="10" step="1" value="5" /></label>
+            <label><span>기도 성공 경건</span><input data-metric="praySuccessPiety" type="number" min="-10" max="10" step="1" value="1" /></label>
+            <label><span>기도 성공 체력</span><input data-metric="praySuccessHealth" type="number" min="-10" max="10" step="1" value="1" /></label>
+            <label><span>기도 실패 경건</span><input data-metric="prayFailPiety" type="number" min="-10" max="10" step="1" value="0" /></label>
+            <label><span>기도 실패 체력</span><input data-metric="prayFailHealth" type="number" min="-10" max="10" step="1" value="0" /></label>
+            <label><span>연설 성공 정치</span><input data-metric="speechSuccessPolitics" type="number" min="-10" max="10" step="1" value="1" /></label>
+            <label><span>연설 성공 체력</span><input data-metric="speechSuccessHealth" type="number" min="-10" max="10" step="1" value="0" /></label>
+            <label><span>연설 실패 정치</span><input data-metric="speechFailPolitics" type="number" min="-10" max="10" step="1" value="0" /></label>
+            <label><span>연설 실패 체력</span><input data-metric="speechFailHealth" type="number" min="-10" max="10" step="1" value="0" /></label>
+            <label><span>기도 성공률 %</span><input data-metric="prayRate" type="number" min="0" max="100" step="1" value="70" /></label>
+            <label><span>연설 성공률 %</span><input data-metric="speechRate" type="number" min="0" max="100" step="1" value="60" /></label>
+          </div>
+        </section>
+
+        <section class="metric-block">
+          <h3>입력 2: 일자별 행동 구성</h3>
+          <div class="metric-input-grid compact-metric">
+            <label><span>일당 기도 횟수</span><input data-metric="prayersPerTurn" type="number" min="0" max="80" step="1" value="3" /></label>
+            <label><span>일당 연설 횟수</span><input data-metric="speechesPerTurn" type="number" min="0" max="80" step="1" value="2" /></label>
+            <label><span>1일 공작 경건 비용</span><input data-metric="schemeCost1" type="number" min="0" max="10" step="1" value="1" /></label>
+            <label><span>2일 공작 경건 비용</span><input data-metric="schemeCost2" type="number" min="0" max="10" step="1" value="1" /></label>
+            <label><span>3일 공작 경건 비용</span><input data-metric="schemeCost3" type="number" min="0" max="10" step="1" value="2" /></label>
+            <label><span>4일 이후 공작 경건 비용</span><input data-metric="schemeCost4Plus" type="number" min="0" max="10" step="1" value="2" /></label>
+          </div>
+
+          <div class="metric-summary-grid">
+            <div class="metric-summary"><span>생존 보장 필요 일당 기도</span><strong id="requiredPrayerOutput">0</strong></div>
+            <div class="metric-summary"><span>일당 공작 가능 횟수</span><strong id="schemeCountOutput">0</strong></div>
+            <div class="metric-summary"><span>최종 생존률</span><strong id="finalSurvivalOutput">0%</strong></div>
+          </div>
+        </section>
+      </div>
+
+      <h3 class="chart-section-title">일자별 생산량 분포</h3>
+      <div class="chart-grid">
+        <article class="chart-panel"><h3>체력 생산량</h3><canvas id="healthChart" width="520" height="220"></canvas></article>
+        <article class="chart-panel"><h3>정치 생산량</h3><canvas id="politicsChart" width="520" height="220"></canvas></article>
+        <article class="chart-panel"><h3>경건 생산량</h3><canvas id="pietyChart" width="520" height="220"></canvas></article>
+      </div>
+
+      <h3 class="chart-section-title">현재 능력치 분포</h3>
+      <div class="chart-grid">
+        <article class="chart-panel"><h3>현재 체력</h3><canvas id="currentHealthChart" width="520" height="220"></canvas></article>
+        <article class="chart-panel"><h3>현재 정치</h3><canvas id="currentPoliticsChart" width="520" height="220"></canvas></article>
+        <article class="chart-panel"><h3>현재 경건</h3><canvas id="currentPietyChart" width="520" height="220"></canvas></article>
+      </div>
+
+      <div class="metric-table-wrap">
+        <table class="metric-table">
+          <thead>
+            <tr>
+              <th>일자</th>
+              <th>체력 하위25%</th><th>체력 평균</th><th>체력 상위25%</th>
+              <th>정치 하위25%</th><th>정치 평균</th><th>정치 상위25%</th>
+              <th>경건 하위25%</th><th>경건 평균</th><th>경건 상위25%</th>
+              <th>생존률</th>
+            </tr>
+          </thead>
+          <tbody id="metricTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script defer src="./src/app.js"></script>
+  <script defer src="./src/numeric-module.js"></script>
+  <script defer src="./src/screen-switch.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
