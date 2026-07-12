@@ -4,6 +4,7 @@
 
 using UnityEngine;
 using System.Collections;
+using System;
 using UnityEngine.UI;
 using UnityEngine.Events;
 public enum FlipMode
@@ -51,6 +52,8 @@ public class Book : MonoBehaviour {
     public Image LeftNext;
     public Image Right;
     public Image RightNext;
+    public event Action OnFlipStarted;
+    public event Action OnFlipSettled;
     public UnityEvent OnFlip;
     float radius1, radius2;
     //Spine Bottom
@@ -281,6 +284,7 @@ public class Book : MonoBehaviour {
     public void DragRightPageToPoint(Vector3 point)
     {
         if (currentPage >= PageCount) return;
+        InvokeFlipStartedIfNeeded();
         pageDragging = true;
         mode = FlipMode.RightToLeft;
         f = point;
@@ -316,6 +320,7 @@ public class Book : MonoBehaviour {
     public void DragLeftPageToPoint(Vector3 point)
     {
         if (currentPage <= 0) return;
+        InvokeFlipStartedIfNeeded();
         pageDragging = true;
         mode = FlipMode.LeftToRight;
         f = point;
@@ -347,6 +352,14 @@ public class Book : MonoBehaviour {
         DragLeftPageToPoint(transformPoint(Input.mousePosition));
         
     }
+
+    void InvokeFlipStartedIfNeeded()
+    {
+        if (pageDragging) return;
+
+        OnFlipStarted?.Invoke();
+    }
+
     public void OnMouseRelease()
     {
         if (interactable)
@@ -420,6 +433,8 @@ public class Book : MonoBehaviour {
         ShadowLTR.gameObject.SetActive(false);
         if (OnFlip != null)
             OnFlip.Invoke();
+
+        OnFlipSettled?.Invoke();
     }
     public void TweenBack()
     {
@@ -436,6 +451,7 @@ public class Book : MonoBehaviour {
                     Left.gameObject.SetActive(false);
                     Right.gameObject.SetActive(false);
                     pageDragging = false;
+                    OnFlipSettled?.Invoke();
                 }
                 ));
         }
@@ -453,6 +469,7 @@ public class Book : MonoBehaviour {
                     Left.gameObject.SetActive(false);
                     Right.gameObject.SetActive(false);
                     pageDragging = false;
+                    OnFlipSettled?.Invoke();
                 }
                 ));
         }
