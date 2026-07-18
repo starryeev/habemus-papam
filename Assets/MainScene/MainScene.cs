@@ -9,6 +9,8 @@ using UnityEngine.UI;
 
 public class MainScene : MonoBehaviour
 {
+    private const string IntroNewspaperSceneName = "IntroNewspaperScene";
+
     [SerializeField] private GameObject startGameWarningPopup;
     [SerializeField] private GameObject loadWarningPopup;
     [SerializeField] private GameObject loadPopup;
@@ -128,18 +130,7 @@ public class MainScene : MonoBehaviour
 
     public void OnClickStartGame()
     {
-        if (SaveManager.Instance == null)
-        {
-            return;
-        }
-
-        if (SaveManager.Instance.HasSave())
-        {
-            SetStartGameWarningPopup(true);
-            return;
-        }
-
-        OpenNameSelectionPopup();
+        SetStartGameWarningPopup(true);
     }
 
     public void OnClickConfirmStartGame()
@@ -151,12 +142,18 @@ public class MainScene : MonoBehaviour
             SaveManager.Instance.DiscardCurrentGameSave();
         }
 
-        OpenNameSelectionPopup();
+        LoadIntroNewspaperScene();
     }
 
     public void OnClickCancelStartGame()
     {
         SetStartGameWarningPopup(false);
+    }
+
+    private void LoadIntroNewspaperScene()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(IntroNewspaperSceneName);
     }
 
     public void OnClickStartNamedGame()

@@ -29,6 +29,7 @@ public class InputNameUIController : MonoBehaviour
     private int visiblePageMax = 3;
 
     public string CurrentPlayerName { get; private set; } = string.Empty;
+    public bool HasPlayerName => !string.IsNullOrWhiteSpace(CurrentPlayerName);
 
     private enum NameValidationResult
     {
