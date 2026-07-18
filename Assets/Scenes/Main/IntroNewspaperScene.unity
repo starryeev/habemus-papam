@@ -6523,6 +6523,10 @@ PrefabInstance:
       propertyPath: 'pagePanels.Array.data[6]'
       value: 
       objectReference: {fileID: 310932645}
+    - target: {fileID: 11430880, guid: fe9bfb5044c0cc646baba1ad7d354100, type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 22433904, guid: fe9bfb5044c0cc646baba1ad7d354100, type: 3}
       propertyPath: m_Pivot.y
       value: 0.22114345
