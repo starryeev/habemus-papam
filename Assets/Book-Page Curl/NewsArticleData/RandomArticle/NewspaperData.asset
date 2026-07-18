@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fc75b8ca3e825949977e8966f880119, type: 3}
+  m_Name: NewspaperData
+  m_EditorClassIdentifier: Assembly-CSharp::NewspaperData
+  text160WithoutImageArticles:
+  - {fileID: 11400000, guid: e7fe75e18ca4e894b820596c523e05b8, type: 2}
+  - {fileID: 11400000, guid: d1420aa364be98d4a8df738a1113617d, type: 2}
+  - {fileID: 11400000, guid: 7a21418bb127cf243a7d0849e2f78cfe, type: 2}
+  text160WithImageArticles:
+  - {fileID: 11400000, guid: 28e2852db56b722409f74220a3f6a5a9, type: 2}
+  text260WithoutImageArticles:
+  - {fileID: 11400000, guid: 1b9c6101803ba744f8e0dc1624e7a417, type: 2}
+  - {fileID: 11400000, guid: 0f457afb3b752bf4f884f19553ead078, type: 2}
+  - {fileID: 11400000, guid: 4130897bc43497e4998ebc296c762ca4, type: 2}
+  - {fileID: 11400000, guid: b66993185ec62c142a8d592d58dcf0c7, type: 2}
+  - {fileID: 11400000, guid: 45e4db4893038bd46bfc7da4a520cdb4, type: 2}
+  text260WithImageArticles:
+  - {fileID: 11400000, guid: 8292b937fde5a214da1644fc93329a40, type: 2}
+  - {fileID: 11400000, guid: 1733e13853710984dba997dcb0582e47, type: 2}
+  - {fileID: 11400000, guid: af8e168551dd2af468ebd88b2cf7e271, type: 2}
