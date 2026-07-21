@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a640f1458763d47e1b89b0acb63e86fd, type: 3}
+  m_Name: E40300
+  m_EditorClassIdentifier: Assembly-CSharp::E40300
+  eventID: E40300
+  eventName: "\uAE4C\uB9C8\uADC0 \uC18C\uB3D9"
+  eventDescription: "(\uD6C4\uBCF4 n)\uC774 \uC120\uBB3C\uC744 \uBCF4\uB0B4\uC654\uB2E4.
+    \uC548\uC5D0 \uB4E0 \uAC83\uC740 \uBC18\uC9DD\uC774\uB294 \uBAA9\uAC78\uC774\uC600\uB2E4.\n\uADF8\uB7F0\uB370
+    \uADF8 \uB54C...! \uC660 \uBBF8\uCE5C \uAE4C\uB9C8\uADC0 \uB5BC\uAC00 \uB2F9\uC2E0\uC744
+    \uD5A5\uD574 \uB0A0\uC544\uC624\uB294 \uAC83\uC744 \uBC1C\uACAC\uD588\uB2E4!"
+  itemImage: {fileID: 0}
+  maxAppear: 3
+  eventWeightBase: 20
+  eventWeightMultiplier: 0
+  preEvents: []
+  conflictEvents: []
+  option1: "\uD6E0\uC774 \uD6E0\uC774! \uBB3C\uB800\uAC70\uB77C!"
+  option1Chance: 0.65
+  option1Requirement: '-'
+  option1SuccessDescription: "\uAE4C\uC545 \uAE4C\uC545! \uAE4C\uB9C8\uADC0\uB4E4\uC740
+    \uD55C\uBC14\uD0D5 \uB09C\uB3D9\uC744 \uD53C\uC6B4 \uB4A4 \uC800 \uBA40\uB9AC
+    \uB0A0\uC544\uAC14\uB2E4.\n\uAC00\uBC29 \uC548\uC774 \uC601 \uD5C8\uC804\uD574
+    \uBCF4\uC774\uB294\uB370....\n\n\uC218\uC911\uC5D0 \uC788\uB294 \uBAA8\uB4E0
+    \uC544\uC774\uD15C \uC18C\uBA78!"
+  option1SuccessResult: "\uBAA8\uB4E0 \uC544\uC774\uD15C \uC18C\uBA78"
+  option1FailDescription: "\uAE4C\uC545! \uB2F9\uC2E0\uC740 \uAE4C\uB9C8\uADC0\uB4E4\uC744
+    \uC950\uC5B4\uBC15\uACE0 \uB0B4\uCAD3\uC558\uB2E4. \uBC29\uAE08\uC774 \uB9C8\uC9C0\uB9C9
+    \uB188\uC774\uC5C8\uB2E4.\n\uD558\uC597\uAC8C \uBD88\uD0DC\uC6E0\uC5B4....\n\n\uCCB4\uB825
+    30 \uAC10\uC18C!"
+  option1FailResult: "\uCCB4\uB825 - 30"
+  option2: 
+  option2Chance: 0
+  option2SuccessDescription: 
+  option2SuccessResult: 
+  option2FailDescription: 
+  option2FailResult: 

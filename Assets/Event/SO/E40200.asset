@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9080f218593d428e96ab429411fd533, type: 3}
+  m_Name: E40200
+  m_EditorClassIdentifier: Assembly-CSharp::E40200
+  eventID: E40200
+  eventName: "\uACE0\uC7A5\uB09C \uBB38"
+  eventDescription: "\uC5EC\uB290 \uB54C\uC640 \uAC19\uC774 \uBCF5\uB3C4\uB97C \uAC70\uB2D0\uB358
+    \uB2F9\uC2E0, \uBC1C\uC744 \uB3D9\uB3D9 \uAD6C\uB974\uB294 \uD55C \uC218\uD589\uC6D0\uACFC
+    \uB9C8\uC8FC\uCCE4\uB2E4.\n\uBCF4\uC544\uD558\uB2C8 \uC5EC\uAE30 \uBB38\uC774
+    \uACE0\uC7A5 \uB09C \uAC70 \uAC19\uC740\uB370... \uD798 \uC880 \uBCF4\uD0DC \uC904\uAE4C?"
+  itemImage: {fileID: 0}
+  maxAppear: 1
+  eventWeightBase: 20
+  eventWeightMultiplier: 0
+  preEvents: []
+  conflictEvents: []
+  option1: "\uC816 \uBA39\uB358 \uD798\uC744 \uB2E4\uD574 \uB2F9\uAE30\uC790!"
+  option1Chance: 1
+  option1Requirement: "\uCCB4\uB825 60 \uC774\uC0C1"
+  option1SuccessDescription: "\uC5ED\uC2DC \uBAB8\uC774 \uC88B\uC73C\uBA74 \uBA38\uB9AC\uAC00
+    \uACE0\uC0DD\uC744 \uC548 \uD55C\uB2E4.\n\n\uCCB4\uB825 5 \uC99D\uAC00!\n\uC815\uCE58\uB825
+    15 \uAC10\uC18C!"
+  option1SuccessResult: "\uCCB4\uB825 + 5\n\uC815\uCE58\uB825 - 15"
+  option1FailDescription: 
+  option1FailResult: 
+  option2: "\uD798\uC774 \uBD80\uC871\uD558\uB2E4.\n\uB2E4\uB978 \uC218\uB2E8\uC744
+    \uCC3E\uC544\uBD10\uC57C \uD560 \uB4EF \uD55C\uB370...."
+  option2Chance: 0.5
+  option2SuccessDescription: "\uBB38\uC774 \uC5F4\uB838\uB2E4. \uC528\uB984\uD55C
+    \uBCF4\uB78C\uC774 \uC788\uB124!\n\n\uC815\uCE58\uB825 5 \uAC10\uC18C!"
+  option2SuccessResult: "\uC815\uCE58\uB825 - 5"
+  option2FailDescription: "\uAFC8\uCA4D\uB3C4 \uC548 \uD558\uB124. \uAD1C\uD788 \uC2DC\uAC04\uB9CC
+    \uBC84\uB838\uB2E4.\n\n6\uCD08\uAC04 \uD589\uB3D9 \uBD88\uAC00!"
+  option2FailResult: "\uD589\uB3D9 \uBD88\uAC00 6\uCD08"

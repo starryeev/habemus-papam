@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 705230ff0633f4574ba80f2bd9adc0a9, type: 3}
+  m_Name: E40000
+  m_EditorClassIdentifier: Assembly-CSharp::E40000
+  eventID: E40000
+  eventName: "\uC0B0\uCC45"
+  eventDescription: "\uC0C8\uB4E4\uC740 \uC9C0\uC800\uADC0\uACE0, \uAF43\uB4E4\uC740
+    \uD53C\uC5B4\uB098\uACE0... \uC0B0\uCC45 \uB098\uAC00\uAE30 \uB531 \uC88B\uC740
+    \uB0A0\uC774\uB2E4.\n\uADF8\uB7F0\uB370 \uC7A0\uAE50! \uAC1C\uC6B8\uC744 \uB118\uAE30
+    \uC704\uD574 \uC9D5\uAC80\uB2E4\uB9AC\uB85C \uAC00\uB2C8 \uD55C \uB0A8\uC790\uAC00
+    \uD654\uB4E4\uC9DD \uB180\uB77C\uBA70 \uAE09\uD558\uAC8C \uC790\uB9AC\uB97C \uB5B4\uB2E4!\n\uCB48\uADF8\uB824
+    \uC549\uC544 \uBB34\uC5B8\uAC00\uB97C \uD558\uB358\uB370... \uACFC\uC5F0 \uAC74\uB108\uB294\uAC8C
+    \uB9DE\uC744\uAE4C?"
+  itemImage: {fileID: 0}
+  maxAppear: 1
+  eventWeightBase: 20
+  eventWeightMultiplier: 0
+  preEvents: []
+  conflictEvents: []
+  option1: "\uD760... \uC544\uBB34\uB9AC \uBD10\uB3C4 \uC218\uC0C1\uD558\uB2E4.\n\uC8FC\uC704\uB97C 
+    \uC0B4\uD53C\uBA70 \uC870\uC2EC\uD788 \uB3CC\uC544\uC11C \uAC00\uC790."
+  option1Chance: 1
+  option1Requirement: "\uACBD\uAC74\uD568 50 \uC774\uC0C1"
+  option1SuccessDescription: "\uC624\uB298\uB3C4 \uBB34\uC0AC\uD788 \uC0B0\uCC45\uC744
+    \uB9C8\uCCE4\uB2E4.\n\uC774 \uB610\uD55C \uD0DC\uC591\uC2E0\uC758 \uC740\uD61C\uACA0\uC9C0\uC694.\n\n\uCCB4\uB825
+    15 \uC99D\uAC00!\n\uACBD\uAC74\uD568 5 \uC99D\uAC00!"
+  option1SuccessResult: "\uCCB4\uB825 + 15\n\uACBD\uAC74\uD568 + 5"
+  option1FailDescription: '-'
+  option1FailResult: '-'
+  option2: "\uB3CC\uB2E4\uB9AC\uB294 \uB098\uC57D\uD55C \uC790\uB098 \uB450\uB4E4\uACA8
+    \uBCF4\uB294 \uAC83\uC774\uB2E4.\n\uADF8\uB0E5 \uAC00\uC790."
+  option2Chance: 1
+  option2SuccessDescription: "\uBBF8\uB044\uB369... \uCCA8\uBC99!\n\uC774\uB7F0,
+    \uC6D0\uCE58 \uC54A\uC740 \uBC18\uC2E0\uC695 \uB355\uC5D0 \uBAB8\uC774 \uBB34\uAC70\uC6CC\uC84C\uB2E4.\n\n\uCCB4\uB825
+    10 \uAC10\uC18C!\n\uC774\uBC88 \uC36C\u3161\uD074\uB77C\uBCA0 \uC885\uB8CC\uAE4C\uC9C0
+    \uC774\uB3D9 \uC18D\uB3C4 15% \uAC10\uC18C!"
+  option2SuccessResult: "\uCCB4\uB825 - 10\n\uCF58\uD074\uB77C\uBCA0 \uC885\uB8CC\uAE4C\uC9C0
+    \uC774\uB3D9 \uC18D\uB3C4 - 15%"
+  option2FailDescription: 
+  option2FailResult: 

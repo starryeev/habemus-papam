@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e97e892116ed84f60b80ea47ae32dbdd, type: 3}
+  m_Name: E31211
+  m_EditorClassIdentifier: Assembly-CSharp::E31211
+  eventID: E31211
+  eventName: "\uC2E0\uAD50\uC640 \uC131\uC804"
+  eventDescription: "\"\uC774\uB2E8\uC774\uB2E4!\n\uD68C\uC758\uC7A5\uC744 \uBC15\uCC28\uACE0
+    \uB098\uAC00\uBC84\uB9B0 (\uD6C4\uBCF4 2)\uC740(\uB294), \uC885\uAD50\uAC1C\uD601\uC744
+    \uC120\uD3EC\uD558\uBA70 \uAD50\uB2E8\uACFC\uC758 \uC808\uC5F0\uC744 \uBC1C\uD45C\uD588\uB2E4.\n(\uD6C4\uBCF4
+    1)\uC740(\uB294) \uC2E0\uC18D\uD558\uAC8C \uC36C\u3161\uD074\uB77C\uBCA0\uB97C
+    \uB05D\uB0B4\uACE0 \uC131\uC804\uC744 \uC900\uBE44\uD558\uC790\uACE0 \uAC74\uC758\uD55C\uB2E4.\n\uC720\uB825\uD55C
+    \uD6C4\uBCF4\uC778 \uB2F9\uC2E0\uC758 \uC9C0\uC9C0 \uC120\uC5B8\uC774\uBA74,
+    (\uD6C4\uBCF4 1)\uC744(\uB97C) \uB2F9\uC120\uC2DC\uD0A4\uB294 \uAC83\uC740 \uC2DC\uAC04
+    \uBB38\uC81C\uC77C \uAC83\uC774\uB2E4.\n\uD55C\uB3D9\uC548 \uC138\uACC4\uB294
+    \uC804\uC7C1\uC758 \uB9C8\uC218\uC5D0 \uD729\uC2F8\uC77C \uAC83\uC774\uC9C0\uB9CC,
+    \uC740\uD1F4\uB9CC \uD560 \uC218 \uC788\uB2E4\uBA74 \uC544\uBB34\uB834 \uC5B4\uB5A4\uAC00?\n\uC138\uACC4\uC758
+    \uC6B4\uBA85\uC774 \uB2F9\uC2E0\uC758 \uC190\uC5D0 \uB2EC\uB838\uB2E4!\""
+  itemImage: {fileID: 0}
+  maxAppear: 1
+  eventWeightBase: 40
+  eventWeightMultiplier: 0
+  preEvents:
+  - {fileID: 11400000, guid: 7b6b2bc8895774eb8a7aa6382bc0a02b, type: 2}
+  conflictEvents: []
+  option1: "(\uD6C4\uBCF4 1)\uC744(\uB97C) \uC9C0\uC9C0\uD55C\uB2E4!"
+  option1Chance: 1
+  option1SuccessDescription: "\"(\uD6C4\uBCF4 1)\uC744 \uB9C9\uC744 \uC218 \uC788\uB294
+    \uC0AC\uB78C\uC740 \uC544\uBB34\uB3C4 \uC5C6\uC5C8\uACE0,\n\uC36C\u3161\uD074\uB77C\uBCA0\uB294
+    \uAD11\uAE30\uC5D0 \uD729\uC4F8\uB824 \uBE60\uB974\uAC8C \uB9C8\uBB34\uB9AC\uB418\uC5C8\uB2E4.\n\uAD50\uB2E8\uC740
+    \uC774\uB2E8\uC744 \uCC99\uACB0\uD558\uAE30\uB85C \uAD73\uAC8C \uACB0\uC758\uD558\uC600\uB2E4.\n\uC131\uC804\uC774\uB2E4,
+    \uC6B0\uB9E4\uD55C \uC774\uB2E8\uB4E4\uC544!!\n\n\uB0A8\uC740 \uD6C4\uBCF4 \uC989\uC2DC
+    \uD0C8\uB77D!\n\uC36C\u3161\uD074\uB77C\uBCA0 \uC885\uACB0!\""
+  option1FailDescription: 
+  option2: "(\uD6C4\uBCF4 1)\uC744(\uB97C) \uB9C9\uC544\uC120\uB2E4!"
+  option2Chance: 1
+  option2SuccessDescription: 
+  option2FailDescription: 

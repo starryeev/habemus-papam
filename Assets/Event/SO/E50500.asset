@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd031b13b0b204b29b21482fc9ab88ba, type: 3}
+  m_Name: E50500
+  m_EditorClassIdentifier: Assembly-CSharp::E50500
+  eventID: E50500
+  eventName: "\uC774 \uBD88\uACBD\uD55C \uC790\uAC00"
+  eventDescription: "(\uD6C4\uBCF4 n)\uC774(\uAC00) \uB2F9\uC2E0\uC758 \uACBD\uC804
+    \uD574\uC11D \uBC29\uC2DD\uC5D0 \uC2EC\uB300\uD558\uACE0\uB3C4 \uC9C0\uB300\uD558\uBA70
+    \uB9D0\uB85C \uC774\uB8E8 \uD45C\uD604\uD560 \uC218 \uC5C6\uB294 \uC2EC\uAC01\uD55C
+    \uBB38\uC81C\uAC00 \uC788\uC74C\uC744 \uC9C0\uC801\uD588\uB2E4.\n\uADF8\uAC8C
+    \uBB34\uC2A8 \uAC15\uC544\uC9C0 \uD480 \uB72F\uC5B4\uBA39\uB294 \uC18C\uB9AC\uB0D0\uACE0
+    \uB300\uAFB8\uD558\uAE30\uB3C4 \uC804\uC5D0...."
+  itemImage: {fileID: 0}
+  maxAppear: 1
+  eventWeightBase: 20
+  eventWeightMultiplier: 0
+  preEvents: []
+  conflictEvents: []
+  option1: "\uAE61!"
+  option1Chance: 1
+  option1Requirement: '-'
+  option1SuccessDescription: "\uBD88\uACFC 5\uBD84\uB9CC\uC5D0 \uC774\uB2E8 \uC2E0\uBB38\uC758
+    \uBAA8\uB4E0 \uACFC\uC815\uC774 \uC804\uAC1C\uB410\uB2E4.\n\uD600\uB97C \uB0B4\uB450\uB97C\uB9CC\uD55C
+    \uC9C4\uD589 \uC18D\uB3C4\uB2E4. \uADF8 \uB300\uC0C1\uC774 \uB2F9\uC2E0\uB9CC
+    \uC544\uB2C8\uC5C8\uB2E4\uBA74 \uB9D0\uC774\uB2E4!\n\n\uCCB4\uB825 40 \uAC10\uC18C!"
+  option1SuccessResult: "\uCCB4\uB825 - 40"
+  option1FailDescription: 
+  option1FailResult: 
+  option2: 
+  option2Chance: 0
+  option2SuccessDescription: 
+  option2SuccessResult: 
+  option2FailDescription: 
+  option2FailResult: 

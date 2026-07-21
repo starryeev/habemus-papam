@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8509c30c4553c4127af7440f75956fcb, type: 3}
+  m_Name: E50600
+  m_EditorClassIdentifier: Assembly-CSharp::E50600
+  eventID: E50600
+  eventName: "\uACB0\uCF54 \uB2E4\uC2DC \uC804\uC7C1!"
+  eventDescription: "\uC5F0\uB2E8\uC5D0\uC11C \uB204\uAD70\uAC00\uAC00 \uC624\uB298\uB3C4!
+    \uB610! \uC5B4\uAE40\uC5C6\uC774!\n\uC804\uC7C1\uC744 \uB4E4\uBA39\uC774\uBA70
+    \uACFC\uACA9\uD55C \uC815\uCE58\uAD6C\uD638\uB97C \uC678\uCE58\uACE0 \uC788\uB2E4!\n\uC774\uBC88\uC5D0\uB294
+    \uB610 \uC5B4\uB5A4 \uC774\uB2E8\uD558\uACE0 \uC2F8\uC6B0\uC790\uB294 \uAC78\uAE4C?\n\n\uBB50?
+    \uB098\uB77C\uACE0?\n\uB3C4\uC800\uD788 \uCC38\uC744 \uC218 \uC5C6\uB2E4!"
+  itemImage: {fileID: 0}
+  maxAppear: 1
+  eventWeightBase: 0
+  eventWeightMultiplier: 0.1
+  preEvents: []
+  conflictEvents: []
+  option1: "\uC131\uC804\uC774\uB2E4!"
+  option1Chance: 1
+  option1Requirement: '-'
+  option1SuccessDescription: "\uB108 \uC8FD\uACE0 \uB098 \uC8FD\uC790!\n\uB0B4\uAC00
+    \uC624\uB298 \uC131\uC804\uC758 \uB9DB\uC744 \uB611\uB611\uD788 \uBCF4\uC5EC\uC8FC\uACA0\uB2E4.\n\n\uBAA8\uB4E0
+    \uD6C4\uBCF4\uC758 \uC815\uCE58\uB825 40 \uC99D\uAC00!\n\uC774\uBC88 \uC36C\u3161\uD074\uB77C\uBCA0
+    \uB3D9\uC548 \uCCB4\uB825\uC774 0\uC73C\uB85C \uB5A8\uC5B4\uC9C0\uC9C0 \uC54A\uC74C!"
+  option1SuccessResult: "\uBAA8\uB4E0 \uD6C4\uBCF4\uC758 \uC815\uCE58\uB825 +40\n\uC774\uBC88
+    \uCF58\uD074\uB77C\uBCA0 \uB3D9\uC548 \uCD5C\uC18C \uCCB4\uB825 1 \uC720\uC9C0"
+  option1FailDescription: 
+  option1FailResult: 
+  option2: "\uC6B0\uB9E4\uD55C \uC774\uB2E8\uB4E4\uC544!"
+  option2Chance: 1
+  option2SuccessDescription: "\uC5B4\uB514\uB2E4 \uB300\uACE0 \uC2E0\uC131\uD55C
+    \uB300\uC2E0\uC804\uC5D0\uC11C \uC0BF\uB300\uC9C8\uC774\uC57C!\n\uC544\uC608
+    \uBF08\uB2E4\uADC0\uB3C4 \uBABB \uCD94\uB9AC\uAC8C \uD574 \uC8FC\uB9C8.\n\n\uC774\uBC88
+    \uC36C\u3161\uD074\uB77C\uBCA0 \uB3D9\uC548 \uACF5\uC791\uC774 \uACBD\uAC74\uD568\uC744
+    \uC18C\uBAA8\uD558\uC9C0 \uC54A\uC74C!\n\uC774\uBC88 \uC36C\u3161\uD074\uB77C\uBCA0
+    \uB3D9\uC548 \uCCB4\uB825\uC774 0\uC73C\uB85C \uB5A8\uC5B4\uC9C0\uC9C0 \uC54A\uC74C!"
+  option2SuccessResult: "\uC774\uBC88 \uCF58\uD074\uB77C\uBCA0 \uB3D9\uC548 \uACF5\uC791
+    \uACBD\uAC74\uD568 \uC18C\uBAA8\uB7C9 0\uC73C\uB85C \uACE0\uC815\n\uC774\uBC88
+    \uCF58\uD074\uB77C\uBCA0 \uB3D9\uC548 \uCD5C\uC18C \uCCB4\uB825 1 \uC720\uC9C0"
+  option2FailDescription: 
+  option2FailResult: 

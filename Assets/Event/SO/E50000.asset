@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 837b0053d1545444e832ccc713fc71ea, type: 3}
+  m_Name: E50000
+  m_EditorClassIdentifier: Assembly-CSharp::E50000
+  eventID: E50000
+  eventName: "\uC5F4\uB82C\uD55C \uCC2C\uC591"
+  eventDescription: "(\uD6C4\uBCF4 n)\uC774(\uAC00) \uC624\uB298\uBD80\uB85C \uB2F9\uC2E0\uC744
+    \uD5A5\uD55C \uC9C0\uC9C0\uB97C \uCCA0\uD68C\uD588\uB2E4.\n\uC560\uCD08\uC5D0
+    \uC9C0\uC9C0\uB97C \uD558\uAE34 \uD588\uC5C8\uB0D0\uB294 \uB098\uC05C \uB9D0\uC744
+    \uD55C \uCD94\uAE30\uACBD\uC740 \uACE7 \uC0AC\uB77C\uC84C\uB2E4. \uC2E4\uB85C
+    \uAE30\uC801\uC774\uC5C8\uB2E4.\n\uC544\uBB34\uD2BC (\uD6C4\uBCF4 n)\uC740(\uB294)
+    \uB2F9\uC2E0\uACFC\uC758 \uC9C0\uC9C0 \uAD00\uACC4\uC5D0\uC11C \uBC97\uC5B4\uB098
+    \uD55C \uBAB8\uC73C\uB85C \uC77C\uCCB4\uAC00 \uB418\uAE38 \uC6D0\uD55C\uB2E4!"
+  itemImage: {fileID: 0}
+  maxAppear: 3
+  eventWeightBase: 20
+  eventWeightMultiplier: 0
+  preEvents: []
+  conflictEvents: []
+  option1: "\uC774\uAC8C \uB300\uCCB4 \uBB34\uC2A8 \uC77C\uC774\uB78C!"
+  option1Chance: 1
+  option1Requirement: '-'
+  option1SuccessDescription: "\"\uC138\uC0C1\uC5D0 70\uC5B5\uBA85\uC758 \uD32C\uC774
+    \uC788\uB2E4\uBA74....\"\n\uC601\uBB38 \uBAA8\uB97C \uC18C\uB9AC\uC5D0 \uBA4D\uD574\uC9C4
+    \uB2F9\uC2E0\uC740 \uC5B4\uB290\uC0C8 (\uD6C4\uBCF4 n)\uC640(\uACFC) \uC545\uC218\uB97C
+    \uD558\uACE0 \uC788\uC5C8\uB2E4.\n\uCD94\uAE30\uACBD\uB4E4\uC758 \uBC15\uC218
+    \uC18C\uB9AC\uAC00 \uB4E4\uB9B0\uB2E4. \uB2F9\uC2E0\uC758 \uBA85\uB9DD\uC774
+    \uB354\uC6B1 \uB192\uC544\uC84C\uB2E4!\n\n\uACBD\uAC74\uD568 30 \uC99D\uAC00!"
+  option1SuccessResult: "\uACBD\uAC74\uD568 +30"
+  option1FailDescription: 
+  option1FailResult: 
+  option2: 
+  option2Chance: 0
+  option2SuccessDescription: 
+  option2SuccessResult: 
+  option2FailDescription: 
+  option2FailResult: 
