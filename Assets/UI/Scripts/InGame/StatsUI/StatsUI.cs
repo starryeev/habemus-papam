@@ -31,6 +31,16 @@ public class StatsUI : MonoBehaviour
     private bool isInitialized = false;
     private int closeupIndex = -1;
 
+    public int GetLinkedCardinalIndex(Cardinal candidate)
+    {
+        if (candidate == null)
+        {
+            return -1;
+        }
+
+        return Array.IndexOf(linkedCardinals, candidate);
+    }
+
 
     public void Initialize(List<Cardinal> allCardinals)
     {

@@ -9,6 +9,9 @@ using UnityEngine.UI;
 
 public class MainScene : MonoBehaviour
 {
+    private const string PopeListNavigationButtonName = "PopeList";
+    private const float PopeListNavigationIdleAlpha = 143f / 255f;
+
     private const string IntroNewspaperSceneName = "IntroNewspaperScene";
 
     [SerializeField] private GameObject startGameWarningPopup;
@@ -78,6 +81,9 @@ public class MainScene : MonoBehaviour
     private int currentPopeCreditIndex;
     private bool popeListRuntimeBindingsInitialized;
     private bool popeListFrameButtonListenersRegistered;
+    private bool popeListArrowButtonListenersRegistered;
+    private bool popeListHistoryPresenterInitialized;
+    private PopeListHistoryPresenter popeListHistoryPresenter;
     private bool isViewingSubCamera;
     private bool hasCameraInitialStates;
     private CameraState mainCameraInitialState;
@@ -124,6 +130,7 @@ public class MainScene : MonoBehaviour
     {
         ClearSelectionHighlight();
         ApplyPopeListMouseOnlyMode(false);
+        popeListHistoryPresenter?.ExitBrowseMode();
         SwitchToMainCameraImmediate();
         RestoreEventSystemNavigation();
     }
@@ -226,16 +233,25 @@ public class MainScene : MonoBehaviour
 
     public void OnClickPopeListLeftArrow()
     {
-        MovePopeCredit(-1);
+        popeListHistoryPresenter?.MoveLeft();
+        SyncPopeListNavigationSprite();
     }
 
     public void OnClickPopeListRightArrow()
     {
-        MovePopeCredit(1);
+        popeListHistoryPresenter?.MoveRight();
+        SyncPopeListNavigationSprite();
     }
 
     public void OnClickPopeListFrame()
     {
+        InitializePopeListRuntimeBindings();
+        popeListHistoryPresenter?.EnterBrowseMode();
+        if (popeListHistoryPresenter == null || !popeListHistoryPresenter.IsBrowsing)
+        {
+            return;
+        }
+
         TransitionToSubCamera();
     }
 
@@ -274,12 +290,14 @@ public class MainScene : MonoBehaviour
         if (isActive)
         {
             InitializePopeListRuntimeBindings();
-            currentPopeCreditIndex = 0;
-            RefreshPopeCreditSprite();
+            popeListHistoryPresenter?.ResetToLatest();
+            SyncPopeListNavigationSprite();
+            popeListHistoryPresenter?.ExitBrowseMode();
             ApplyPopeListMouseOnlyMode(true);
         }
         else
         {
+            popeListHistoryPresenter?.ExitBrowseMode();
             ApplyPopeListMouseOnlyMode(false);
             SwitchToMainCameraImmediate();
         }
@@ -299,7 +317,6 @@ public class MainScene : MonoBehaviour
             ConfigurePopeListRaycasts();
         }
 
-        UpdatePopeListArrowState();
         RefreshNavigation(false);
     }
 
@@ -405,6 +422,7 @@ public class MainScene : MonoBehaviour
     {
         if (isViewingSubCamera && WasCancelPressed())
         {
+            popeListHistoryPresenter?.ExitBrowseMode();
             TransitionToMainCamera();
             return;
         }
@@ -414,13 +432,18 @@ public class MainScene : MonoBehaviour
             return;
         }
 
+        if (popeListHistoryPresenter == null || !popeListHistoryPresenter.IsBrowsing)
+        {
+            return;
+        }
+
         if (WasMoveLeftPressed())
         {
-            MovePopeCredit(-1);
+            popeListHistoryPresenter.MoveLeft();
         }
         else if (WasMoveRightPressed())
         {
-            MovePopeCredit(1);
+            popeListHistoryPresenter.MoveRight();
         }
     }
 
@@ -672,12 +695,15 @@ public class MainScene : MonoBehaviour
         {
             if (entry.Value != null)
             {
-                SetNavigationButtonImageAlpha(entry.Value, entry.Key != null && entry.Key == visibleButton);
+                SetNavigationButtonImageAlpha(
+                    entry.Key,
+                    entry.Value,
+                    entry.Key != null && entry.Key == visibleButton);
             }
         }
     }
 
-    private void SetNavigationButtonImageAlpha(Image image, bool isVisible)
+    private void SetNavigationButtonImageAlpha(Button button, Image image, bool isVisible)
     {
         if (image == null)
         {
@@ -692,7 +718,15 @@ public class MainScene : MonoBehaviour
         }
 
         Color color = baseColor;
-        color.a = isVisible ? (baseColor.a > 0f ? baseColor.a : 1f) : 0f;
+        if (button != null && button.name == PopeListNavigationButtonName)
+        {
+            color.a = isVisible ? 1f : PopeListNavigationIdleAlpha;
+        }
+        else
+        {
+            color.a = isVisible ? (baseColor.a > 0f ? baseColor.a : 1f) : 0f;
+        }
+
         image.color = color;
     }
 
@@ -997,8 +1031,9 @@ public class MainScene : MonoBehaviour
     private void InitializePopeListRuntimeBindings()
     {
         ResolvePopeListReferences();
-        RefreshPopeListCreditSpriteSources();
         RegisterPopeListFrameButtonListeners();
+        RegisterPopeListArrowButtonListeners();
+        ResolvePopeListHistoryPresenter();
         CacheCameraInitialStates();
         CachePopeListPopupTransform();
         ResolvePopeListEffectGraphics();
@@ -1009,6 +1044,16 @@ public class MainScene : MonoBehaviour
         {
             SetCameraView(false);
             popeListRuntimeBindingsInitialized = true;
+        }
+
+        if (!popeListHistoryPresenterInitialized && popeListHistoryPresenter != null)
+        {
+            popeListHistoryPresenter.Initialize(
+                popeListFrameButtons,
+                popeListLeftArrowButton,
+                popeListRightArrowButton);
+            SyncPopeListNavigationSprite();
+            popeListHistoryPresenterInitialized = true;
         }
     }
 
@@ -1039,15 +1084,42 @@ public class MainScene : MonoBehaviour
             popeListCreditImage.transform.SetAsFirstSibling();
         }
 
-        if ((popeListFrameButtons == null || popeListFrameButtons.Count == 0) && popeListPopup != null)
+        if (popeListPopup != null)
         {
-            popeListFrameButtons = new List<Button>();
+            if (popeListFrameButtons == null)
+            {
+                popeListFrameButtons = new List<Button>();
+            }
+
+            while (popeListFrameButtons.Count < 5)
+            {
+                popeListFrameButtons.Add(null);
+            }
+
             for (int i = 1; i <= 5; i++)
             {
+                if (popeListFrameButtons[i - 1] != null)
+                {
+                    continue;
+                }
+
                 Transform frameTransform = FindDeepChild(popeListPopup.transform, $"Frame{i}");
                 Button frameButton = frameTransform != null ? frameTransform.GetComponent<Button>() : null;
-                AddUniqueButton(popeListFrameButtons, frameButton);
+                popeListFrameButtons[i - 1] = frameButton;
             }
+
+        }
+
+        if (popeListLeftArrowButton == null && popeListPopup != null)
+        {
+            Transform leftTransform = FindDeepChild(popeListPopup.transform, "Left");
+            popeListLeftArrowButton = leftTransform != null ? leftTransform.GetComponent<Button>() : null;
+        }
+
+        if (popeListRightArrowButton == null && popeListPopup != null)
+        {
+            Transform rightTransform = FindDeepChild(popeListPopup.transform, "Right");
+            popeListRightArrowButton = rightTransform != null ? rightTransform.GetComponent<Button>() : null;
         }
 
         if (mainCamera == null)
@@ -1156,11 +1228,69 @@ public class MainScene : MonoBehaviour
         {
             if (frameButton != null)
             {
-                frameButton.onClick.AddListener(OnClickPopeListFrame);
+                if (frameButton.onClick.GetPersistentEventCount() == 0)
+                {
+                    frameButton.onClick.AddListener(OnClickPopeListFrame);
+                }
             }
         }
 
         popeListFrameButtonListenersRegistered = true;
+    }
+
+    private void RegisterPopeListArrowButtonListeners()
+    {
+        if (popeListArrowButtonListenersRegistered)
+        {
+            return;
+        }
+
+        if (popeListLeftArrowButton != null &&
+            popeListLeftArrowButton.onClick.GetPersistentEventCount() == 0)
+        {
+            popeListLeftArrowButton.onClick.AddListener(OnClickPopeListLeftArrow);
+        }
+
+        if (popeListRightArrowButton != null &&
+            popeListRightArrowButton.onClick.GetPersistentEventCount() == 0)
+        {
+            popeListRightArrowButton.onClick.AddListener(OnClickPopeListRightArrow);
+        }
+
+        popeListArrowButtonListenersRegistered = true;
+    }
+
+    private void ResolvePopeListHistoryPresenter()
+    {
+        if (popeListHistoryPresenter != null || popeListPopup == null)
+        {
+            return;
+        }
+
+        popeListHistoryPresenter = popeListPopup.GetComponent<PopeListHistoryPresenter>();
+        if (popeListHistoryPresenter == null)
+        {
+            popeListHistoryPresenter = popeListPopup.AddComponent<PopeListHistoryPresenter>();
+        }
+    }
+
+    private void SyncPopeListNavigationSprite()
+    {
+        ResolveNavigationButtonImageReferences();
+        Sprite centerPortrait = popeListHistoryPresenter != null
+            ? popeListHistoryPresenter.CurrentCenterPortrait
+            : null;
+
+        foreach (KeyValuePair<Button, Image> entry in navigationButtonImages)
+        {
+            if (entry.Key != null &&
+                entry.Value != null &&
+                entry.Key.name == PopeListNavigationButtonName)
+            {
+                entry.Value.sprite = centerPortrait;
+                entry.Value.enabled = true;
+            }
+        }
     }
 
     private void MovePopeCredit(int direction)

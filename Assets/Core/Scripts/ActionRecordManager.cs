@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class ActionRecordManager : MonoBehaviour
 {
+    private const int CurrentPapalElectionHistoryVersion = 1;
     private const string SaveFolderName = "Json";
     private const string PersistentStatsFileName = "action_stats_persistent.json";
     private const string GameSceneName = "GameScene";
@@ -150,6 +151,25 @@ public class ActionRecordManager : MonoBehaviour
 
     public void RecordPapalElection(EndingType endingType)
     {
+        CandidateSlot candidateSlot = endingType == EndingType.PlayerPope
+            ? CandidateSlot.Player
+            : CandidateSlot.Unknown;
+        RecordPapalElection(endingType, string.Empty, candidateSlot);
+    }
+
+    public void RecordPapalElection(EndingType endingType, string popeName)
+    {
+        CandidateSlot candidateSlot = endingType == EndingType.PlayerPope
+            ? CandidateSlot.Player
+            : CandidateSlot.Unknown;
+        RecordPapalElection(endingType, popeName, candidateSlot);
+    }
+
+    public void RecordPapalElection(
+        EndingType endingType,
+        string popeName,
+        CandidateSlot candidateSlot)
+    {
         bool isPapalElectionEnding = endingType == EndingType.PlayerPope || endingType == EndingType.NpcPope;
 
         if (isPapalElectionEnding)
@@ -159,6 +179,16 @@ public class ActionRecordManager : MonoBehaviour
 
             persistentStats.currentPopeGeneration++;
             currentRunStats.currentPopeGeneration = persistentStats.currentPopeGeneration;
+
+            EnsurePersistentCollections();
+            persistentStats.papalElectionHistory.Add(new PapalElectionRecordSaveData
+            {
+                generation = persistentStats.currentPopeGeneration,
+                popeName = string.IsNullOrWhiteSpace(popeName) ? "Unknown" : popeName.Trim(),
+                isPlayer = endingType == EndingType.PlayerPope,
+                candidateSlot = candidateSlot,
+                electedAtUtc = DateTime.UtcNow.ToString("O")
+            });
         }
 
         switch (endingType)
@@ -225,6 +255,20 @@ public class ActionRecordManager : MonoBehaviour
     public int GetPersistentPapalElectionFailedCount() => persistentStats.papalElectionFailedCount;
     public int GetCurrentPopeGeneration() => currentRunStats.currentPopeGeneration;
     public int GetPersistentPopeGeneration() => persistentStats.currentPopeGeneration;
+
+    public IReadOnlyList<PapalElectionRecordSaveData> GetPersistentPapalElectionHistory()
+    {
+        EnsurePersistentCollections();
+        return persistentStats.papalElectionHistory.AsReadOnly();
+    }
+
+    public PapalElectionRecordSaveData GetLatestPope()
+    {
+        EnsurePersistentCollections();
+        int count = persistentStats.papalElectionHistory.Count;
+        return count > 0 ? persistentStats.papalElectionHistory[count - 1] : null;
+    }
+
     public int GetCurrentConclaveCount() => currentRunStats.conclaveCount;
     public int GetPersistentConclaveCount() => persistentStats.conclaveCount;
     public float GetCurrentConclaveDays() => currentRunStats.conclaveCount / 4f;
@@ -344,6 +388,7 @@ public class ActionRecordManager : MonoBehaviour
         if (!File.Exists(PersistentStatsFilePath))
         {
             persistentStats = new ActionStatsSaveData();
+            EnsurePersistentCollections();
             return;
         }
 
@@ -351,11 +396,17 @@ public class ActionRecordManager : MonoBehaviour
         {
             string json = File.ReadAllText(PersistentStatsFilePath);
             persistentStats = JsonUtility.FromJson<ActionStatsSaveData>(json) ?? new ActionStatsSaveData();
+            bool historyWasMigrated = EnsurePersistentCollections();
+            if (historyWasMigrated)
+            {
+                SavePersistentStats();
+            }
         }
         catch (Exception exception)
         {
             Debug.LogError($"[ActionRecord] Persistent stats load failed: {exception}");
             persistentStats = new ActionStatsSaveData();
+            EnsurePersistentCollections();
         }
     }
 
@@ -370,5 +421,37 @@ public class ActionRecordManager : MonoBehaviour
         {
             Debug.LogError($"[ActionRecord] Persistent stats save failed: {exception}");
         }
+    }
+
+    private bool EnsurePersistentCollections()
+    {
+        bool changed = false;
+
+        if (persistentStats == null)
+        {
+            persistentStats = new ActionStatsSaveData();
+            changed = true;
+        }
+
+        if (persistentStats.itemAcquireCounts == null)
+        {
+            persistentStats.itemAcquireCounts = new List<ItemAcquireCountSaveData>();
+            changed = true;
+        }
+
+        if (persistentStats.papalElectionHistory == null)
+        {
+            persistentStats.papalElectionHistory = new List<PapalElectionRecordSaveData>();
+            changed = true;
+        }
+
+        if (persistentStats.papalElectionHistoryVersion < CurrentPapalElectionHistoryVersion)
+        {
+            persistentStats.papalElectionHistory.Clear();
+            persistentStats.papalElectionHistoryVersion = CurrentPapalElectionHistoryVersion;
+            changed = true;
+        }
+
+        return changed;
     }
 }

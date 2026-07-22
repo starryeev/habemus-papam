@@ -276,15 +276,48 @@ public class ElectionManager : MonoBehaviour
 
     private void LoadEndingScene(EndingType endingType)
     {
+        EndingContext.CaptureFromCurrentGame(currentWinnerCandidate);
+
         if (ActionRecordManager.Instance != null &&
             (endingType == EndingType.PlayerPope || endingType == EndingType.NpcPope))
         {
-            ActionRecordManager.Instance.RecordPapalElection(endingType);
+            string electedName = endingType == EndingType.PlayerPope
+                ? EndingContext.PlayerName
+                : EndingContext.ElectedNpcName;
+
+            if (string.IsNullOrWhiteSpace(electedName) && currentWinnerCandidate != null)
+            {
+                electedName = currentWinnerCandidate.name;
+            }
+
+            CandidateSlot candidateSlot = ResolveCandidateSlot(currentWinnerCandidate);
+            ActionRecordManager.Instance.RecordPapalElection(endingType, electedName, candidateSlot);
         }
 
-        EndingContext.CaptureFromCurrentGame(currentWinnerCandidate);
         EndingResult.Set(endingType);
         Time.timeScale = 1f;
         SceneManager.LoadScene(endingSceneName);
+    }
+
+    private CandidateSlot ResolveCandidateSlot(Cardinal candidate)
+    {
+        StatsUI sourceStatsUI = statsUI;
+        if (sourceStatsUI == null && CardinalManager.Instance != null)
+        {
+            sourceStatsUI = CardinalManager.Instance.StatsUI;
+        }
+
+        int linkedIndex = sourceStatsUI != null
+            ? sourceStatsUI.GetLinkedCardinalIndex(candidate)
+            : -1;
+
+        switch (linkedIndex)
+        {
+            case 0: return CandidateSlot.Player;
+            case 1: return CandidateSlot.Npc1;
+            case 2: return CandidateSlot.Npc2;
+            case 3: return CandidateSlot.Npc3;
+            default: return CandidateSlot.Unknown;
+        }
     }
 }

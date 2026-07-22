@@ -62,6 +62,8 @@ public class ActionStatsSaveData
     public int papalElectionCount;
     public int papalElectionFailedCount;
     public int currentPopeGeneration;
+    public int papalElectionHistoryVersion;
+    public List<PapalElectionRecordSaveData> papalElectionHistory = new List<PapalElectionRecordSaveData>();
     public int conclaveCount;
 
     public void RecordItemAcquired(string itemId, string itemName)
@@ -133,26 +135,69 @@ public class ActionStatsSaveData
             papalElectionCount = papalElectionCount,
             papalElectionFailedCount = papalElectionFailedCount,
             currentPopeGeneration = currentPopeGeneration,
+            papalElectionHistoryVersion = papalElectionHistoryVersion,
             conclaveCount = conclaveCount
         };
 
-        foreach (ItemAcquireCountSaveData record in itemAcquireCounts)
+        if (itemAcquireCounts != null)
         {
-            if (record == null)
+            foreach (ItemAcquireCountSaveData record in itemAcquireCounts)
             {
-                continue;
-            }
+                if (record == null)
+                {
+                    continue;
+                }
 
-            clone.itemAcquireCounts.Add(new ItemAcquireCountSaveData
+                clone.itemAcquireCounts.Add(new ItemAcquireCountSaveData
+                {
+                    itemId = record.itemId,
+                    itemName = record.itemName,
+                    count = record.count
+                });
+            }
+        }
+
+        if (papalElectionHistory != null)
+        {
+            foreach (PapalElectionRecordSaveData record in papalElectionHistory)
             {
-                itemId = record.itemId,
-                itemName = record.itemName,
-                count = record.count
-            });
+                if (record == null)
+                {
+                    continue;
+                }
+
+                clone.papalElectionHistory.Add(new PapalElectionRecordSaveData
+                {
+                    generation = record.generation,
+                    popeName = record.popeName,
+                    isPlayer = record.isPlayer,
+                    candidateSlot = record.candidateSlot,
+                    electedAtUtc = record.electedAtUtc
+                });
+            }
         }
 
         return clone;
     }
+}
+
+public enum CandidateSlot
+{
+    Unknown = 0,
+    Player = 1,
+    Npc1 = 2,
+    Npc2 = 3,
+    Npc3 = 4
+}
+
+[Serializable]
+public class PapalElectionRecordSaveData
+{
+    public int generation;
+    public string popeName = string.Empty;
+    public bool isPlayer;
+    public CandidateSlot candidateSlot;
+    public string electedAtUtc = string.Empty;
 }
 
 [Serializable]
