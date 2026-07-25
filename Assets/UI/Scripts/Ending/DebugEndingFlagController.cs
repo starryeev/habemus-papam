@@ -5,25 +5,11 @@ using UnityEngine.UI;
 public class DebugEndingFlagController : MonoBehaviour
 {
     [SerializeField] private string endingSceneName = "EndingScene";
-    [SerializeField] private bool startHidden = true;
-
-    private RectTransform debugRoot;
-    private bool isVisible;
     private bool isHereticWarGameOverFlag;
 
     private void Awake()
     {
-        debugRoot = GetComponent<RectTransform>();
         WireButtons();
-        SetVisible(!startHidden);
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha8) || Input.GetKeyDown(KeyCode.Keypad8))
-        {
-            SetVisible(!isVisible);
-        }
     }
 
     public void TriggerPlayerPope()
@@ -171,13 +157,4 @@ public class DebugEndingFlagController : MonoBehaviour
         return null;
     }
 
-    private void SetVisible(bool visible)
-    {
-        isVisible = visible;
-
-        if (debugRoot != null)
-        {
-            debugRoot.localScale = visible ? Vector3.one : Vector3.zero;
-        }
-    }
 }
