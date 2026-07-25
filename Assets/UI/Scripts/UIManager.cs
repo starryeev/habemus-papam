@@ -25,11 +25,29 @@ void Awake()
         if(instance==null)
         {
             instance=this;
+            AttachCameraZoom();
         }
         else
         {
             Destroy(gameObject);
         }
+    }
+
+    private void AttachCameraZoom()
+    {
+        Camera mainCamera = Camera.main;
+        if (mainCamera == null)
+        {
+            return;
+        }
+
+        CanvasGroup group = GetComponent<CanvasGroup>();
+        if (group == null)
+        {
+            group = gameObject.AddComponent<CanvasGroup>();
+        }
+
+        GameSceneCameraZoom.Attach(mainCamera, group);
     }
 
     public static UIManager Instance
