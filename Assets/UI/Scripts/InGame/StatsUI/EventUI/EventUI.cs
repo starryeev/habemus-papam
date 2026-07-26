@@ -64,11 +64,13 @@ public class EventUI : MonoBehaviour
     
     public void UISetEvent()
     {
+        GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
         SetState(EventUIState.CHOICE);
         Debug.Log("EventUI Set to" + InGameManager.Instance.GetCurrentEvent());
     }
     public void UISetEvent(string eventID = "11100")
     {
+        GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
         SetState(EventUIState.TUTORIAL);
         window.ShowEvent(eventID);
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -198,10 +199,16 @@ public class InGameManager : MonoBehaviour
     void Start()
     {
         InitGame();
+        StartCoroutine(AutoStartConclaveAfterDelay());
     }
 
     public void StartConclaveCycle()
     {
+        if (isTimeRunning)
+        {
+            return;
+        }
+
         ConfigureStartButton(false, false);
 
         if (isFirstStart)
@@ -306,6 +313,7 @@ public class InGameManager : MonoBehaviour
                 break;
 
             case GameContext.GameContextEvent.ConclaveEnd:
+                GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
                 Debug.Log("[InGameManager] 콘클라베 종료 (Time Over)");
 
                 if (inventoryUIPanel != null)
@@ -320,6 +328,16 @@ public class InGameManager : MonoBehaviour
                     CardinalManager.Instance.StopConClave();
                 }
                 break;
+        }
+    }
+
+    private IEnumerator AutoStartConclaveAfterDelay()
+    {
+        yield return new WaitForSecondsRealtime(3f);
+
+        if (isFirstStart && !isTimeRunning)
+        {
+            StartConclaveCycle();
         }
     }
 
@@ -596,6 +614,7 @@ public class InGameManager : MonoBehaviour
 
         isEndingConclaveAfterPlayerHpZero = true;
         StopTimer();
+        GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
 
         if (inventoryUIPanel != null)
         {

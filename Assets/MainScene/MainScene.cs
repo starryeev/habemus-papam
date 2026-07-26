@@ -18,6 +18,8 @@ public class MainScene : MonoBehaviour
     [SerializeField] private GameObject loadWarningPopup;
     [SerializeField] private GameObject loadPopup;
     [SerializeField] private GameObject selectNamePopup;
+    [SerializeField] private GameObject dictPopup;
+    [SerializeField] private Button dictButton;
     [SerializeField] private TMP_InputField playerNameInputField;
     [SerializeField] private Button startNameButton;
     [SerializeField] private Component loadUserNameText;
@@ -102,12 +104,14 @@ public class MainScene : MonoBehaviour
     private void Awake()
     {
         ResolveNameSelectionReferences();
+        ResolveDictionaryPopupReferences();
         InitializePopeListRuntimeBindings();
         SetNavigationButtonImagesVisible(null);
         SetStartGameWarningPopup(false);
         SetLoadWarningPopup(false);
         SetLoadPopup(false);
         SetSelectNamePopup(false);
+        SetDictPopup(false);
         SetPopeListPopup(false);
     }
 
@@ -142,6 +146,12 @@ public class MainScene : MonoBehaviour
 
     public void OnClickConfirmStartGame()
     {
+        if (IsPopupOpen(dictPopup))
+        {
+            SetDictPopup(false);
+            return;
+        }
+
         SetStartGameWarningPopup(false);
 
         if (SaveManager.Instance != null)
@@ -150,6 +160,11 @@ public class MainScene : MonoBehaviour
         }
 
         LoadIntroNewspaperScene();
+    }
+
+    public void OnClickOpenDictPopup()
+    {
+        SetDictPopup(true);
     }
 
     public void OnClickCancelStartGame()
@@ -874,6 +889,7 @@ public class MainScene : MonoBehaviour
             || IsPopupOpen(loadWarningPopup)
             || IsPopupOpen(loadPopup)
             || IsPopupOpen(selectNamePopup)
+            || IsPopupOpen(dictPopup)
             || IsPopupOpen(popeListPopup);
     }
 
@@ -920,6 +936,33 @@ public class MainScene : MonoBehaviour
         {
             startNameButton.onClick.RemoveListener(OnClickStartNamedGame);
             startNameButton.onClick.AddListener(OnClickStartNamedGame);
+        }
+    }
+
+    private void ResolveDictionaryPopupReferences()
+    {
+        if (dictPopup == null)
+        {
+            dictPopup = FindSceneObjectByNameIncludingInactive("DictPopUP");
+        }
+
+        if (dictButton == null)
+        {
+            GameObject dictObject = FindSceneObjectByNameIncludingInactive("Dict");
+            dictButton = dictObject != null ? dictObject.GetComponent<Button>() : null;
+        }
+
+        if (dictButton != null)
+        {
+            dictButton.onClick.AddListener(OnClickOpenDictPopup);
+        }
+    }
+
+    private void SetDictPopup(bool isActive)
+    {
+        if (dictPopup != null)
+        {
+            dictPopup.SetActive(isActive);
         }
     }
 

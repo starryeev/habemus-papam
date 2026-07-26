@@ -106,6 +106,40 @@ public class Lecture : MonoBehaviour
             }
         }
     }
+
+    public bool TryStartPlayerSpeechImmediately(StateController playerSC)
+    {
+        if (playerSC == null || !playerSC.CompareTag("Player") || speechTargetPoint == null)
+        {
+            return false;
+        }
+
+        CancelPlayerRegistration(playerSC);
+
+        if (currentSpeaker == playerSC)
+        {
+            if (playerSC.IsPerformingSpeechAction)
+            {
+                return false;
+            }
+
+            currentSpeaker = null;
+        }
+
+        if (currentSpeaker != null)
+        {
+            currentSpeaker.ForceCompleteSpeech();
+        }
+
+        currentSpeaker = playerSC;
+        bool started = playerSC.TeleportToSpeechAndStart(speechTargetPoint.position);
+        if (!started)
+        {
+            currentSpeaker = null;
+        }
+
+        return started;
+    }
     private void CallNewNPCToQueue()
     {
         if (overflowPlayer != null) return;

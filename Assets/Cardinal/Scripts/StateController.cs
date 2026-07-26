@@ -993,6 +993,99 @@ public class StateController : MonoBehaviour
         Debug.Log("이동 시퀀스 강제 중단됨.");
     }
 
+    public void ForceCompletePrayer()
+    {
+        bool wasPraying = currentState == CardinalState.Praying;
+
+        if (praySequenceCoroutine != null)
+        {
+            StopCoroutine(praySequenceCoroutine);
+            praySequenceCoroutine = null;
+        }
+
+        ClearActionRequestState();
+        ResetAgentMovementState();
+
+        if (wasPraying && cardinal != null)
+        {
+            cardinal.Pray();
+        }
+
+        if (IsActionState(currentState))
+        {
+            RestoreStateAfterAction();
+        }
+    }
+
+    public void ForceCompleteSpeech()
+    {
+        bool wasSpeaking = currentState == CardinalState.InSpeech;
+
+        if (speechSequenceCoroutine != null)
+        {
+            StopCoroutine(speechSequenceCoroutine);
+            speechSequenceCoroutine = null;
+        }
+
+        ClearActionRequestState();
+        ResetAgentMovementState();
+
+        if (wasSpeaking && cardinal != null)
+        {
+            cardinal.Speech();
+        }
+
+        if (animController != null)
+        {
+            animController.SetSpeechAnimation(0);
+        }
+
+        if (IsActionState(currentState))
+        {
+            RestoreStateAfterAction();
+        }
+    }
+
+    public bool TeleportToPrayerAndStart(Vector3 actionPosition)
+    {
+        if (!TeleportToActionPoint(actionPosition))
+        {
+            return false;
+        }
+
+        OrderToPray(actionPosition, false);
+        return true;
+    }
+
+    public bool TeleportToSpeechAndStart(Vector3 actionPosition)
+    {
+        if (!TeleportToActionPoint(actionPosition))
+        {
+            return false;
+        }
+
+        OrderToSpeech(actionPosition, false);
+        return true;
+    }
+
+    private bool TeleportToActionPoint(Vector3 actionPosition)
+    {
+        CancelApproach();
+
+        Vector3 destination = actionPosition;
+        destination.z = transform.position.z;
+
+        if (agent != null && agent.isOnNavMesh && agent.Warp(destination))
+        {
+            agent.isStopped = false;
+            agent.velocity = Vector3.zero;
+            return true;
+        }
+
+        transform.position = destination;
+        return agent == null || agent.isOnNavMesh;
+    }
+
     public void ProceedToRealPrayer(Vector3 realTarget)
     {
 

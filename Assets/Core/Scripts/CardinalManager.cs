@@ -36,6 +36,7 @@ public class CardinalManager : MonoBehaviour
     // 카디널들 관리하는 리스트
     private List<Cardinal> cardinals = new List<Cardinal>();
     public List<Cardinal> Cardinals => cardinals;
+    public Transform PlayerTransform { get; private set; }
 
     private List<Cardinal> leftGroupList = new List<Cardinal>();
     private List<Cardinal> rightGroupList = new List<Cardinal>();
@@ -86,6 +87,7 @@ public class CardinalManager : MonoBehaviour
         // 플레이어 생성
         GameObject pObj = Instantiate(cardinalPrefabPlayer, container);
         pObj.name = "Cardinal_Player";
+        PlayerTransform = pObj.transform;
         Cardinal pCard = pObj.GetComponent<Cardinal>();
         if (pCard != null) cardinals.Add(pCard);
 
@@ -113,6 +115,11 @@ public class CardinalManager : MonoBehaviour
     public void StartConClave()
     {
         StopAllCoroutines();
+        if (statsUI != null)
+        {
+            statsUI.HideForConclaveEntrance();
+        }
+
         StartCoroutine(ResetAndEnterSequence());
         SoundManager.Instance.PlayBGM("DummyBGM", 1);
     }
@@ -209,6 +216,7 @@ public class CardinalManager : MonoBehaviour
         if (statsUI != null)
         {
             statsUI.Initialize(cardinals);
+            statsUI.FadeInAfterConclaveEntrance(1f);
 
             InGameManager.Instance.StartTimer();
         }
