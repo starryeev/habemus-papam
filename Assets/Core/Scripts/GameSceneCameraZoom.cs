@@ -147,6 +147,15 @@ public sealed class GameSceneCameraZoom : MonoBehaviour
         }
     }
 
+    public static void ZoomAllGameCamerasToMinimum(float duration = 1f)
+    {
+        GameSceneCameraZoom[] zoomControllers = Object.FindObjectsByType<GameSceneCameraZoom>(FindObjectsSortMode.None);
+        foreach (GameSceneCameraZoom zoomController in zoomControllers)
+        {
+            zoomController.ZoomToMinimumOverTime(duration);
+        }
+    }
+
     public void ReleaseZoomAndFollowOverTime(float duration)
     {
         if (targetCamera == null)
@@ -161,6 +170,22 @@ public sealed class GameSceneCameraZoom : MonoBehaviour
 
         isReleasingZoom = true;
         releaseRoutine = StartCoroutine(ReleaseZoomAndFollowRoutine(Mathf.Max(0f, duration)));
+    }
+
+    public void ZoomToMinimumOverTime(float duration)
+    {
+        if (targetCamera == null)
+        {
+            return;
+        }
+
+        if (releaseRoutine != null)
+        {
+            StopCoroutine(releaseRoutine);
+        }
+
+        isReleasingZoom = true;
+        releaseRoutine = StartCoroutine(ZoomToMinimumRoutine(Mathf.Max(0f, duration)));
     }
 
     private System.Collections.IEnumerator ReleaseZoomAndFollowRoutine(float duration)
@@ -182,6 +207,26 @@ public sealed class GameSceneCameraZoom : MonoBehaviour
         StopFollowing();
         transform.position = initialCameraPosition;
         ClampPositionToCameraBorder();
+        releaseRoutine = null;
+        isReleasingZoom = false;
+    }
+
+    private System.Collections.IEnumerator ZoomToMinimumRoutine(float duration)
+    {
+        float startSize = targetCamera.orthographicSize;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
+            targetCamera.orthographicSize = Mathf.Lerp(startSize, MinZoomSize, progress);
+            UpdateUiAlpha();
+            yield return null;
+        }
+
+        targetCamera.orthographicSize = MinZoomSize;
+        UpdateUiAlpha();
         releaseRoutine = null;
         isReleasingZoom = false;
     }

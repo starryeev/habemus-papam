@@ -133,6 +133,7 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
         GameBalance balance = InGameManager.Instance != null ? InGameManager.Instance.Balance : null;
         if (balance == null)
         {
+            SetUndefinedPopupValuesToZero(popup);
             return;
         }
 
@@ -175,7 +176,7 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
         if (started)
         {
             CloseAllPopups();
-            GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
+            GameSceneCameraZoom.ZoomAllGameCamerasToMinimum(1f);
         }
 
         isConfirming = false;
@@ -224,6 +225,14 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
         {
             text.text = value;
         }
+    }
+
+    private static void SetUndefinedPopupValuesToZero(GameObject popup)
+    {
+        SetPopupText(popup, "Desc/Info1/Plus", "0");
+        SetPopupText(popup, "Desc/Info1/Plus-2", "0");
+        SetPopupText(popup, "Desc/Info1 (1)/Minus", "0");
+        SetPopupText(popup, "Desc/Info1 (1)/Minus-2", "0");
     }
 
     private static string FormatSigned(float value)

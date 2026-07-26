@@ -313,7 +313,7 @@ public class InGameManager : MonoBehaviour
                 break;
 
             case GameContext.GameContextEvent.ConclaveEnd:
-                GameSceneCameraZoom.ReleaseActiveZoomAndFollow();
+                GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
                 Debug.Log("[InGameManager] 콘클라베 종료 (Time Over)");
 
                 if (inventoryUIPanel != null)
@@ -614,7 +614,7 @@ public class InGameManager : MonoBehaviour
 
         isEndingConclaveAfterPlayerHpZero = true;
         StopTimer();
-        GameSceneCameraZoom.ReleaseActiveZoomAndFollow();
+        GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
 
         if (inventoryUIPanel != null)
         {

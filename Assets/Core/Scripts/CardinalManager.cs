@@ -115,6 +115,11 @@ public class CardinalManager : MonoBehaviour
     public void StartConClave()
     {
         StopAllCoroutines();
+        if (statsUI != null)
+        {
+            statsUI.HideForConclaveEntrance();
+        }
+
         StartCoroutine(ResetAndEnterSequence());
         SoundManager.Instance.PlayBGM("DummyBGM", 1);
     }
@@ -211,6 +216,7 @@ public class CardinalManager : MonoBehaviour
         if (statsUI != null)
         {
             statsUI.Initialize(cardinals);
+            statsUI.FadeInAfterConclaveEntrance(1f);
 
             InGameManager.Instance.StartTimer();
         }

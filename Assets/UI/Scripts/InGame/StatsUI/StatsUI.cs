@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
 using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 //상단 UI
 
@@ -28,8 +29,15 @@ public class StatsUI : MonoBehaviour
     private float[] MaxStats = new float[4]; 
     private float[] SubStats = new float[4];
     private Coroutine[] moveCoroutines = new Coroutine[4];
+    private CanvasGroup canvasGroup;
+    private Coroutine alphaCoroutine;
     private bool isInitialized = false;
     private int closeupIndex = -1;
+
+    private void Awake()
+    {
+        HideForConclaveEntrance();
+    }
 
     public int GetLinkedCardinalIndex(Cardinal candidate)
     {
@@ -39,6 +47,62 @@ public class StatsUI : MonoBehaviour
         }
 
         return Array.IndexOf(linkedCardinals, candidate);
+    }
+
+    public void HideForConclaveEntrance()
+    {
+        EnsureCanvasGroup();
+        if (alphaCoroutine != null)
+        {
+            StopCoroutine(alphaCoroutine);
+            alphaCoroutine = null;
+        }
+
+        canvasGroup.alpha = 0f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+    }
+
+    public void FadeInAfterConclaveEntrance(float duration = 1f)
+    {
+        EnsureCanvasGroup();
+        if (alphaCoroutine != null)
+        {
+            StopCoroutine(alphaCoroutine);
+        }
+
+        alphaCoroutine = StartCoroutine(FadeCanvasAlpha(1f, duration));
+    }
+
+    private void EnsureCanvasGroup()
+    {
+        if (canvasGroup == null)
+        {
+            canvasGroup = GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+            {
+                canvasGroup = gameObject.AddComponent<CanvasGroup>();
+            }
+        }
+    }
+
+    private IEnumerator FadeCanvasAlpha(float targetAlpha, float duration)
+    {
+        float startAlpha = canvasGroup.alpha;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
+            canvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, progress);
+            yield return null;
+        }
+
+        canvasGroup.alpha = targetAlpha;
+        canvasGroup.interactable = targetAlpha > 0f;
+        canvasGroup.blocksRaycasts = targetAlpha > 0f;
+        alphaCoroutine = null;
     }
 
 
