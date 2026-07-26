@@ -37,20 +37,6 @@ public class SpeechWaitingTrigger : MonoBehaviour
             occupants.Add(enteredController);
         }
 
-        if (other.CompareTag("Player"))
-        {
-            StateController playerSC = other.GetComponent<StateController>();
-            PlayerController playerCtrl = other.GetComponent<PlayerController>();
-
-            if (playerSC != null && playerSC.CanAcceptManualInteraction())
-            {
-                if (playerCtrl != null)
-                {
-                    lectureManager.RegisterPlayerToQueue(playerSC);
-                }
-            }
-        }
-
         if (other.CompareTag("NPC"))
         {
             StateController arrivedNPC = other.GetComponent<StateController>();

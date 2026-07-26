@@ -39,17 +39,6 @@ public class PrayerWaitingTrigger : MonoBehaviour
             occupants.Add(enteredController);
         }
 
-        if (other.CompareTag("Player"))
-        {
-            StateController playerSC = other.GetComponent<StateController>();
-
-            if (playerSC != null && playerSC.CanAcceptManualInteraction())
-            {
-                gamsilManager.RegisterPlayerToQueue(playerSC);
-            }
-
-        }
-
         if (other.CompareTag("NPC"))
         {
             StateController arrivedNPC = other.GetComponent<StateController>();

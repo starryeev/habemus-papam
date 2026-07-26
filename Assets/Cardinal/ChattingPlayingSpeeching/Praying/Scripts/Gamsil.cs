@@ -119,6 +119,40 @@ public class Gamsil : MonoBehaviour
         }
     }
 
+    public bool TryStartPlayerPrayerImmediately(StateController playerSC)
+    {
+        if (playerSC == null || !playerSC.CompareTag("Player") || prayTargetPoint == null)
+        {
+            return false;
+        }
+
+        CancelPlayerRegistration(playerSC);
+
+        if (currentPrayerNPC == playerSC)
+        {
+            if (playerSC.IsPerformingPrayerAction)
+            {
+                return false;
+            }
+
+            currentPrayerNPC = null;
+        }
+
+        if (currentPrayerNPC != null)
+        {
+            currentPrayerNPC.ForceCompletePrayer();
+        }
+
+        currentPrayerNPC = playerSC;
+        bool started = playerSC.TeleportToPrayerAndStart(prayTargetPoint.position);
+        if (!started)
+        {
+            currentPrayerNPC = null;
+        }
+
+        return started;
+    }
+
     private void CallNewNPCToQueue()
     {
         if (overflowPlayer != null) return;

@@ -27,6 +27,7 @@ void Awake()
             instance=this;
             AttachCameraZoom();
             DebugModeToggle.Attach(gameObject);
+            ActionPriorityPopupController.Attach(gameObject);
         }
         else
         {

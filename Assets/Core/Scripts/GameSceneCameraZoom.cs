@@ -18,6 +18,8 @@ public sealed class GameSceneCameraZoom : MonoBehaviour
     private Transform playerTarget;
     private Vector3 followVelocity;
     private Vector3 initialCameraPosition;
+    private Coroutine releaseRoutine;
+    private bool isReleasingZoom;
 
     public static void Attach(Camera camera, CanvasGroup uiGroup)
     {
@@ -53,7 +55,7 @@ public sealed class GameSceneCameraZoom : MonoBehaviour
     private void Update()
     {
         float scrollDelta = Input.mouseScrollDelta.y;
-        if (!Mathf.Approximately(scrollDelta, 0f))
+        if (!isReleasingZoom && !Mathf.Approximately(scrollDelta, 0f))
         {
             if (scrollDelta > 0f && !TryFindPlayerTarget())
             {
@@ -114,6 +116,14 @@ public sealed class GameSceneCameraZoom : MonoBehaviour
 
     public void ReleaseZoomAndFollow()
     {
+        if (releaseRoutine != null)
+        {
+            StopCoroutine(releaseRoutine);
+            releaseRoutine = null;
+        }
+
+        isReleasingZoom = false;
+
         ReleaseZoom();
         StopFollowing();
         transform.position = initialCameraPosition;
@@ -126,6 +136,54 @@ public sealed class GameSceneCameraZoom : MonoBehaviour
         {
             activeInstance.ReleaseZoomAndFollow();
         }
+    }
+
+    public static void ReleaseAllGameCameraZoomAndFollow(float duration = 1f)
+    {
+        GameSceneCameraZoom[] zoomControllers = Object.FindObjectsByType<GameSceneCameraZoom>(FindObjectsSortMode.None);
+        foreach (GameSceneCameraZoom zoomController in zoomControllers)
+        {
+            zoomController.ReleaseZoomAndFollowOverTime(duration);
+        }
+    }
+
+    public void ReleaseZoomAndFollowOverTime(float duration)
+    {
+        if (targetCamera == null)
+        {
+            return;
+        }
+
+        if (releaseRoutine != null)
+        {
+            StopCoroutine(releaseRoutine);
+        }
+
+        isReleasingZoom = true;
+        releaseRoutine = StartCoroutine(ReleaseZoomAndFollowRoutine(Mathf.Max(0f, duration)));
+    }
+
+    private System.Collections.IEnumerator ReleaseZoomAndFollowRoutine(float duration)
+    {
+        float startSize = targetCamera.orthographicSize;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
+            targetCamera.orthographicSize = Mathf.Lerp(startSize, MaxZoomSize, progress);
+            UpdateUiAlpha();
+            yield return null;
+        }
+
+        targetCamera.orthographicSize = MaxZoomSize;
+        UpdateUiAlpha();
+        StopFollowing();
+        transform.position = initialCameraPosition;
+        ClampPositionToCameraBorder();
+        releaseRoutine = null;
+        isReleasingZoom = false;
     }
 
     private void Configure(CanvasGroup group)
