@@ -2,6 +2,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 //여기에 교황 판정 화면을 구현
 public class CheckUI : MonoBehaviour
 {
@@ -32,6 +33,7 @@ public class CheckUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI miscText;
     [SerializeField] private TextMeshProUGUI probabilityText;
     [SerializeField] private float jackpotDuration = 3f;
+    [SerializeField] private VideoPlayer vp;
     private Coroutine jackpotCoroutine;
     private float winProbability = 0; //ElectionManager에서 정해진 승리 확률.
     private int winner = -1;

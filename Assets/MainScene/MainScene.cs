@@ -233,18 +233,21 @@ public class MainScene : MonoBehaviour
 
     public void OnClickPopeListLeftArrow()
     {
+        SoundManager.Instance.PlaySFX("ButtonLight");
         popeListHistoryPresenter?.MoveLeft();
         SyncPopeListNavigationSprite();
     }
 
     public void OnClickPopeListRightArrow()
     {
+        SoundManager.Instance.PlaySFX("ButtonLight");
         popeListHistoryPresenter?.MoveRight();
         SyncPopeListNavigationSprite();
     }
 
     public void OnClickPopeListFrame()
     {
+        SoundManager.Instance.PlaySFX("Frame");
         InitializePopeListRuntimeBindings();
         popeListHistoryPresenter?.EnterBrowseMode();
         if (popeListHistoryPresenter == null || !popeListHistoryPresenter.IsBrowsing)
