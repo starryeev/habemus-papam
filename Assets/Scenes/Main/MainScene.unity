@@ -5675,7 +5675,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &899902976
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5997,6 +5997,8 @@ MonoBehaviour:
   selectNamePopup: {fileID: 0}
   dictPopup: {fileID: 0}
   dictButton: {fileID: 0}
+  resetDataPopup: {fileID: 0}
+  resetDataButton: {fileID: 0}
   playerNameInputField: {fileID: 0}
   startNameButton: {fileID: 0}
   loadUserNameText: {fileID: 0}
