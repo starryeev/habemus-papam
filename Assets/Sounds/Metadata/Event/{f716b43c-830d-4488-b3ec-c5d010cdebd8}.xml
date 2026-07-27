@@ -2,13 +2,13 @@
 <objects serializationModel="Studio.02.03.00">
 	<object class="Event" id="{f716b43c-830d-4488-b3ec-c5d010cdebd8}">
 		<property name="name">
-			<value>2 메인화면- 물병</value>
+			<value>Bottle</value>
 		</property>
 		<property name="outputFormat">
 			<value>1</value>
 		</property>
 		<relationship name="folder">
-			<destination>{a9488e2e-7a0c-4c0a-9e62-d3fba026f7b2}</destination>
+			<destination>{aea828d0-4d17-496a-be6e-4e39e904243e}</destination>
 		</relationship>
 		<relationship name="mixer">
 			<destination>{af08375e-d541-4b37-bdbc-ca699c782aa2}</destination>

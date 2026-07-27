@@ -2,13 +2,13 @@
 <objects serializationModel="Studio.02.03.00">
 	<object class="Event" id="{dfb23ed1-1fbe-42b7-af1d-8e8797854842}">
 		<property name="name">
-			<value>7 메인화면- 특수버튼음</value>
+			<value>ButtonSpecial</value>
 		</property>
 		<property name="outputFormat">
 			<value>1</value>
 		</property>
 		<relationship name="folder">
-			<destination>{a9488e2e-7a0c-4c0a-9e62-d3fba026f7b2}</destination>
+			<destination>{aea828d0-4d17-496a-be6e-4e39e904243e}</destination>
 		</relationship>
 		<relationship name="mixer">
 			<destination>{d000041d-c655-4b6c-90bc-9b3c8708192d}</destination>
@@ -97,6 +97,12 @@
 	</object>
 	<object class="MixerBusPanner" id="{a0f04b83-1dc9-421d-813a-987290307cf6}" />
 	<object class="SingleSound" id="{efbef46d-10b6-4450-b4bd-e1b226f205d8}">
+		<property name="startOffset">
+			<value>1.5</value>
+		</property>
+		<property name="volume">
+			<value>10</value>
+		</property>
 		<relationship name="audioFile">
 			<destination>{cc9cf5b0-48bd-4836-99ff-c798530ef701}</destination>
 		</relationship>

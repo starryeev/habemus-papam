@@ -2,13 +2,13 @@
 <objects serializationModel="Studio.02.03.00">
 	<object class="Event" id="{29f5ec85-d087-4c29-8cfe-3eef00e1bbb3}">
 		<property name="name">
-			<value>6 메인화면- 나침반</value>
+			<value>Compass</value>
 		</property>
 		<property name="outputFormat">
 			<value>1</value>
 		</property>
 		<relationship name="folder">
-			<destination>{a9488e2e-7a0c-4c0a-9e62-d3fba026f7b2}</destination>
+			<destination>{aea828d0-4d17-496a-be6e-4e39e904243e}</destination>
 		</relationship>
 		<relationship name="mixer">
 			<destination>{647018fe-9126-430b-bbeb-8bc586216ab9}</destination>

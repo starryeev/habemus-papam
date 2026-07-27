@@ -2,13 +2,13 @@
 <objects serializationModel="Studio.02.03.00">
 	<object class="Event" id="{ac19411a-65be-453e-84dc-b96ff7285f84}">
 		<property name="name">
-			<value>8 메인화면 일반버튼음_무거움</value>
+			<value>ButtonHeavy</value>
 		</property>
 		<property name="outputFormat">
 			<value>1</value>
 		</property>
 		<relationship name="folder">
-			<destination>{a9488e2e-7a0c-4c0a-9e62-d3fba026f7b2}</destination>
+			<destination>{aea828d0-4d17-496a-be6e-4e39e904243e}</destination>
 		</relationship>
 		<relationship name="mixer">
 			<destination>{415e06c3-b500-4f31-8e96-efdfd1c802fa}</destination>
@@ -97,6 +97,12 @@
 	</object>
 	<object class="MixerBusPanner" id="{b6030e7c-3fdd-4940-ae12-cd349d2fe3fd}" />
 	<object class="SingleSound" id="{3dab283b-abb7-4b27-8fd8-56c68bcaa6b0}">
+		<property name="startOffset">
+			<value>6.5</value>
+		</property>
+		<property name="volume">
+			<value>-11.5</value>
+		</property>
 		<relationship name="audioFile">
 			<destination>{eac8893c-4329-4c3b-9747-7421d2e55426}</destination>
 		</relationship>

@@ -2,13 +2,13 @@
 <objects serializationModel="Studio.02.03.00">
 	<object class="Event" id="{c8b864d5-c385-42dd-b629-bace539ce7ab}">
 		<property name="name">
-			<value>9 메인화면- 일반 버튼_가벼움</value>
+			<value>ButtonLight</value>
 		</property>
 		<property name="outputFormat">
 			<value>1</value>
 		</property>
 		<relationship name="folder">
-			<destination>{a9488e2e-7a0c-4c0a-9e62-d3fba026f7b2}</destination>
+			<destination>{aea828d0-4d17-496a-be6e-4e39e904243e}</destination>
 		</relationship>
 		<relationship name="mixer">
 			<destination>{e6f42b37-271b-4dbd-828e-97ee780f79a4}</destination>
@@ -97,6 +97,9 @@
 	</object>
 	<object class="MixerBusPanner" id="{22a75a3f-4233-4983-bd31-11411e5be089}" />
 	<object class="SingleSound" id="{299eb7fe-40b8-49a0-aacc-069f399623c0}">
+		<property name="startOffset">
+			<value>17</value>
+		</property>
 		<relationship name="audioFile">
 			<destination>{55ff081e-a65c-43b1-8eef-fa440c25f8bd}</destination>
 		</relationship>

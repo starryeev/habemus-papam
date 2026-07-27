@@ -2,13 +2,13 @@
 <objects serializationModel="Studio.02.03.00">
 	<object class="Event" id="{98222b95-e958-432e-9f4d-cf4655ce2af0}">
 		<property name="name">
-			<value>4 메인화면- 문</value>
+			<value>Door</value>
 		</property>
 		<property name="outputFormat">
 			<value>1</value>
 		</property>
 		<relationship name="folder">
-			<destination>{a9488e2e-7a0c-4c0a-9e62-d3fba026f7b2}</destination>
+			<destination>{aea828d0-4d17-496a-be6e-4e39e904243e}</destination>
 		</relationship>
 		<relationship name="mixer">
 			<destination>{911d60b7-2c88-432d-8fc1-51362a802508}</destination>
@@ -97,6 +97,9 @@
 	</object>
 	<object class="MixerBusPanner" id="{8ee371d1-ff30-4f1c-8187-44cfc447ae20}" />
 	<object class="SingleSound" id="{c75057fd-aaa8-4581-978d-8d3cb4ba3dbb}">
+		<property name="startOffset">
+			<value>3</value>
+		</property>
 		<relationship name="audioFile">
 			<destination>{14f3d810-c3ec-431e-8da4-cd756a8268cc}</destination>
 		</relationship>

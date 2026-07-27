@@ -2,13 +2,13 @@
 <objects serializationModel="Studio.02.03.00">
 	<object class="Event" id="{aa35b339-fca1-4446-ab6c-f20a860842cf}">
 		<property name="name">
-			<value>1 메인화면- 책</value>
+			<value>Book</value>
 		</property>
 		<property name="outputFormat">
 			<value>1</value>
 		</property>
 		<relationship name="folder">
-			<destination>{a9488e2e-7a0c-4c0a-9e62-d3fba026f7b2}</destination>
+			<destination>{aea828d0-4d17-496a-be6e-4e39e904243e}</destination>
 		</relationship>
 		<relationship name="mixer">
 			<destination>{ec00bba0-3dce-47fe-ac49-ffb27c725d81}</destination>
