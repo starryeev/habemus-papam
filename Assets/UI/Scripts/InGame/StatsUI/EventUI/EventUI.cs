@@ -29,7 +29,10 @@ public class EventUI : MonoBehaviour
         switch (state)
         {
             case EventUIState.NONE:
-                Time.timeScale = 1f;
+                if (InGameManager.Instance == null || !InGameManager.Instance.IsConclaveExitInProgress)
+                {
+                    Time.timeScale = 1f;
+                }
                 window.gameObject.SetActive(false);
                 result.gameObject.SetActive(false);
                 break;

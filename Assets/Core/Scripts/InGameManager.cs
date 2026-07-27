@@ -172,6 +172,7 @@ public class InGameManager : MonoBehaviour
     private bool shouldRevivePlayerOnNextConclave = false;
     private bool isHandlingFinalPlayerHpZero = false;
     private bool isEndingConclaveAfterPlayerHpZero = false;
+    private bool isConclaveExitInProgress = false;
 
     public GameBalance Balance => balance;
     public GameContext Context => gameContext;
@@ -179,6 +180,7 @@ public class InGameManager : MonoBehaviour
     public EventManager EventManager => eventManager;
     public bool IsFirstStart => isFirstStart;
     public bool IsSushiOn => isSushiOn;
+    public bool IsConclaveExitInProgress => isConclaveExitInProgress;
 
     void Awake()
     {
@@ -277,11 +279,17 @@ public class InGameManager : MonoBehaviour
         }
     }
 
+    public void OnConclaveExitSequenceCompleted()
+    {
+        isConclaveExitInProgress = false;
+    }
+
     void InitGame()
     {
         isTimeRunning = false;
         isFirstStart = true;
         isSushiOn = false;
+        isConclaveExitInProgress = false;
 
         gameContext.InitGameContext();
         ConfigureStartButton(true, true);
@@ -297,6 +305,7 @@ public class InGameManager : MonoBehaviour
         switch (eventType)
         {
             case GameContext.GameContextEvent.ConclaveStart:
+                isConclaveExitInProgress = false;
                 Debug.Log($"[InGameManager] 콘클라베 시작: {gameContext.CurrentConclave}");
 
                 if (ActionRecordManager.Instance != null)
@@ -313,6 +322,7 @@ public class InGameManager : MonoBehaviour
                 break;
 
             case GameContext.GameContextEvent.ConclaveEnd:
+                isConclaveExitInProgress = true;
                 GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
                 Debug.Log("[InGameManager] 콘클라베 종료 (Time Over)");
 

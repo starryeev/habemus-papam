@@ -351,6 +351,10 @@ public class CardinalManager : MonoBehaviour
         }
 
         Debug.Log("All cardinals have exited.");
+        if (InGameManager.Instance != null)
+        {
+            InGameManager.Instance.OnConclaveExitSequenceCompleted();
+        }
         Time.timeScale = 1f;
 
         SoundManager.Instance.PlayBGM("DummyBGM");

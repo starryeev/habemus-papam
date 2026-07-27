@@ -20,6 +20,8 @@ public class MainScene : MonoBehaviour
     [SerializeField] private GameObject selectNamePopup;
     [SerializeField] private GameObject dictPopup;
     [SerializeField] private Button dictButton;
+    [SerializeField] private GameObject resetDataPopup;
+    [SerializeField] private Button resetDataButton;
     [SerializeField] private TMP_InputField playerNameInputField;
     [SerializeField] private Button startNameButton;
     [SerializeField] private Component loadUserNameText;
@@ -105,6 +107,7 @@ public class MainScene : MonoBehaviour
     {
         ResolveNameSelectionReferences();
         ResolveDictionaryPopupReferences();
+        ResolveResetDataReferences();
         InitializePopeListRuntimeBindings();
         SetNavigationButtonImagesVisible(null);
         SetStartGameWarningPopup(false);
@@ -112,6 +115,7 @@ public class MainScene : MonoBehaviour
         SetLoadPopup(false);
         SetSelectNamePopup(false);
         SetDictPopup(false);
+        SetResetDataPopup(false);
         SetPopeListPopup(false);
     }
 
@@ -146,6 +150,12 @@ public class MainScene : MonoBehaviour
 
     public void OnClickConfirmStartGame()
     {
+        if (IsPopupOpen(resetDataPopup))
+        {
+            OnClickConfirmResetData();
+            return;
+        }
+
         if (IsPopupOpen(dictPopup))
         {
             SetDictPopup(false);
@@ -169,7 +179,31 @@ public class MainScene : MonoBehaviour
 
     public void OnClickCancelStartGame()
     {
+        if (IsPopupOpen(resetDataPopup))
+        {
+            SetResetDataPopup(false);
+            return;
+        }
+
         SetStartGameWarningPopup(false);
+    }
+
+    public void OnClickOpenResetDataPopup()
+    {
+        SetResetDataPopup(true);
+    }
+
+    public void OnClickConfirmResetData()
+    {
+        SetResetDataPopup(false);
+
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.ResetAllUserData();
+        }
+
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     private void LoadIntroNewspaperScene()
@@ -248,21 +282,22 @@ public class MainScene : MonoBehaviour
 
     public void OnClickPopeListLeftArrow()
     {
-        SoundManager.Instance.PlaySFX("ButtonLight");
+        // 사운드 매니저 아직 메인 씬에 없어서 오류 발생해서 ? 문으로 임시 대체
+        SoundManager.Instance?.PlaySFX("ButtonLight");
         popeListHistoryPresenter?.MoveLeft();
         SyncPopeListNavigationSprite();
     }
 
     public void OnClickPopeListRightArrow()
     {
-        SoundManager.Instance.PlaySFX("ButtonLight");
+        SoundManager.Instance?.PlaySFX("ButtonLight");
         popeListHistoryPresenter?.MoveRight();
         SyncPopeListNavigationSprite();
     }
 
     public void OnClickPopeListFrame()
     {
-        SoundManager.Instance.PlaySFX("Frame");
+        SoundManager.Instance?.PlaySFX("Frame");
         InitializePopeListRuntimeBindings();
         popeListHistoryPresenter?.EnterBrowseMode();
         if (popeListHistoryPresenter == null || !popeListHistoryPresenter.IsBrowsing)
@@ -890,6 +925,7 @@ public class MainScene : MonoBehaviour
             || IsPopupOpen(loadPopup)
             || IsPopupOpen(selectNamePopup)
             || IsPopupOpen(dictPopup)
+            || IsPopupOpen(resetDataPopup)
             || IsPopupOpen(popeListPopup);
     }
 
@@ -958,6 +994,25 @@ public class MainScene : MonoBehaviour
         }
     }
 
+    private void ResolveResetDataReferences()
+    {
+        if (resetDataPopup == null)
+        {
+            resetDataPopup = FindSceneObjectByNameIncludingInactive("ResetPopUP");
+        }
+
+        if (resetDataButton == null)
+        {
+            GameObject resetDataObject = FindSceneObjectByNameIncludingInactive("ResetData");
+            resetDataButton = resetDataObject != null ? resetDataObject.GetComponent<Button>() : null;
+        }
+
+        if (resetDataButton != null)
+        {
+            resetDataButton.onClick.RemoveListener(OnClickOpenResetDataPopup);
+            resetDataButton.onClick.AddListener(OnClickOpenResetDataPopup);
+        }
+    }
     private void SetDictPopup(bool isActive)
     {
         if (dictPopup != null)
@@ -966,6 +1021,13 @@ public class MainScene : MonoBehaviour
         }
     }
 
+    private void SetResetDataPopup(bool isActive)
+    {
+        if (resetDataPopup != null)
+        {
+            resetDataPopup.SetActive(isActive);
+        }
+    }
     private static GameObject FindSceneObjectByNameIncludingInactive(string objectName)
     {
         GameObject activeObject = GameObject.Find(objectName);

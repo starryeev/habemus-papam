@@ -181,6 +181,23 @@ public class SaveManager : MonoBehaviour
         DeleteSave();
     }
 
+    public void ResetAllUserData()
+    {
+        pendingLoad = false;
+        pendingNewGame = false;
+        isApplyingLoad = false;
+        currentGameNames = new GameNameSaveData();
+
+        DeleteSave();
+        DeleteCompletedPlayerNames();
+        NameDB.SetPlayerInputNames(null);
+
+        if (ActionRecordManager.Instance != null)
+        {
+            ActionRecordManager.Instance.ResetPersistentData();
+        }
+    }
+
     public void CompleteCurrentGame()
     {
         pendingLoad = false;
@@ -565,6 +582,21 @@ public class SaveManager : MonoBehaviour
         catch (Exception exception)
         {
             Debug.LogError($"[Save] 저장 파일 삭제 실패: {exception}");
+        }
+    }
+
+    private void DeleteCompletedPlayerNames()
+    {
+        try
+        {
+            if (File.Exists(CompletedPlayerNamesFilePath))
+            {
+                File.Delete(CompletedPlayerNamesFilePath);
+            }
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError($"[Save] Completed player name delete failed: {exception}");
         }
     }
 }

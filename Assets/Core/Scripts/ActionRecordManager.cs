@@ -76,6 +76,27 @@ public class ActionRecordManager : MonoBehaviour
         currentRunDirty = false;
     }
 
+    public void ResetPersistentData()
+    {
+        currentRunStats = new ActionStatsSaveData();
+        persistentStats = new ActionStatsSaveData();
+        currentRunDirty = false;
+        currentRunSaveTimer = 0f;
+        persistentSaveTimer = 0f;
+
+        try
+        {
+            if (File.Exists(PersistentStatsFilePath))
+            {
+                File.Delete(PersistentStatsFilePath);
+            }
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError($"[ActionRecord] Persistent stats delete failed: {exception}");
+        }
+    }
+
     public void RecordPray(Cardinal cardinal)
     {
         if (!IsPlayer(cardinal))
