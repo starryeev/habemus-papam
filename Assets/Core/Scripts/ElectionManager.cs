@@ -295,6 +295,10 @@ public class ElectionManager : MonoBehaviour
         }
 
         EndingResult.Set(endingType);
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.ClearContinueSaveForEnding();
+        }
         Time.timeScale = 1f;
         SceneManager.LoadScene(endingSceneName);
     }

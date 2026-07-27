@@ -118,6 +118,10 @@ public class DebugEndingFlagController : MonoBehaviour
         }
 
         EndingResult.Set(endingType);
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.ClearContinueSaveForEnding();
+        }
         Time.timeScale = 1f;
 
         if (!string.IsNullOrWhiteSpace(endingSceneName))
