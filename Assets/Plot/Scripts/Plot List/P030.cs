@@ -7,6 +7,8 @@ using static UnityEngine.GraphicsBuffer;
 
 public class P030 : Plot
 {
+    private const string MinHpEffectSource = "P030";
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -51,7 +53,7 @@ public class P030 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         var cm = CardinalManager.Instance;
 
@@ -83,7 +85,7 @@ public class P030 : Plot
             }
         }
 
-        performer.SetMinHpOneEffect(true);
+        performer.SetMinHpOneEffect(MinHpEffectSource, true);
         Debug.Log("최소 체력 1 ON");
         context.OnGameContextEvent += OnContextEvent;
 
@@ -91,7 +93,7 @@ public class P030 : Plot
 
         if (performer != null)
         {
-            performer.SetMinHpOneEffect(false);
+            performer.SetMinHpOneEffect(MinHpEffectSource, false);
             Debug.Log("최소 체력 1 OFF");
         }
 
@@ -101,4 +103,3 @@ public class P030 : Plot
         }
     }
 }
-

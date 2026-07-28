@@ -221,6 +221,17 @@ public class EventManager : MonoBehaviour
         return plotDamageBonuses.TryGetValue(candidateNumber, out float bonus) ? bonus : 0f;
     }
 
+    public float ModifyPlotHpDelta(Cardinal performer, Cardinal target, float delta)
+    {
+        if (delta >= 0f || performer == null || target == null || !performer.CompareTag("Player"))
+        {
+            return delta;
+        }
+
+        int candidateNumber = GetCandidateNumber(target);
+        return candidateNumber > 0 ? delta - GetPlotDamageBonus(candidateNumber) : delta;
+    }
+
     public void GuaranteeNextPrayerOrSpeech()
     {
         guaranteeNextPrayerOrSpeech = true;
@@ -240,6 +251,11 @@ public class EventManager : MonoBehaviour
     }
 
     public bool FreePlotPietyForCurrentConclave => freePlotPietyForCurrentConclave;
+
+    public bool IsPlotPietyCostWaived(Cardinal performer)
+    {
+        return freePlotPietyForCurrentConclave && performer != null && performer.CompareTag("Player");
+    }
 
     public EventManagerSaveData CaptureSaveData()
     {
@@ -453,6 +469,29 @@ public class EventManager : MonoBehaviour
         return candidate != null && (candidate.Hp <= 0f || candidate.IsKnockedOut);
     }
 
+    private int GetCandidateNumber(Cardinal target)
+    {
+        if (target == null || CardinalManager.Instance == null) return 0;
+
+        StatsUI statsUI = CardinalManager.Instance.StatsUI;
+        Cardinal[] linked = statsUI != null ? statsUI.LinkedCardinals : null;
+        if (linked != null)
+        {
+            for (int candidateNumber = 1; candidateNumber <= 3 && candidateNumber < linked.Length; candidateNumber++)
+            {
+                if (linked[candidateNumber] == target) return candidateNumber;
+            }
+        }
+
+        List<Cardinal> ai = CardinalManager.Instance.GetAICardinlas();
+        for (int index = 0; index < 3 && index < ai.Count; index++)
+        {
+            if (ai[index] == target) return index + 1;
+        }
+
+        return 0;
+    }
+
     private void HandleGameContextEvent(GameContext.GameContextEvent eventType)
     {
         if (eventType == GameContext.GameContextEvent.ConclaveEnd)
@@ -463,6 +502,7 @@ public class EventManager : MonoBehaviour
 
     private void ClearConclaveEffects()
     {
+        plotDamageBonuses.Clear();
         guaranteeNextPrayerOrSpeech = false;
         freePlotPietyForCurrentConclave = false;
     }

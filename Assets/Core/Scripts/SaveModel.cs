@@ -234,6 +234,7 @@ public class CardinalSaveData
     public float piety;
     public float hpDrainMultiplier = 1f;
     public float prayDeltaHpEvent;
+    public List<string> minHpOneEffectSources = new List<string>();
     public bool isKnockedOut;
     public bool isSchemer;
     public bool isConClaving;

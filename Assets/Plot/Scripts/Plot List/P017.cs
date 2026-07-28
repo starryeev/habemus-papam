@@ -48,7 +48,7 @@ public class P017 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         var cm = CardinalManager.Instance;
 
@@ -57,7 +57,7 @@ public class P017 : Plot
             .ThenBy(c => Random.value)
             .LastOrDefault();
 
-        target.ChangeHp(hpDelta);
+        ApplyHpDelta(performer, target, hpDelta);
     }
 
 }

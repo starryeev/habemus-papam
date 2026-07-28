@@ -1,9 +1,11 @@
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "E50600", menuName = "Events/결코 다시 전쟁!")]
 public class E50600 : Event
 {
+    private const string MinHpEffectSource = "E50600";
+
     void Reset()
     {
         eventID = "E50600";
@@ -40,44 +42,42 @@ public class E50600 : Event
     {
         if(!CanChoiceOption1(performer)) return false;
 
-        foreach(var cardinal in CardinalManager.Instance.Cardinals)
+        foreach(Cardinal cardinal in GetRepresentativeCardinals(performer))
         {
             cardinal.ChangeInfluence(40f);
-            performer.StartCoroutine(Co_ApplyMinHpOneUntilConclaveEnd(cardinal));
+            cardinal.SetMinHpOneEffect(MinHpEffectSource, true);
         }
 
-        return true;
+        return FinishChoice(1, true);
     }
 
     public override bool OnChoiceOption2(Cardinal performer)
     {
         if(!CanChoiceOption2(performer)) return false;
 
-        foreach(var cardinal in CardinalManager.Instance.Cardinals)
+        foreach(Cardinal cardinal in GetRepresentativeCardinals(performer))
         {
-            performer.StartCoroutine(Co_ApplyMinHpOneUntilConclaveEnd(cardinal));
+            cardinal.SetMinHpOneEffect(MinHpEffectSource, true);
         }
 
         InGameManager.Instance.EventManager.SetFreePlotPietyForCurrentConclave();
-        return true;
+        return FinishChoice(2, true);
     }
 
-    private IEnumerator Co_ApplyMinHpOneUntilConclaveEnd(Cardinal target)
+    private IEnumerable<Cardinal> GetRepresentativeCardinals(Cardinal performer)
     {
-        if(target == null || InGameManager.Instance == null || InGameManager.Instance.Context == null) yield break;
-
-        bool isEnded = false;
-        GameContext context = InGameManager.Instance.Context;
-
-        void OnContextEvent(GameContext.GameContextEvent eventType)
+        HashSet<Cardinal> representatives = new HashSet<Cardinal>();
+        if (performer != null)
         {
-            if(eventType == GameContext.GameContextEvent.ConclaveEnd) isEnded = true;
+            representatives.Add(performer);
         }
 
-        target.SetMinHpOneEffect(true);
-        context.OnGameContextEvent += OnContextEvent;
-        yield return new WaitUntil(() => isEnded || target == null);
-        if(target != null) target.SetMinHpOneEffect(false);
-        context.OnGameContextEvent -= OnContextEvent;
+        for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+        {
+            Cardinal candidate = GetCandidate(candidateNumber);
+            if (candidate != null) representatives.Add(candidate);
+        }
+
+        return representatives;
     }
 }

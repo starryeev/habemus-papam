@@ -48,13 +48,12 @@ public class P005 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         var cm = CardinalManager.Instance;
 
         int targetIndex = Random.Range(0, 3);
 
-        cm.Cardinals[targetIndex].ChangeHp(hpDelta);
+        ApplyHpDelta(performer, cm.Cardinals[targetIndex], hpDelta);
     }
 }
-    

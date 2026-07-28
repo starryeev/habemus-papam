@@ -48,7 +48,7 @@ public class P031 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         float currentInfluence = performer.Influence;
 

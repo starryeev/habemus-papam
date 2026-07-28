@@ -48,7 +48,7 @@ public class P001 : Plot
     {
         if(!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
         
         performer.ChangeHp(hpDelta);
     }

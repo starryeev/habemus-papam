@@ -47,7 +47,7 @@ public class P020 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         for (int i = 0; i < rewardCount; i++)
         {
@@ -76,5 +76,3 @@ public class P020 : Plot
     }
 
 }
-
- 

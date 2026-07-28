@@ -179,7 +179,7 @@ public class PlotUI : MonoBehaviour
         var buttonText = plotUseButtons[index].GetComponentInChildren<TextMeshProUGUI>();
 
         // 조건 확인
-        bool isPietyEnough = currentPlot.IsCostEnough(performer);
+        bool isPietyEnough = currentPlot.IsEffectiveCostEnough(performer);
         bool canExecute = currentPlot.CanExecute(performer);
 
         // 버튼 활성화 설정

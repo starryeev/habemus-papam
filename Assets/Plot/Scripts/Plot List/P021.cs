@@ -56,7 +56,7 @@ public class P021 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         Debug.Log("P021 사용");
 

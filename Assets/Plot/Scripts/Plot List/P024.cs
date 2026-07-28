@@ -47,7 +47,7 @@ public class P024 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         float hp = performer.Hp;
         float pol = performer.Influence;
