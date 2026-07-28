@@ -34,14 +34,14 @@ public class E12300 : Event
         {  // 성공했을 때 로직
             performer.ChangeHp(10f);
 
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             performer.ChangeHp(-20f);
             performer.ChangePiety(20f);
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -52,16 +52,16 @@ public class E12300 : Event
 
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
-            performer.ChangeHp(10f);
+            performer.ChangeHp(20f);
 
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
             performer.ChangeHp(-20f);
             performer.ChangePiety(20f);
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

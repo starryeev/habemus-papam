@@ -60,7 +60,7 @@ public class E40500 : Event
 
         if(Random.value <= option2Chance)
         {
-            // 이번 썬ㅡ클라베에서 기도/연설 이후 남은 시간 5초 추가 감소 처리 필요
+            InGameManager.Instance.EventManager.SetPrayerSpeechTimePenalty(5f);
             return true;
         }
 

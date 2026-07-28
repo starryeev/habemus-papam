@@ -40,7 +40,7 @@ public class E40600 : Event
     {
         if(!CanChoiceOption1(performer)) return false;
         performer.ChangeHp(40f);
-        // 다음 기도/연설 시 무조건 성공 처리 필요
+        InGameManager.Instance.EventManager.GuaranteeNextPrayerOrSpeech();
         return true;
     }
 

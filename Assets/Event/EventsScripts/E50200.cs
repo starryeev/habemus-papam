@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "E50200", menuName = "Events/목 좀 축이세요")]
@@ -40,7 +41,7 @@ public class E50200 : Event
         if(InGameManager.Instance.Context.RemainingTime <= 40f)
         {
             performer.ChangeHp(-20f);
-            performer.ChangeSpeed(1f);
+            performer.StartCoroutine(Co_ApplySpeedUntilConclaveEnd(performer, 1f));
             return true;
         }
 
@@ -52,5 +53,24 @@ public class E50200 : Event
     public override bool OnChoiceOption2(Cardinal performer)
     {
         return true;
+    }
+
+    private IEnumerator Co_ApplySpeedUntilConclaveEnd(Cardinal target, float delta)
+    {
+        if(target == null || InGameManager.Instance == null || InGameManager.Instance.Context == null) yield break;
+
+        bool isEnded = false;
+        GameContext context = InGameManager.Instance.Context;
+
+        void OnContextEvent(GameContext.GameContextEvent eventType)
+        {
+            if(eventType == GameContext.GameContextEvent.ConclaveEnd) isEnded = true;
+        }
+
+        target.ChangeSpeed(delta);
+        context.OnGameContextEvent += OnContextEvent;
+        yield return new WaitUntil(() => isEnded || target == null);
+        if(target != null) target.ChangeSpeed(-delta);
+        context.OnGameContextEvent -= OnContextEvent;
     }
 }

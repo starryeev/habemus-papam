@@ -35,12 +35,12 @@ public class E11300 : Event
 
         
 
-        return true;
+        return FinishChoice(1, true);
     }
 
 
     public override bool OnChoiceOption2(Cardinal performer)
     {
-        return true;
+        return FinishChoice(2, true);
     }
 }

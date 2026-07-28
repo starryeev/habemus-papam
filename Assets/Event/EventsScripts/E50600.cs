@@ -58,7 +58,7 @@ public class E50600 : Event
             performer.StartCoroutine(Co_ApplyMinHpOneUntilConclaveEnd(cardinal));
         }
 
-        // 이번 썬ㅡ클라베 동안 공작 경건함 소모량 0 고정 처리 필요
+        InGameManager.Instance.EventManager.SetFreePlotPietyForCurrentConclave();
         return true;
     }
 

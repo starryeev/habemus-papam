@@ -35,13 +35,13 @@ public class E30000 : Event
         {  // 성공했을 때 로직
 
 
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -55,16 +55,12 @@ public class E30000 : Event
             performer.ChangeHp(30);
             InGameManager.Instance.Context.ChangeRemainingTime(-20f);
 
-            // 콘클라베 즉시종료 로직인데 문제가 발생할가능성있음
-            InGameManager.Instance.Context.ChangeRemainingTime(-99999f);
-
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
-            
-
-            return false;
+            InGameManager.Instance.Context.ChangeRemainingTime(-99999f);
+            return FinishChoice(2, false);
         }
     }
 }

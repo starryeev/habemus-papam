@@ -34,13 +34,13 @@ public class E31200 : Event
         {  // 성공했을 때 로직
 
 
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -51,15 +51,17 @@ public class E31200 : Event
 
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
+            SetCandidateStats(2, 60f, 60f, 60f);
 
-
-            return true;
+            // TODO(태양만세 엔딩): 후보 2가 최종 당선될 때 전용 엔딩으로 전환한다.
+            // EndingType과 엔딩 컷신이 아직 없으므로 여기서는 부활/분기 기록까지만 수행한다.
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

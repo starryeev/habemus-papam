@@ -7,7 +7,7 @@ public class E31100 : Event
     {
         eventID = "E31100";
         eventName = "반란모의";
-        maxAppear = 1;
+        maxAppear = 4;
 
         eventWeightBase = 20f;
         eventWeightMultiplier = 0f;
@@ -36,13 +36,13 @@ public class E31100 : Event
             performer.ChangePiety(40f);
             performer.ChangeInfluence(15f);
 
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -55,13 +55,13 @@ public class E31100 : Event
         {  // 성공했을 때 로직
 
 
-            return true;
+            return FinishChoiceWithEnding(2, EndingType.Crusade);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

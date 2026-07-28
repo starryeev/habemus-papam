@@ -35,13 +35,13 @@ public class E31101 : Event
         {  // 성공했을 때 로직
 
 
-            return true;
+            return FinishChoiceWithEnding(1, EndingType.GreatSage);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -54,13 +54,13 @@ public class E31101 : Event
         {  // 성공했을 때 로직
 
 
-            return true;
+            return FinishChoiceWithEnding(2, EndingType.PolarBear);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

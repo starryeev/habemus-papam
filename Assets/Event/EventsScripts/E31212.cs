@@ -45,15 +45,13 @@ public class E31212 : Event
 
         if(Random.value <= option1Chance)
         {  // 성공했을 때 로직
-            // 승천 엔딩 처리 필요
-
-            return true;
+            return FinishChoiceWithEnding(1, EndingType.Ascension);
         }
         else
         {  // 실패했을 때 로직
             GiveItemById("I013");
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -71,13 +69,13 @@ public class E31212 : Event
                 option2SuccessDescription = $"오... 좋은 아이템을 찾았다!\n\n{item.itemName} 획득!";
             }
 
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 

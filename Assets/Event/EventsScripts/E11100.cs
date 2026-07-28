@@ -3,6 +3,22 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "E11100", menuName = "Events/큰일났다!")]
 public class E11100 : Event
 {
+    void OnEnable()
+    {
+        if (!string.IsNullOrWhiteSpace(eventID)) return;
+
+        EventManager manager = InGameManager.Instance != null ? InGameManager.Instance.EventManager : null;
+        Event definition = manager != null ? manager.GetEventById("E11100") : null;
+        if (definition != null && definition != this)
+        {
+            CopyDefinitionFrom(definition);
+        }
+        else
+        {
+            Reset();
+        }
+    }
+
     void Reset()
     {
         eventID = "E11100";
@@ -34,12 +50,12 @@ public class E11100 : Event
         performer.ChangeInfluence(40f);
         performer.hpDrainMultiplier *= 2f;
 
-        return true;
+        return FinishChoice(1, true);
     }
 
 
     public override bool OnChoiceOption2(Cardinal performer)
     {
-        return true;
+        return FinishChoice(2, true);
     }
 }

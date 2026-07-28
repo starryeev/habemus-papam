@@ -35,13 +35,13 @@ public class E20000 : Event
         {  // 성공했을 때 로직
 
 
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -54,13 +54,13 @@ public class E20000 : Event
         {  // 성공했을 때 로직
 
 
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }
