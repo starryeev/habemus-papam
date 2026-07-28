@@ -12,7 +12,6 @@ public class EventManager : MonoBehaviour
     private readonly Dictionary<int, float> plotDamageBonuses = new();
 
     private bool guaranteeNextPrayerOrSpeech;
-    private float prayerSpeechTimePenalty;
     private bool freePlotPietyForCurrentConclave;
 
     private static readonly Dictionary<string, string> RequiredPreEventIds = new()
@@ -234,13 +233,6 @@ public class EventManager : MonoBehaviour
         return true;
     }
 
-    public void SetPrayerSpeechTimePenalty(float seconds)
-    {
-        prayerSpeechTimePenalty = Mathf.Max(0f, seconds);
-    }
-
-    public float PrayerSpeechTimePenalty => prayerSpeechTimePenalty;
-
     public void SetFreePlotPietyForCurrentConclave()
     {
         freePlotPietyForCurrentConclave = true;
@@ -395,7 +387,6 @@ public class EventManager : MonoBehaviour
     private void ClearConclaveEffects()
     {
         guaranteeNextPrayerOrSpeech = false;
-        prayerSpeechTimePenalty = 0f;
         freePlotPietyForCurrentConclave = false;
     }
 
