@@ -5,7 +5,7 @@
 public class P024 : Plot
 {
     [Header("해당 공작 설정")]
-    [SerializeField] private int minHp;
+    [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
     [SerializeField] private int statsDelta;
 
@@ -21,7 +21,7 @@ public class P024 : Plot
         plotWeightBase = 15;
         plotWeightMultiplier = 0f;
 
-        minHp = 4;
+        minInfluence = 4;
         pietyCost = 0;
         statsDelta = 2;
 
@@ -29,13 +29,13 @@ public class P024 : Plot
         plotName = "가지치기";
         plotDescription = "줄건 줘";
         plotEffect = "체력<sprite name=hp>, 정치력<sprite name=influence>, 경건함<sprite name=piety> 중 가장 적은 수치 절반으로 감소\n나머지 15 증가";
-        plotCondiText = $"<sprite name=hp>{minHp}<sprite name=up>";
+        plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }
 
     public override bool CanExecute(Cardinal performer)
     {
-        return performer.Hp >= minHp;
+        return performer.Influence >= minInfluence;
     }
 
     public override bool IsCostEnough(Cardinal performer)

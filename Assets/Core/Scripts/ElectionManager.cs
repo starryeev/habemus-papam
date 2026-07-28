@@ -191,7 +191,8 @@ public class ElectionManager : MonoBehaviour
 
         int currentDay = Mathf.Max(1, InGameManager.Instance.GetCurrentDay());
         float dayBonus = currentDay == 1 ? 0f : currentDay == 2 ? 5f : currentDay == 3 ? 10f : 15f;
-        return Mathf.Clamp(dayBonus + candidate.Influence, 0f, 100f);
+        float candidatePassive = InGameManager.Instance.GetNpcCandidateNumber(candidate) == 2 ? -2f : 0f;
+        return Mathf.Clamp(dayBonus + candidate.Influence + candidatePassive, 0f, 100f);
     }
 
     private Cardinal FindPlayerCandidate()

@@ -16,7 +16,7 @@ MonoBehaviour:
   plotName: "\uC740\uBC00\uD55C \uB17C\uC758"
   plotDescription: "...\uC810\uC2EC \uBB50 \uBA39\uC9C0?"
   plotEffect: "정치력<sprite name=influence> 2 증가"
-  plotCondiText: <sprite name=influence>1<sprite name=down>
+  plotCondiText: <sprite name=influence>1<sprite name=up>
   plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}
   plotGrade: 0

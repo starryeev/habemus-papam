@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: BasicBalance
   m_EditorClassIdentifier: Assembly-CSharp::GameBalance
   initialHp: 10
-  initialInfluence: 2
+  initialInfluence: 0
   initialPiety: 2
   initialMoveSpeed: 3
-  praySuccessChance: 0.8
-  praySuccessDeltaPiety: 2
+  praySuccessChance: 0.5
+  praySuccessDeltaPiety: 1
   praySuccessDeltaHp: 1
-  prayFailDeltaPiety: 1
-  prayFailDeltaHp: 2
-  speechSuccessChance: 0.9
+  prayFailDeltaPiety: 2
+  prayFailDeltaHp: 1
+  speechSuccessChance: 0.5
   speechSuccessDeltaInfluenceMin: 1
   speechSuccessDeltaInfluenceMax: 1
-  speechSuccessDeltaHp: -1
-  speechFailDeltaInfluence: -1
+  speechSuccessDeltaHp: 0
+  speechFailDeltaInfluence: 1
   speechFailDeltaHp: -1

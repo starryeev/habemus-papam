@@ -12,7 +12,7 @@ public class PlotSet
         for(int i = 0; i < 3; i++)
         {
             this.plots[i] = plots[i];
-            this.isUsed[i] = false;
+            this.isUsed[i] = plots[i] == null;
         }
     }
 
@@ -73,10 +73,9 @@ public class PlotManager : MonoBehaviour
         float playerInfluence = GetPlayerInfluence();
         Plot[] selectedPlots = new Plot[3];
 
-        for (int i = 0; i < selectedPlots.Length; i++)
-        {
-            selectedPlots[i] = PickByInfluenceBand(playerInfluence, selectedPlots);
-        }
+        selectedPlots[0] = PickSlotPlot(Random.value < 0.6f ? PlotGrade.Common : PlotGrade.Rare, playerInfluence, selectedPlots);
+        selectedPlots[1] = PickSlotPlot(Random.value < 0.9f ? PlotGrade.Rare : PlotGrade.Legendary, playerInfluence, selectedPlots);
+        selectedPlots[2] = PickSlotPlot(Random.value < 0.6f ? PlotGrade.Common : PlotGrade.Rare, playerInfluence, selectedPlots);
 
         return new PlotSet(selectedPlots);
     }
@@ -89,79 +88,69 @@ public class PlotManager : MonoBehaviour
         return player != null ? player.Influence : 0f;
     }
 
-    private Plot PickByInfluenceBand(float playerInfluence, Plot[] alreadySelected)
+    private Plot PickSlotPlot(PlotGrade grade, float playerInfluence, Plot[] alreadySelected)
     {
-        List<Plot> available = plots.Where(plot => plot != null && IsSupportedByTurnSystem(plot) && !usedPlots.Contains(plot) &&
-            !alreadySelected.Contains(plot)).ToList();
-        List<Plot> low = available.Where(plot => plot.GetInfluenceRequirement() < playerInfluence - 2f).ToList();
-        List<Plot> middle = available.Where(plot => plot.GetInfluenceRequirement() > playerInfluence - 2f &&
-            plot.GetInfluenceRequirement() < playerInfluence).ToList();
-        List<Plot> high = available.Where(plot => plot.GetInfluenceRequirement() > playerInfluence &&
-            plot.GetInfluenceRequirement() < playerInfluence + 2f).ToList();
+        List<Plot> available = GetAvailablePlots(grade, alreadySelected);
+        if (available.Count == 0 && grade == PlotGrade.Legendary)
+            return PickSlotPlot(PlotGrade.Rare, playerInfluence, alreadySelected);
+        if (available.Count == 0) return null;
 
-        var bands = new List<(List<Plot> candidates, float weight)>();
-        if (low.Count > 0) bands.Add((low, 30f));
-        if (middle.Count > 0) bands.Add((middle, 50f));
-        if (high.Count > 0) bands.Add((high, 20f));
-        if (bands.Count == 0) return PickWeightedPlot(available);
+        int conditionPenalty = InGameManager.Instance != null && InGameManager.Instance.IsNpcCandidateLeading(2) ? 1 : 0;
+        List<Plot> lower = available.Where(plot => plot.GetInfluenceRequirement() + conditionPenalty < playerInfluence).ToList();
+        List<Plot> higher = available.Where(plot => playerInfluence < plot.GetInfluenceRequirement() + conditionPenalty &&
+            plot.GetInfluenceRequirement() + conditionPenalty < playerInfluence + 2f).ToList();
 
-        float roll = Random.Range(0f, bands.Sum(band => band.weight));
-        foreach (var band in bands)
-        {
-            roll -= band.weight;
-            if (roll <= 0f) return PickWeightedPlot(band.candidates);
-        }
-        return PickWeightedPlot(bands[bands.Count - 1].candidates);
+        bool chooseLower = Random.value < 0.8f;
+        List<Plot> selectedBand = chooseLower ? lower : higher;
+        if (selectedBand.Count == 0) selectedBand = chooseLower ? higher : lower;
+        if (selectedBand.Count == 0 && grade == PlotGrade.Legendary)
+            return PickSlotPlot(PlotGrade.Rare, playerInfluence, alreadySelected);
+        if (selectedBand.Count == 0) return null;
+        return selectedBand[Random.Range(0, selectedBand.Count)];
+    }
+
+    private List<Plot> GetAvailablePlots(PlotGrade grade, Plot[] alreadySelected)
+    {
+        return plots.Where(plot => plot != null && plot.plotGrade == grade && IsSupportedByTurnSystem(plot) &&
+            !usedPlots.Contains(plot) && !alreadySelected.Contains(plot)).ToList();
     }
 
     private static bool IsSupportedByTurnSystem(Plot plot)
     {
-        // P007/P019는 NPC 행동 슬롯, P021은 저장 가능한 익일 예약 효과,
-        // P031은 콘클라베 단위 기도 제한 계약, P033은 저장 가능한 차회 예약 효과가 필요하다.
+        // P019는 2회 행동 억제의 턴간 예약, P021/P033은 저장 가능한 차회 예약 효과,
+        // P031은 콘클라베 단위 기도 제한 계약이 필요하다.
         // 부분 효과로 소비되지 않게 제외한다.
-        return plot.plotID != "P007" && plot.plotID != "P019" &&
+        return plot.plotID != "P019" &&
             plot.plotID != "P021" && plot.plotID != "P031" && plot.plotID != "P033";
     }
 
-    private Plot PickWeightedPlot(List<Plot> candidates)
+    public bool MeetsEffectiveInfluenceCondition(Plot plot, Cardinal candidate)
     {
-        if (candidates == null || candidates.Count == 0) return null;
-        float sum = candidates.Sum(plot => Mathf.Max(0f, plot.GetPlotWeight()));
-        if (sum <= 0f) return candidates[Random.Range(0, candidates.Count)];
+        if (plot == null || candidate == null) return false;
+        return candidate.Influence >= GetEffectiveInfluenceRequirement(plot, candidate);
+    }
 
-        float roll = Random.Range(0f, sum);
-        foreach (Plot candidate in candidates)
-        {
-            roll -= Mathf.Max(0f, candidate.GetPlotWeight());
-            if (roll <= 0f) return candidate;
-        }
-        return candidates[candidates.Count - 1];
+    public int GetEffectiveInfluenceRequirement(Plot plot, Cardinal candidate)
+    {
+        if (plot == null) return 0;
+        int penalty = candidate != null && candidate.CompareTag("Player") && InGameManager.Instance != null &&
+            InGameManager.Instance.IsNpcCandidateLeading(2) ? 1 : 0;
+        return plot.GetInfluenceRequirement() + penalty;
+    }
+
+    public string GetEffectiveConditionText(Plot plot, Cardinal candidate)
+    {
+        if (plot == null) return string.Empty;
+        int baseRequirement = plot.GetInfluenceRequirement();
+        int effectiveRequirement = GetEffectiveInfluenceRequirement(plot, candidate);
+        return effectiveRequirement == baseRequirement
+            ? plot.plotCondiText
+            : $"<sprite name=influence>{effectiveRequirement}<sprite name=up>";
     }
 
     public void RefreshPlotManager()
     {
         usedPlots.Clear();
-    }
-
-    private Plot GetWeightedRandPlot(PlotGrade grade)
-    {
-        var candidates = plots.Where(p => p.plotGrade == grade && !usedPlots.Contains(p)).ToList();
-
-        float weightSum = candidates.Sum(p => p.GetPlotWeight());
-        
-        float randChoice = Random.Range(0f, weightSum);
-        float currentSum = 0f;
-
-        foreach(var p in candidates)
-        {
-            currentSum += p.GetPlotWeight();
-            if (currentSum >= randChoice)
-            {
-                return p;
-            }
-        }
-
-        return candidates[0];
     }
 
     // 콘클라베 시작 시 새로운 공작 Set 생성
@@ -185,8 +174,16 @@ public class PlotManager : MonoBehaviour
     public void UsePlot(int plotSet, int index)
     {
         if (InGameManager.Instance != null && !InGameManager.Instance.CanPerformPlayerAction(performer)) return;
-        AvailPlotSets[plotSet].plots[index].Execute(performer);
+        Plot selectedPlot = AvailPlotSets[plotSet].plots[index];
+        if (!MeetsEffectiveInfluenceCondition(selectedPlot, performer) || !selectedPlot.IsEffectiveCostEnough(performer)) return;
+        if (InGameManager.Instance != null) InGameManager.Instance.ExecuteNpcActionsBeforePlayerAction(performer);
+        selectedPlot.Execute(performer);
         performer?.OnPlotExecuted();
+        if (InGameManager.Instance != null && InGameManager.Instance.EventManager != null)
+        {
+            Event tutorial = InGameManager.Instance.EventManager.GetFirstPlotTutorialEvent();
+            InGameManager.Instance.QueueImmediateEventAfterPlayerAction(tutorial);
+        }
         AvailPlotSets[plotSet].use(index);
 
         if (ActionRecordManager.Instance != null)

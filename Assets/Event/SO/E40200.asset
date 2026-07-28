@@ -26,7 +26,7 @@ MonoBehaviour:
   conflictEvents: []
   option1: "\uC816 \uBA39\uB358 \uD798\uC744 \uB2E4\uD574 \uB2F9\uAE30\uC790!"
   option1Chance: 1
-  option1Requirement: "\uCCB1\uB83 6 \uC78\uC0C1"
+  option1Requirement: "체력 6 이상"
   option1SuccessDescription: "\uC5ED\uC2DC \uBAB8\uC774 \uC88B\uC73C\uBA74 \uBA38\uB9AC\uAC00
     \uACE0\uC0DD\uC744 \uC548 \uD55C\uB2E4.\n\n\uCCB4\uB825 5 \uC99D\uAC00!\n\uC815\uCE58\uB825
     15 \uAC10\uC18C!"
@@ -39,5 +39,5 @@ MonoBehaviour:
   option2SuccessDescription: "\uBB38\uC774 \uC5F4\uB838\uB2E4. \uC528\uB984\uD55C
     \uBCF4\uB78C\uC774 \uC788\uB124!\n\n\uC815\uCE58\uB825 5 \uAC10\uC18C!"
   option2SuccessResult: "\uC815\uCE58\uB825 - 5"
-  option2FailDescription: "꿈쩍도 안 하네. 괜히 시간만 버렸다.\n\n다음 턴 행동 횟수 1회 감소!"
-  option2FailResult: "다음 턴 행동 횟수 -1"
+  option2FailDescription: "꿈쩍도 안 하네. 애를 쓴 덕분인지 다음에는 몸이 더 가볍다.\n\n다음 턴 행동 횟수 1회 증가!"
+  option2FailResult: "다음 턴 행동 횟수 +1"

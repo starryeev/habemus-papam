@@ -221,6 +221,7 @@ public class GameContextSaveData
     public bool blockNextTurn;
     public bool blockRemainingCurrentTurn;
     public bool awaitingTurnEvent;
+    public bool eventBeforeActions;
     public bool endConclaveAfterEvent;
     public string currentEventId = string.Empty;
     public bool isTimeRunning;
@@ -229,6 +230,9 @@ public class GameContextSaveData
     public bool showStartButton = true;
     public bool startButtonInteractable = true;
     public bool showInventoryPanel;
+    public List<int> npcTurnBehaviours = new List<int>();
+    public List<bool> npcTurnActionsExecuted = new List<bool>();
+    public List<bool> npcNextTurnActionBlocked = new List<bool>();
 }
 
 [Serializable]
@@ -241,6 +245,7 @@ public class CardinalSaveData
     public float hp;
     public float influence;
     public float piety;
+    public float maxHp = 10f;
     public float hpDrainMultiplier = 1f;
     public float prayDeltaHpEvent;
     public List<string> minHpOneEffectSources = new List<string>();
@@ -270,6 +275,7 @@ public class ItemSaveData
 [Serializable]
 public class EventManagerSaveData
 {
+    public int scheduleVersion;
     public List<EventRecordSaveData> records = new List<EventRecordSaveData>();
     public List<EventChoiceSaveData> choices = new List<EventChoiceSaveData>();
     public List<EventPlotDamageBonusSaveData> plotDamageBonuses = new List<EventPlotDamageBonusSaveData>();

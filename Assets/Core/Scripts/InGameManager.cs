@@ -5,6 +5,13 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+public enum NPCBehaviour
+{
+    None,
+    Pray,
+    Speech
+}
+
 public class GameContext
 {
     public enum Conclave
@@ -179,7 +186,12 @@ public class InGameManager : MonoBehaviour
     private bool blockNextTurn;
     private bool blockRemainingCurrentTurn;
     private bool awaitingTurnEvent;
+    private bool eventBeforeActions;
+    private Event queuedImmediateEvent;
     private bool endConclaveAfterEvent;
+    private readonly NPCBehaviour[,] npcTurnBehaviours = new NPCBehaviour[3, 4];
+    private readonly bool[,] npcTurnActionsExecuted = new bool[3, 4];
+    private readonly bool[] npcNextTurnActionBlocked = new bool[3];
 
     public GameBalance Balance => balance;
     public GameContext Context => gameContext;
@@ -255,6 +267,12 @@ public class InGameManager : MonoBehaviour
         }
 
         SpawnFieldItems();
+        Event startEvent = eventManager != null ? eventManager.GetStartOfDayEvent() : null;
+        if (startEvent != null)
+        {
+            OpenEventBeforeActions(startEvent);
+            return;
+        }
         TryResolveTurnWithoutActions();
     }
 
@@ -290,6 +308,8 @@ public class InGameManager : MonoBehaviour
         blockNextTurn = false;
         blockRemainingCurrentTurn = false;
         awaitingTurnEvent = false;
+        eventBeforeActions = false;
+        queuedImmediateEvent = null;
         endConclaveAfterEvent = false;
 
         gameContext.InitGameContext();
@@ -338,6 +358,10 @@ public class InGameManager : MonoBehaviour
                 {
                     CardinalManager.Instance.StopConClave();
                 }
+                break;
+
+            case GameContext.GameContextEvent.TurnStart:
+                SelectNpcBehavioursForTurn();
                 break;
         }
     }
@@ -523,7 +547,7 @@ public class InGameManager : MonoBehaviour
 
     public GameContextSaveData CaptureSaveData()
     {
-        return new GameContextSaveData
+        GameContextSaveData saveData = new GameContextSaveData
         {
             day = gameContext.CurrentDay,
             conclave = (int)gameContext.CurrentConclave,
@@ -535,6 +559,7 @@ public class InGameManager : MonoBehaviour
             blockNextTurn = blockNextTurn,
             blockRemainingCurrentTurn = blockRemainingCurrentTurn,
             awaitingTurnEvent = awaitingTurnEvent,
+            eventBeforeActions = eventBeforeActions,
             endConclaveAfterEvent = endConclaveAfterEvent,
             currentEventId = gameContext.CurrentEvent != null ? gameContext.CurrentEvent.eventID : string.Empty,
             isTimeRunning = isTimeRunning,
@@ -544,6 +569,18 @@ public class InGameManager : MonoBehaviour
             startButtonInteractable = startButton == null || startButton.interactable,
             showInventoryPanel = inventoryUIPanel != null && inventoryUIPanel.activeSelf
         };
+
+        for (int candidate = 0; candidate < 3; candidate++)
+        {
+            for (int action = 0; action < 4; action++)
+            {
+                saveData.npcTurnBehaviours.Add((int)npcTurnBehaviours[candidate, action]);
+                saveData.npcTurnActionsExecuted.Add(npcTurnActionsExecuted[candidate, action]);
+            }
+            saveData.npcNextTurnActionBlocked.Add(npcNextTurnActionBlocked[candidate]);
+        }
+
+        return saveData;
     }
 
     public void RestoreGameContext(GameContextSaveData saveData)
@@ -564,7 +601,9 @@ public class InGameManager : MonoBehaviour
         blockNextTurn = saveData.blockNextTurn;
         blockRemainingCurrentTurn = saveData.blockRemainingCurrentTurn;
         awaitingTurnEvent = saveData.awaitingTurnEvent;
+        eventBeforeActions = saveData.eventBeforeActions;
         endConclaveAfterEvent = saveData.endConclaveAfterEvent;
+        RestoreNpcTurnPlan(saveData);
         if (!string.IsNullOrWhiteSpace(saveData.currentEventId) && eventManager != null)
         {
             Event restoredEvent = eventManager.GetEventById(saveData.currentEventId);
@@ -754,6 +793,186 @@ public class InGameManager : MonoBehaviour
             (isTimeRunning && !awaitingTurnEvent && !gameContext.IsEventPhase && !gameContext.AreActionsComplete());
     }
 
+    public NPCBehaviour GetNPCBehaviourThisTurn(int candidateNumber)
+    {
+        int candidateIndex = Mathf.Clamp(candidateNumber - 1, 0, 2);
+        int turnIndex = Mathf.Clamp(gameContext.CurrentTurn - 1, 0, 3);
+        return npcTurnBehaviours[candidateIndex, turnIndex];
+    }
+
+    public NPCBehaviour GetNPCBehaviourThisTurn(int candidateNumber, int turnIndex)
+    {
+        return npcTurnBehaviours[Mathf.Clamp(candidateNumber - 1, 0, 2), Mathf.Clamp(turnIndex, 0, 3)];
+    }
+
+    public void ExecuteNpcActionsBeforePlayerAction(Cardinal performer)
+    {
+        if (performer == null || !performer.CompareTag("Player") || gameContext.IsEventPhase) return;
+
+        int turnIndex = Mathf.Clamp(gameContext.CurrentTurn - 1, 0, 3);
+        for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+        {
+            int candidateIndex = candidateNumber - 1;
+            if (npcTurnActionsExecuted[candidateIndex, turnIndex]) continue;
+            npcTurnActionsExecuted[candidateIndex, turnIndex] = true;
+
+            Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
+            if (candidate == null || candidate.Hp <= 0f || candidate.IsKnockedOut) continue;
+
+            switch (npcTurnBehaviours[candidateIndex, turnIndex])
+            {
+                case NPCBehaviour.Pray:
+                    candidate.PerformNpcPrayer(balance.PraySuccessChance);
+                    break;
+                case NPCBehaviour.Speech:
+                    candidate.PerformNpcSpeech(GetSpeechSuccessChance(candidate));
+                    break;
+                default:
+                    ApplyNpcIdlePenalty(candidate);
+                    break;
+            }
+
+            candidate.ResolveHpState();
+        }
+    }
+
+    public float GetSpeechSuccessChance(Cardinal actor)
+    {
+        float chance = GetNpcCandidateNumber(actor) == 1 ? 0.9f : balance.SpeechSuccessChance;
+        Cardinal leader = GetLeadingCandidate();
+        if (GetNpcCandidateNumber(leader) == 1 && actor != leader) chance -= 0.1f;
+        return Mathf.Clamp01(chance);
+    }
+
+    public int GetNpcCandidateNumber(Cardinal candidate)
+    {
+        if (candidate == null) return 0;
+        for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+        {
+            if (GetRepresentativeCandidate(candidateNumber) == candidate) return candidateNumber;
+        }
+        return 0;
+    }
+
+    public bool IsNpcCandidateLeading(int candidateNumber)
+    {
+        return GetRepresentativeCandidate(candidateNumber) == GetLeadingCandidate();
+    }
+
+    private void SelectNpcBehavioursForTurn()
+    {
+        PrepareNpcPassives();
+        int turnIndex = Mathf.Clamp(gameContext.CurrentTurn - 1, 0, 3);
+        for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+        {
+            Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
+            npcTurnActionsExecuted[candidateNumber - 1, turnIndex] = false;
+            bool actionBlocked = npcNextTurnActionBlocked[candidateNumber - 1];
+            npcNextTurnActionBlocked[candidateNumber - 1] = false;
+            npcTurnBehaviours[candidateNumber - 1, turnIndex] = candidate != null && !actionBlocked
+                ? RollNpcBehaviour(candidateNumber, candidate.Hp) : NPCBehaviour.None;
+        }
+    }
+
+    private static NPCBehaviour RollNpcBehaviour(int candidateNumber, float hp)
+    {
+        float roll = UnityEngine.Random.value;
+        bool healthy = hp >= 4f;
+        switch (candidateNumber)
+        {
+            case 1:
+                if (healthy) return roll < 0.3f ? NPCBehaviour.Pray : roll < 0.7f ? NPCBehaviour.Speech : NPCBehaviour.None;
+                return roll < 0.7f ? NPCBehaviour.Pray : roll < 0.9f ? NPCBehaviour.Speech : NPCBehaviour.None;
+            case 2:
+                if (healthy) return roll < 0.5f ? NPCBehaviour.Pray : roll < 0.8f ? NPCBehaviour.Speech : NPCBehaviour.None;
+                return roll < 0.6f ? NPCBehaviour.Pray : NPCBehaviour.None;
+            default:
+                if (healthy) return roll < 0.3f ? NPCBehaviour.Pray : roll < 0.6f ? NPCBehaviour.Speech : NPCBehaviour.None;
+                return roll < 0.6f ? NPCBehaviour.Pray : NPCBehaviour.None;
+        }
+    }
+
+    private static void ApplyNpcIdlePenalty(Cardinal candidate)
+    {
+        if (UnityEngine.Random.value < 0.1f) candidate.ChangeInfluence(-1f);
+        if (UnityEngine.Random.value < 0.1f) candidate.ChangePiety(-1f);
+        if (UnityEngine.Random.value < 0.1f) candidate.ChangePiety(-2f);
+        if (UnityEngine.Random.value < 0.1f) candidate.ChangePiety(-3f);
+    }
+
+    private void PrepareNpcPassives()
+    {
+        Cardinal candidate3 = GetRepresentativeCandidate(3);
+        if (candidate3 != null) candidate3.SetMaxHp(15f);
+    }
+
+    private Cardinal GetRepresentativeCandidate(int candidateNumber)
+    {
+        if (candidateNumber < 1 || candidateNumber > 3 || CardinalManager.Instance == null) return null;
+        StatsUI statsUI = CardinalManager.Instance.StatsUI;
+        Cardinal[] linked = statsUI != null ? statsUI.LinkedCardinals : null;
+        if (linked != null && linked.Length > candidateNumber && linked[candidateNumber] != null)
+            return linked[candidateNumber];
+
+        List<Cardinal> aiCandidates = CardinalManager.Instance.GetAICardinlas();
+        return aiCandidates.Count >= candidateNumber ? aiCandidates[candidateNumber - 1] : null;
+    }
+
+    private Cardinal GetLeadingCandidate()
+    {
+        if (CardinalManager.Instance == null) return null;
+        List<Cardinal> candidates = new List<Cardinal>();
+        Cardinal player = FindPlayerCardinal();
+        if (player != null) candidates.Add(player);
+        for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+        {
+            Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
+            if (candidate != null && !candidates.Contains(candidate)) candidates.Add(candidate);
+        }
+
+        Cardinal leader = null;
+        foreach (Cardinal candidate in candidates)
+        {
+            if (candidate == null || candidate.Hp <= 0f) continue;
+            if (leader == null || CompareCandidateRank(candidate, leader) > 0) leader = candidate;
+        }
+        return leader;
+    }
+
+    private static int CompareCandidateRank(Cardinal left, Cardinal right)
+    {
+        float leftHigh = Mathf.Max(left.Influence, left.Piety);
+        float rightHigh = Mathf.Max(right.Influence, right.Piety);
+        int highComparison = leftHigh.CompareTo(rightHigh);
+        if (highComparison != 0) return highComparison;
+        return Mathf.Min(left.Influence, left.Piety).CompareTo(Mathf.Min(right.Influence, right.Piety));
+    }
+
+    private void RestoreNpcTurnPlan(GameContextSaveData saveData)
+    {
+        for (int candidate = 0; candidate < 3; candidate++)
+        {
+            npcNextTurnActionBlocked[candidate] = saveData.npcNextTurnActionBlocked != null &&
+                candidate < saveData.npcNextTurnActionBlocked.Count && saveData.npcNextTurnActionBlocked[candidate];
+            for (int action = 0; action < 4; action++)
+            {
+                int index = candidate * 4 + action;
+                npcTurnBehaviours[candidate, action] = saveData.npcTurnBehaviours != null && index < saveData.npcTurnBehaviours.Count
+                    ? (NPCBehaviour)Mathf.Clamp(saveData.npcTurnBehaviours[index], 0, 2)
+                    : NPCBehaviour.None;
+                npcTurnActionsExecuted[candidate, action] = saveData.npcTurnActionsExecuted != null &&
+                    index < saveData.npcTurnActionsExecuted.Count && saveData.npcTurnActionsExecuted[index];
+            }
+        }
+        PrepareNpcPassives();
+    }
+
+    public void BlockNpcNextTurnAction(int candidateNumber)
+    {
+        if (candidateNumber < 1 || candidateNumber > 3) return;
+        npcNextTurnActionBlocked[candidateNumber - 1] = true;
+    }
+
     public void CompletePlayerAction(Cardinal performer)
     {
         if (performer == null || !performer.CompareTag("Player") || !CanPerformPlayerAction(performer)) return;
@@ -763,7 +982,29 @@ public class InGameManager : MonoBehaviour
             blockRemainingCurrentTurn = false;
             gameContext.CompleteRemainingActions();
         }
+        if (queuedImmediateEvent != null)
+        {
+            Event immediateEvent = queuedImmediateEvent;
+            queuedImmediateEvent = null;
+            OpenEventBeforeActions(immediateEvent);
+            return;
+        }
         if (gameContext.AreActionsComplete()) ResolveCompletedTurn();
+    }
+
+    public void QueueImmediateEventAfterPlayerAction(Event evt)
+    {
+        if (evt != null && queuedImmediateEvent == null) queuedImmediateEvent = evt;
+    }
+
+    private void OpenEventBeforeActions(Event evt)
+    {
+        if (evt == null) return;
+        gameContext.SetEvent(evt);
+        awaitingTurnEvent = true;
+        eventBeforeActions = true;
+        if (UIManager.Instance != null && UIManager.Instance.Ingame != null)
+            UIManager.Instance.Ingame.Event.UISetEvent();
     }
 
     public void QueueNextTurnActionDelta(int delta)
@@ -786,6 +1027,12 @@ public class InGameManager : MonoBehaviour
     {
         if (!awaitingTurnEvent) return;
         awaitingTurnEvent = false;
+        if (eventBeforeActions)
+        {
+            eventBeforeActions = false;
+            if (gameContext.AreActionsComplete()) ResolveCompletedTurn();
+            return;
+        }
         if (endConclaveAfterEvent)
         {
             endConclaveAfterEvent = false;
@@ -810,6 +1057,8 @@ public class InGameManager : MonoBehaviour
     {
         StopTimer();
         awaitingTurnEvent = false;
+        eventBeforeActions = false;
+        queuedImmediateEvent = null;
         gameContext.EndConclave();
     }
 
@@ -822,6 +1071,8 @@ public class InGameManager : MonoBehaviour
 
     private void ResolveCompletedTurn()
     {
+        if (!ApplyTurnEndHealthLoss()) return;
+
         if (gameContext.CurrentTurn >= 4)
         {
             EndCurrentConclave();
@@ -841,6 +1092,34 @@ public class InGameManager : MonoBehaviour
             Debug.LogWarning("[Turn] 표시할 이벤트가 없어 다음 턴으로 진행합니다.");
             OnTurnEventClosed();
         }
+    }
+
+    private bool ApplyTurnEndHealthLoss()
+    {
+        PrepareNpcPassives();
+        List<Cardinal> candidates = new List<Cardinal>();
+        Cardinal player = FindPlayerCardinal();
+        if (player != null) candidates.Add(player);
+        for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+        {
+            Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
+            if (candidate != null && !candidates.Contains(candidate)) candidates.Add(candidate);
+        }
+
+        Cardinal candidate3 = GetRepresentativeCandidate(3);
+        bool candidate3WasLeading = candidate3 != null && IsNpcCandidateLeading(3);
+
+        foreach (Cardinal candidate in candidates)
+        {
+            if (candidate == null || candidate.Hp <= 0f) continue;
+            candidate.ChangeHp(-1f);
+        }
+
+        if (candidate3 != null && candidate3.Hp > 0f && candidate3WasLeading && UnityEngine.Random.value < 0.3f)
+            candidate3.ChangeHp(-1f);
+
+        foreach (Cardinal candidate in candidates) candidate?.ResolveHpState();
+        return player == null || player.Hp > 0f;
     }
 
     private void StartNextTurnOrEndConclave()

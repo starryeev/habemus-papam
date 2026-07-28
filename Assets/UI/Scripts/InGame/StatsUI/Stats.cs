@@ -18,10 +18,10 @@ public class Stats : MonoBehaviour
     [Space(10f)]
     [Header("캐릭터 설명")]
     [SerializeField] string Description;
-    public void SetHP(float hp)
+    public void SetHP(float hp, float maxHp = 10f)
     {
         this.hp.text = $"{(int)hp}";
-        HP.fillAmount = hp/10;
+        HP.fillAmount = hp / Mathf.Max(1f, maxHp);
     }
     public void SetPiety(float piety)
     {

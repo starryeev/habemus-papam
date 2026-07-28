@@ -16,16 +16,13 @@ MonoBehaviour:
   plotName: "\uC0BC\uC704\uC77C\uCCB4?"
   plotDescription: "\uC0BC\uC0BC \uAE08\uC9C0"
   plotEffect: "체력 3 증가, 정치력/경건함 3 감소"
-  plotCondiText: <sprite name=hp>3<sprite name=up> <sprite name=influence>3<sprite
-    name=up> <sprite name=piety>3<sprite name=up>
+  plotCondiText: <sprite name=influence>3<sprite name=up>
   plotCostText: <sprite name=piety>  0
   plotImage: {fileID: 0}
   plotGrade: 0
   plotWeightBase: 20
   plotWeightMultiplier: 0
-  minHp: 3
   minInfluence: 3
-  minPiety: 3
   pietyCost: 0
   hpDelta: 3
   influenceDelta: -3

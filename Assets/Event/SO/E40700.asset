@@ -28,7 +28,7 @@ MonoBehaviour:
   conflictEvents: []
   option1: "\uC544\uB2C8\uB2E4 \uC774 \uC545\uB9C8\uC57C!"
   option1Chance: 1
-  option1Requirement: "\uACBD\uAC8\uD57 6 \uC78\uC0C1"
+  option1Requirement: "경건함 6 이상"
   option1SuccessDescription: "\uB098\uC758 \uB2A5\uB825\uC744 \uC870\uC2EC\uD558\uB77C,
     \uC194\uB77C \uB79C\uD134 \uBE5B!\n\uBA38\uB9AC\uC5D0\uC11C \uB098\uC628 \uCC2C\uB780\uD55C
     \uAD11\uD718\uC5D0 \uC545\uB9C8\uB294 \uC800\uD56D\uB3C4 \uBABB\uD558\uACE0 \uC2A4\uB7EC\uC84C\uB2E4.\n\n\uCCB4\uB825

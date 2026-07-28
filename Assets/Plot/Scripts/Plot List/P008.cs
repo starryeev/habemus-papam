@@ -6,9 +6,7 @@ using UnityEngine;
 public class P008 : Plot
 {
     [Header("해당 공작 설정")]
-    [SerializeField] private int minHp;
     [SerializeField] private int minInfluence;
-    [SerializeField] private int minPiety;
     [SerializeField] private int pietyCost;
     [SerializeField] private int hpDelta;
     [SerializeField] private int influenceDelta;
@@ -26,9 +24,7 @@ public class P008 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minHp = 3;
         minInfluence = 3;
-        minPiety = 3;
         pietyCost = 0;
         hpDelta = 3;
         influenceDelta = 3;
@@ -38,15 +34,13 @@ public class P008 : Plot
         plotName = "삼위일체";
         plotDescription = "트포다 트포";
         plotEffect = "체력<sprite name=hp> 33 증가\n정치력<sprite name=influence>, 경건함<sprite name=piety> 3 증가";
-        plotCondiText = $"<sprite name=hp>{minHp}<sprite name=hp> <sprite name=influence>{minInfluence}<sprite name=up> <sprite name=piety>{minPiety}<sprite name=up>";
+        plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }
 
     public override bool CanExecute(Cardinal performer)
     {
-        return (performer.Influence >= minInfluence && 
-            performer.Hp >= minHp &&
-            performer.Piety >= minPiety);
+        return performer.Influence >= minInfluence;
     }
 
     public override bool IsCostEnough(Cardinal performer)

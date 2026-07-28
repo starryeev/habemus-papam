@@ -16,12 +16,12 @@ MonoBehaviour:
   plotName: "\uAC00\uC9C0\uCE58\uAE30"
   plotDescription: "\uC904\uAC74 \uC918"
   plotEffect: "가장 낮은 능력치 절반 감소(내림), 나머지 2 증가"
-  plotCondiText: <sprite name=hp>4<sprite name=up>
+  plotCondiText: <sprite name=influence>4<sprite name=up>
   plotCostText: <sprite name=piety>  0
   plotImage: {fileID: 0}
   plotGrade: 1
   plotWeightBase: 15
   plotWeightMultiplier: 0
-  minHp: 4
+  minInfluence: 4
   pietyCost: 0
   statsDelta: 2

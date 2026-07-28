@@ -320,7 +320,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Cardinal
   hp: 10
   hpDrainMultiplier: 1
-  influence: 2
+  influence: 0
   piety: 2
   baseMoveSpeed: 0
 --- !u!114 &8780407932907178985

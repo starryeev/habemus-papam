@@ -14,6 +14,7 @@ public class Cardinal : MonoBehaviour
 
     [Tooltip("추기경 기본 경건함")]
     [SerializeField] private float piety;
+    [SerializeField] private float maxHp = 10f;
 
     [Header("이동 관련 설정")]
     [SerializeField] private float baseMoveSpeed;
@@ -34,6 +35,7 @@ public class Cardinal : MonoBehaviour
     public float HpDrainMultiplier => hpDrainMultiplier;
     public float Influence => influence;
     public float Piety => piety;
+    public float MaxHp => maxHp;
     public float MoveSpeed => baseMoveSpeed * speedMultiplier;
     public bool IsKnockedOut => isKnockedOut;
 
@@ -59,6 +61,11 @@ public class Cardinal : MonoBehaviour
     }
 
     void Update()
+    {
+        ResolveHpState();
+    }
+
+    public void ResolveHpState()
     {
         if (hp <= 0f && !isKnockedOut)
         {
@@ -133,6 +140,7 @@ public class Cardinal : MonoBehaviour
 
         GameBalance balance = InGameManager.Instance.Balance;
         hp = balance.InitialHp;
+        maxHp = 10f;
         influence = balance.InitialInfluence;
         piety = balance.InitialPiety;
         baseMoveSpeed = balance.InitialMoveSpeed;
@@ -185,6 +193,7 @@ public class Cardinal : MonoBehaviour
             hp = GetBalanceFallback(hp, balance => balance.InitialHp),
             influence = GetBalanceFallback(influence, balance => balance.InitialInfluence),
             piety = GetBalanceFallback(piety, balance => balance.InitialPiety),
+            maxHp = maxHp,
             hpDrainMultiplier = hpDrainMultiplier,
             prayDeltaHpEvent = prayDeltaHpEvent,
             minHpOneEffectSources = savedMinHpSources,
@@ -201,7 +210,8 @@ public class Cardinal : MonoBehaviour
     {
         ApplyBalanceDefaults();
 
-        hp = Mathf.Clamp(saveData.hp, 0f, 10f);
+        maxHp = Mathf.Max(1f, saveData.maxHp);
+        hp = Mathf.Clamp(saveData.hp, 0f, maxHp);
         influence = Mathf.Clamp(saveData.influence, 0f, 10f);
         piety = Mathf.Clamp(saveData.piety, 0f, 10f);
         hpDrainMultiplier = saveData.hpDrainMultiplier;
@@ -305,12 +315,18 @@ public class Cardinal : MonoBehaviour
 
         if (minHpOneEffectSources.Count > 0 && delta < 0f)
         {
-            hp = Mathf.Clamp(nextHp, 1f, 10f);
+            hp = Mathf.Clamp(nextHp, 1f, maxHp);
         }
         else
         {
-            hp = Mathf.Clamp(nextHp, 0f, 10f);
+            hp = Mathf.Clamp(nextHp, 0f, maxHp);
         }
+    }
+
+    public void SetMaxHp(float value)
+    {
+        maxHp = Mathf.Max(1f, value);
+        hp = Mathf.Min(hp, maxHp);
     }
 
     public void ChangeInfluence(float delta)
@@ -381,10 +397,23 @@ public class Cardinal : MonoBehaviour
             return;
         }
 
+        if (CompareTag("Player")) InGameManager.Instance.ExecuteNpcActionsBeforePlayerAction(this);
+        ResolvePrayer(InGameManager.Instance.Balance.PraySuccessChance, CompareTag("Player"));
+    }
+
+    public void PerformNpcPrayer(float successChance)
+    {
+        ResolvePrayer(Mathf.Clamp01(successChance), false);
+    }
+
+    private void ResolvePrayer(float successChance, bool completePlayerAction)
+    {
+        if (InGameManager.Instance == null) return;
+
         GameBalance balance = InGameManager.Instance.Balance;
-        bool guaranteedSuccess = InGameManager.Instance.EventManager != null &&
+        bool guaranteedSuccess = completePlayerAction && InGameManager.Instance.EventManager != null &&
             InGameManager.Instance.EventManager.TryConsumeGuaranteedPrayerOrSpeech(this);
-        bool rolledSuccess = Random.value < balance.PraySuccessChance;
+        bool rolledSuccess = Random.value < successChance;
 
         float hpBeforePrayer = Hp;
         bool blocksPrayerHealing = items.Exists(item => item is I001);
@@ -414,7 +443,7 @@ public class Cardinal : MonoBehaviour
         {
             ActionRecordManager.Instance.RecordPray(this);
         }
-        InGameManager.Instance.CompletePlayerAction(this);
+        if (completePlayerAction) InGameManager.Instance.CompletePlayerAction(this);
     }
 
     public void Speech()
@@ -424,10 +453,23 @@ public class Cardinal : MonoBehaviour
             return;
         }
 
+        if (CompareTag("Player")) InGameManager.Instance.ExecuteNpcActionsBeforePlayerAction(this);
+        ResolveSpeech(InGameManager.Instance.GetSpeechSuccessChance(this), CompareTag("Player"));
+    }
+
+    public void PerformNpcSpeech(float successChance)
+    {
+        ResolveSpeech(Mathf.Clamp01(successChance), false);
+    }
+
+    private void ResolveSpeech(float successChance, bool completePlayerAction)
+    {
+        if (InGameManager.Instance == null) return;
+
         GameBalance balance = InGameManager.Instance.Balance;
-        bool guaranteedSuccess = InGameManager.Instance.EventManager != null &&
+        bool guaranteedSuccess = completePlayerAction && InGameManager.Instance.EventManager != null &&
             InGameManager.Instance.EventManager.TryConsumeGuaranteedPrayerOrSpeech(this);
-        bool rolledSuccess = Random.value < balance.SpeechSuccessChance;
+        bool rolledSuccess = Random.value < successChance;
 
         Animation_Controller anim = GetComponent<Animation_Controller>();
         if (anim == null)
@@ -442,7 +484,13 @@ public class Cardinal : MonoBehaviour
                 anim.SetSpeechAnimation(2);
             }
 
-            float speechSuccessDeltaInfluence = Random.Range(balance.SpeechSuccessDeltaInfluenceMin, balance.SpeechSuccessDeltaInfluenceMax + 1);
+            float speechSuccessDeltaInfluence = balance.SpeechSuccessDeltaInfluenceMin;
+            if (!Mathf.Approximately(balance.SpeechSuccessDeltaInfluenceMin, balance.SpeechSuccessDeltaInfluenceMax))
+            {
+                speechSuccessDeltaInfluence = Random.Range(
+                    balance.SpeechSuccessDeltaInfluenceMin,
+                    balance.SpeechSuccessDeltaInfluenceMax);
+            }
 
             foreach (var item in items)
             {
@@ -485,7 +533,7 @@ public class Cardinal : MonoBehaviour
         {
             ActionRecordManager.Instance.RecordSpeech(this);
         }
-        InGameManager.Instance.CompletePlayerAction(this);
+        if (completePlayerAction) InGameManager.Instance.CompletePlayerAction(this);
     }
 
     public void OnPlotExecuted()

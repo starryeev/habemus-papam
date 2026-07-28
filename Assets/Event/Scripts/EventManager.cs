@@ -48,10 +48,12 @@ public class EventManager : MonoBehaviour
         { "E32002", NewIdSet("E32001") }
     };
 
-    // 기획표의 m-d 표기는 날짜가 아니라 일차-콘클라베 차수다.
-    // 한 슬롯에 여러 이벤트가 있으면 표의 발생 확률(가중치)로 하나를 선택한다.
-    private static readonly Dictionary<string, HashSet<int>> ScheduledConclaveSlots = new()
+    // 기획표의 m-n은 m일차 n번째 턴 경계다. n=1은 일차 시작, n=2는 1턴 종료 직후다.
+    // 확률이 없는 이벤트는 100%로 취급하며, 슬롯 확률의 남는 몫은 일반 이벤트가 차지한다.
+    private static readonly Dictionary<string, HashSet<int>> ScheduledTurnSlots = new()
     {
+        { "E11100", NewSlotSet(1, 1) },
+        { "E11300", NewSlotSet(1, 2) },
         { "E12100", NewSlotSet(2, 2) },
         { "E12200", NewSlotSet(2, 2) },
         { "E12300", NewSlotSet(2, 2) },
@@ -95,7 +97,7 @@ public class EventManager : MonoBehaviour
 
     public Event PickAnyEvent()
     {
-        return PickWeightedEvent(allEvents == null ? new List<Event>() : allEvents.Where(e => e != null).ToList());
+        return PickUniformEvent(allEvents == null ? new List<Event>() : allEvents.Where(e => e != null).ToList());
     }
 
     public Event GetNewEvent()
@@ -105,26 +107,23 @@ public class EventManager : MonoBehaviour
             return null;
         }
 
-        List<Event> conditionSatisfied = allEvents
-            .Where(e => e != null && HasRemaining(e) && PreEventSatisfied(e) &&
-                        ConflictEventSatisfied(e) && NarrativeConditionSatisfied(e) &&
-                        IsSupportedByTurnSystem(e))
-            .ToList();
+        List<Event> conditionSatisfied = GetEligibleEvents();
 
         bool scheduledSlotOpen = !IsCurrentScheduledSlotResolved() && HasScheduleForCurrentSlot();
         List<Event> scheduledEvents = scheduledSlotOpen
-            ? conditionSatisfied.Where(IsScheduledForCurrentConclave).ToList()
+            ? conditionSatisfied.Where(IsScheduledForCurrentTurnBoundary).ToList()
             : new List<Event>();
         List<Event> scheduledStories = scheduledEvents.Where(IsStoryEvent).ToList();
         if (scheduledStories.Count > 0) scheduledEvents = scheduledStories;
         if (scheduledSlotOpen) attemptedScheduledSlots.Add(GetCurrentScheduleSlot());
-        Event pickedEvent = PickScheduledEvent(scheduledEvents);
-        if (pickedEvent == null)
+        bool invalidScheduledProbability = HasInvalidScheduledProbability(scheduledEvents);
+        Event pickedEvent = invalidScheduledProbability ? null : PickScheduledEvent(scheduledEvents);
+        if (pickedEvent == null && !invalidScheduledProbability)
         {
             List<Event> normalEvents = conditionSatisfied
-                .Where(e => !ScheduledConclaveSlots.ContainsKey(e.eventID))
+                .Where(IsNormalRandomEvent)
                 .ToList();
-            pickedEvent = PickWeightedEvent(normalEvents);
+            pickedEvent = PickUniformEvent(normalEvents);
         }
         if (pickedEvent == null)
         {
@@ -142,7 +141,53 @@ public class EventManager : MonoBehaviour
         int count = 0;
         appearedCnt.TryGetValue(e, out count);
 
-        return count < e.maxAppear;
+        return count < 1;
+    }
+
+    public Event GetStartOfDayEvent()
+    {
+        if (InGameManager.Instance == null || InGameManager.Instance.GetCurrentConclave() != GameContext.Conclave.Dawn)
+            return null;
+
+        int slot = Mathf.Max(1, InGameManager.Instance.GetCurrentDay()) * 10 + 1;
+        return PickAndMarkScheduledEvent(slot, false);
+    }
+
+    public Event GetFirstPlotTutorialEvent()
+    {
+        Event tutorial = GetEventById("E11200");
+        if (tutorial == null || !HasRemaining(tutorial) || !PreEventSatisfied(tutorial) ||
+            !ConflictEventSatisfied(tutorial) || !NarrativeConditionSatisfied(tutorial))
+            return null;
+
+        MarkEventAppeared(tutorial);
+        return tutorial;
+    }
+
+    private List<Event> GetEligibleEvents()
+    {
+        return allEvents == null ? new List<Event>() : allEvents
+            .Where(e => e != null && HasRemaining(e) && PreEventSatisfied(e) &&
+                        ConflictEventSatisfied(e) && NarrativeConditionSatisfied(e) &&
+                        IsSupportedByTurnSystem(e))
+            .ToList();
+    }
+
+    private Event PickAndMarkScheduledEvent(int slot, bool allowNormalFallback)
+    {
+        if (attemptedScheduledSlots.Contains(slot)) return null;
+
+        List<Event> scheduled = GetEligibleEvents().Where(e => IsScheduledForSlot(e, slot)).ToList();
+        List<Event> stories = scheduled.Where(IsStoryEvent).ToList();
+        if (stories.Count > 0) scheduled = stories;
+        attemptedScheduledSlots.Add(slot);
+
+        bool invalidScheduledProbability = HasInvalidScheduledProbability(scheduled);
+        Event picked = invalidScheduledProbability ? null : PickScheduledEvent(scheduled);
+        if (picked == null && allowNormalFallback && !invalidScheduledProbability)
+            picked = PickUniformEvent(GetEligibleEvents().Where(IsNormalRandomEvent).ToList());
+        if (picked != null) MarkEventAppeared(picked);
+        return picked;
     }
 
     public bool PreEventSatisfied(Event e)
@@ -344,7 +389,10 @@ public class EventManager : MonoBehaviour
 
     public EventManagerSaveData CaptureSaveData()
     {
-        EventManagerSaveData saveData = new EventManagerSaveData();
+        EventManagerSaveData saveData = new EventManagerSaveData
+        {
+            scheduleVersion = 2
+        };
 
         foreach (var pair in appearedCnt)
         {
@@ -466,7 +514,8 @@ public class EventManager : MonoBehaviour
             }
         }
 
-        if (saveData.attemptedScheduledSlots != null)
+        // v1까지는 같은 숫자를 '일차-콘클라베'로 사용했으므로 새 턴 슬롯으로 재해석하지 않는다.
+        if (saveData.scheduleVersion >= 2 && saveData.attemptedScheduledSlots != null)
         {
             foreach (int slot in saveData.attemptedScheduledSlots)
             {
@@ -478,38 +527,20 @@ public class EventManager : MonoBehaviour
         freePlotPietyForCurrentConclave = saveData.freePlotPietyForCurrentConclave;
     }
 
-    private Event PickWeightedEvent(List<Event> candidates)
+    private static Event PickUniformEvent(List<Event> candidates)
     {
         if (candidates == null || candidates.Count == 0) return null;
-
-        List<Event> forced = candidates.Where(e => float.IsPositiveInfinity(GetSelectionWeight(e))).ToList();
-        if (forced.Count > 0)
-        {
-            return forced[Random.Range(0, forced.Count)];
-        }
-
-        float totalWeight = 0f;
-        foreach (Event candidate in candidates)
-        {
-            totalWeight += Mathf.Max(0f, GetSelectionWeight(candidate));
-        }
-
-        if (totalWeight <= 0f) return null;
-
-        float roll = Random.value * totalWeight;
-        float accumulated = 0f;
-        foreach (Event candidate in candidates)
-        {
-            accumulated += Mathf.Max(0f, GetSelectionWeight(candidate));
-            if (roll <= accumulated) return candidate;
-        }
-
-        return candidates[candidates.Count - 1];
+        return candidates[Random.Range(0, candidates.Count)];
     }
 
     private Event PickScheduledEvent(List<Event> candidates)
     {
         if (candidates == null || candidates.Count == 0) return null;
+
+        if (HasInvalidScheduledProbability(candidates))
+        {
+            return null;
+        }
 
         float roll = Random.value;
         float accumulated = 0f;
@@ -523,6 +554,21 @@ public class EventManager : MonoBehaviour
         return null;
     }
 
+    private static bool HasInvalidScheduledProbability(List<Event> candidates)
+    {
+        if (candidates == null || candidates.Count == 0) return false;
+        List<Event> undefined = candidates.Where(candidate => GetScheduledChance(candidate) < 0f).ToList();
+        if (undefined.Count > 0)
+        {
+            Debug.LogError($"[Event] 진행도 삭제 후 발생 확률이 정의되지 않았습니다: {string.Join(", ", undefined.Select(e => e.eventID))}");
+            return true;
+        }
+        float totalChance = candidates.Sum(GetScheduledChance);
+        if (totalChance <= 1.0001f) return false;
+        Debug.LogError($"[Event] 슬롯 확률 합이 100%를 초과합니다: {totalChance * 100f:0.##}% ({string.Join(", ", candidates.Select(e => e.eventID))})");
+        return true;
+    }
+
     private static float GetScheduledChance(Event e)
     {
         switch (e.eventID)
@@ -533,21 +579,9 @@ public class EventManager : MonoBehaviour
             case "E31000": return 0.7f;
             case "E31212": return 0.3f;
             case "E32000": return 0.3f;
-            case "E31101": return Mathf.Clamp01(e.GetEventWeight() / 100f);
+            // 기존 진행도 기반 식(10 + 0.05P)은 진행도 삭제 후 대체 확률이 명시되지 않았다.
+            case "E31101": return -1f;
             default: return 1f;
-        }
-    }
-
-    private float GetSelectionWeight(Event e)
-    {
-        switch (e.eventID)
-        {
-            case "E11200":
-            case "E11300":
-            case "E21101":
-                return float.PositiveInfinity;
-            default:
-                return e.GetEventWeight();
         }
     }
 
@@ -574,17 +608,19 @@ public class EventManager : MonoBehaviour
         return e != null;
     }
 
-    private bool IsScheduledForCurrentConclave(Event e)
+    private bool IsScheduledForCurrentTurnBoundary(Event e)
     {
-        if (e == null || InGameManager.Instance == null ||
-            !ScheduledConclaveSlots.TryGetValue(e.eventID, out HashSet<int> slots))
-        {
-            return false;
-        }
+        return IsScheduledForSlot(e, GetCurrentScheduleSlot());
+    }
 
-        int day = Mathf.Max(1, InGameManager.Instance.GetCurrentDay());
-        int conclave = (int)InGameManager.Instance.GetCurrentConclave() + 1;
-        return slots.Contains(day * 10 + conclave);
+    private static bool IsScheduledForSlot(Event e, int slot)
+    {
+        return e != null && ScheduledTurnSlots.TryGetValue(e.eventID, out HashSet<int> slots) && slots.Contains(slot);
+    }
+
+    private static bool IsNormalRandomEvent(Event e)
+    {
+        return e != null && e.eventID != "E11200" && !ScheduledTurnSlots.ContainsKey(e.eventID);
     }
 
     private bool IsCurrentScheduledSlotResolved()
@@ -593,20 +629,20 @@ public class EventManager : MonoBehaviour
         int slot = GetCurrentScheduleSlot();
 
         return attemptedScheduledSlots.Contains(slot) || appeared.Any(evt => evt != null &&
-            ScheduledConclaveSlots.TryGetValue(evt.eventID, out HashSet<int> slots) &&
+            ScheduledTurnSlots.TryGetValue(evt.eventID, out HashSet<int> slots) &&
             slots.Contains(slot));
     }
 
     private static int GetCurrentScheduleSlot()
     {
         return Mathf.Max(1, InGameManager.Instance.GetCurrentDay()) * 10 +
-            (int)InGameManager.Instance.GetCurrentConclave() + 1;
+            Mathf.Clamp(InGameManager.Instance.GetCurrentTurn() + 1, 2, 4);
     }
 
     private static bool HasScheduleForCurrentSlot()
     {
         int slot = GetCurrentScheduleSlot();
-        return ScheduledConclaveSlots.Values.Any(slots => slots.Contains(slot));
+        return ScheduledTurnSlots.Values.Any(slots => slots.Contains(slot));
     }
 
     private static bool IsStoryEvent(Event e)

@@ -34,12 +34,12 @@ public class Closeup : MonoBehaviour
         Title.text = DummyTitles[idx];
         Description.text = DummyDescriptions[idx];
 
-        SetStats(cardinal.Hp, cardinal.Piety, cardinal.Influence);
+        SetStats(cardinal.Hp, cardinal.Piety, cardinal.Influence, cardinal.MaxHp);
     }
-    public void SetStats(float hp, float piety, float influence)
+    public void SetStats(float hp, float piety, float influence, float maxHp = 10f)
     {
         this.hp.text = $"{(int)hp}";
-        HP.fillAmount = hp/10;
+        HP.fillAmount = hp / Mathf.Max(1f, maxHp);
         this.piety.text = $"{(int)piety}";
         Piety.fillAmount = piety/10;
         this.influence.text = $"{(int)influence}";

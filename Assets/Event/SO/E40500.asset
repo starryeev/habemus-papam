@@ -28,7 +28,7 @@ MonoBehaviour:
   conflictEvents: []
   option1: "\uC9D1\uC73C\uB85C \uC218\uD589\uC6D0\uC744 \uBCF4\uB0B8\uB2E4."
   option1Chance: 0.8
-  option1Requirement: "\uC82\uCE6\uB83 4 \uC78\uC0C1"
+  option1Requirement: "정치력 4 이상"
   option1SuccessDescription: "\uC9C4\uC9DC \uBD88\uC774 \uCF1C\uC838 \uC788\uC5C8\uB2E4!\n\uD734,
     \uD558\uB9C8\uD130\uBA74 \uC9D1 \uD1B5\uC9F8\uB85C \uD0DC\uC591\uAED8 \uBD09\uD5CC\uD560
     \uBED4\uD588\uB124.\n\n\uC815\uCE58\uB825 15 \uAC10\uC18C!\n\uACBD\uAC74\uD568

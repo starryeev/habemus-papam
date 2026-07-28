@@ -16,7 +16,7 @@ MonoBehaviour:
   plotName: "\uBAA9 \uC880 \uCD95\uC774\uC138\uC694"
   plotDescription: "\uD478\uB8EC \uC8FC\uC2A4\uAC00 \uBB58\uAE4C...?"
   plotEffect: "모든 후보의 다음 2회 행동 불가"
-  plotCondiText: <sprite name=influence>4<sprite name=down>
+  plotCondiText: <sprite name=influence>4<sprite name=up>
   plotCostText: <sprite name=piety>  4
   plotImage: {fileID: 0}
   plotGrade: 1

@@ -187,7 +187,8 @@ public class StatsUI : MonoBehaviour
         {
             closeup.SetStats(linkedCardinals[closeupIndex].Hp,
             linkedCardinals[closeupIndex].Piety,
-            linkedCardinals[closeupIndex].Influence);
+            linkedCardinals[closeupIndex].Influence,
+            linkedCardinals[closeupIndex].MaxHp);
         }
         else CalculateAndMoveStats();
     }
@@ -273,7 +274,7 @@ public class StatsUI : MonoBehaviour
         float inf = linkedCardinals[i].Influence;
         float pie = linkedCardinals[i].Piety;
 
-        StatsList[i].SetHP(hp);
+        StatsList[i].SetHP(hp, linkedCardinals[i].MaxHp);
         StatsList[i].SetInfluence(inf);
         StatsList[i].SetPiety(pie);
 

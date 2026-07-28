@@ -120,6 +120,17 @@ public class PlotUI : MonoBehaviour
             var currentPlot = pm.AvailPlotSets[0].plots[i];
             var buttonText = plotUseButtons[i].GetComponentInChildren<TextMeshProUGUI>();
 
+            if (currentPlot == null)
+            {
+                plotNameList[i].text = "등장 가능한 공작 없음";
+                plotDescList[i].text = "현재 정치력 조건을 만족하는 공작이 없습니다.";
+                plotCondiList[i].text = string.Empty;
+                plotEffectList[i].text = string.Empty;
+                buttonText.text = string.Empty;
+                plotUseButtons[i].interactable = false;
+                continue;
+            }
+
             // 공작 등급에 따른 뒷 배경 세팅
             switch (currentPlot.plotGrade)
             {
@@ -143,7 +154,7 @@ public class PlotUI : MonoBehaviour
             // 공작 텍스트 정보 세팅
             plotNameList[i].text = currentPlot.plotName;
             plotDescList[i].text = currentPlot.plotDescription;
-            plotCondiList[i].text = currentPlot.plotCondiText;
+            plotCondiList[i].text = pm.GetEffectiveConditionText(currentPlot, performer);
             plotEffectList[i].text = currentPlot.plotEffect;
             buttonText.text = currentPlot.plotCostText;
 
@@ -177,10 +188,16 @@ public class PlotUI : MonoBehaviour
 
         var currentPlot = pm.AvailPlotSets[0].plots[index];
         var buttonText = plotUseButtons[index].GetComponentInChildren<TextMeshProUGUI>();
+        if (currentPlot == null)
+        {
+            plotUseButtons[index].interactable = false;
+            buttonText.text = string.Empty;
+            return;
+        }
 
         // 조건 확인
         bool isPietyEnough = currentPlot.IsEffectiveCostEnough(performer);
-        bool canExecute = currentPlot.CanExecute(performer);
+        bool canExecute = PlotManager.Instance != null && PlotManager.Instance.MeetsEffectiveInfluenceCondition(currentPlot, performer);
 
         // 버튼 활성화 설정
         plotUseButtons[index].interactable = isPietyEnough && canExecute;

@@ -36,7 +36,7 @@ public class P002 : Plot
 
     public override bool CanExecute(Cardinal performer)
     {
-        return performer.Influence <= maxInfluence;
+        return performer.Influence >= maxInfluence;
     }
 
     public override bool IsCostEnough(Cardinal performer)

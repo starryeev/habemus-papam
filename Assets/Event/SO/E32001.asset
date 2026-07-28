@@ -31,7 +31,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8d94bfe2599f0474489f65a305c6f538, type: 2}
   option1: "\uC131\uC804\uB9CC\uD07C\uC740 \uB9C9\uC544\uC57C \uD55C\uB2E4!"
   option1Chance: 1
-  option1Requirement: "\uACBD\uAC8\uD57 5 \uC78\uC0C1"
+  option1Requirement: "경건함 5 이상"
   option1SuccessDescription: "\uB048\uC9C8\uAE34 \uC124\uB4DD \uB05D\uC5D0, \uC6D0\uB300\uD55C
     \uAD70\uC0AC \uC791\uC804\uC740 \uACBD\uC81C \uC7AC\uC81C\uC640 \uC678\uAD50\uC801
     \uD56D\uC758\uB85C \uCD95\uC18C\uB418\uC5C8\uB2E4!\n\uAD50\uB2E8\uC774 \uD3C9\uD654\uB97C

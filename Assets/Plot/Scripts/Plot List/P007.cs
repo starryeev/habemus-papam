@@ -52,6 +52,10 @@ public class P007 : Plot
         if (performer != null && performer.CompareTag("Player"))
         {
             InGameManager.Instance.QueueNextTurnActionDelta(-1);
+            for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+            {
+                InGameManager.Instance.BlockNpcNextTurnAction(candidateNumber);
+            }
         }
     }
 
