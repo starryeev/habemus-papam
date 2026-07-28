@@ -22,7 +22,7 @@ public class I006 : Item
         itemDescription = "최고급 이탈리아 포도를 발효한 후 수도원 지하에서 다섯 번 증류한 화끈한 술.";
         itemEffectDescription = "오늘 기도 시 체력 회복량 두 배";
 
-        prayerBonusHp = 10;
+        prayerBonusHp = 1;
     }
 
     public override void OnUse()

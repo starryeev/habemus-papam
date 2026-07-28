@@ -24,9 +24,9 @@ public class P034 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 50;
-        pietyCost = 40;
-        pietyDelta = 60;
+        minInfluence = 5;
+        pietyCost = 4;
+        pietyDelta = 6;
 
         // 텍스트 기본값
         plotName = "언더독";
@@ -68,6 +68,7 @@ public class P034 : Plot
 
         if (target != null)
         {
+            target.ChangeInfluence(pietyDelta);
             target.ChangePiety(pietyDelta);
         }
     }

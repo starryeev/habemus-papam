@@ -15,15 +15,13 @@ MonoBehaviour:
   plotID: P024
   plotName: "\uAC00\uC9C0\uCE58\uAE30"
   plotDescription: "\uC904\uAC74 \uC918"
-  plotEffect: "\uCCB4\uB825<sprite name=hp>, \uC815\uCE58\uB825<sprite name=influence>,
-    \uACBD\uAC74\uD568<sprite name=piety> \uC911 \uAC00\uC7A5 \uC801\uC740 \uC218\uCE58
-    \uC808\uBC18\uC73C\uB85C \uAC10\uC18C\n\uB098\uBA38\uC9C0 15 \uC99D\uAC00"
-  plotCondiText: <sprite name=hp>40<sprite name=up>
+  plotEffect: "가장 낮은 능력치 절반 감소(내림), 나머지 2 증가"
+  plotCondiText: <sprite name=hp>4<sprite name=up>
   plotCostText: <sprite name=piety>  0
   plotImage: {fileID: 0}
   plotGrade: 1
   plotWeightBase: 15
   plotWeightMultiplier: 0
-  minHp: 40
+  minHp: 4
   pietyCost: 0
-  statsDelta: 15
+  statsDelta: 2

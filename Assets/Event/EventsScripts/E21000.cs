@@ -18,7 +18,7 @@ public class E21000 : Event
 
     public override bool CanChoiceOption1(Cardinal performer)
     {
-        if(performer.Piety < 40f) return false;
+        if(performer.Piety < 4f) return false;
         return true;
     }
 
@@ -33,8 +33,8 @@ public class E21000 : Event
 
         if(Random.value <= option1Chance)
         {  // 성공했을 때 로직
-            performer.ChangePiety(10f);
-            performer.ChangeInfluence(-10f);
+            performer.ChangePiety(1f);
+            performer.ChangeInfluence(-1f);
 
             return FinishChoice(1, true);
         }
@@ -53,7 +53,7 @@ public class E21000 : Event
 
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
-            performer.ChangeInfluence(10f);
+            performer.ChangeInfluence(1f);
 
             return FinishChoice(2, true);
         }

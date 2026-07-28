@@ -16,13 +16,13 @@ MonoBehaviour:
   plotName: "\uC8FC\uC0AC\uC704 \uAD74\uB9AC\uAE30"
   plotDescription: "\uC8FC\uC0AC\uC704\uB294 \uB358\uC838\uC84C\uB2E4"
   plotEffect: "\uC77C\uBC18 \uC544\uC774\uD15C '\uC8FC\uC0AC\uC704' 2\uAC1C \uD68D\uB4DD"
-  plotCondiText: 
-  plotCostText: <sprite name=piety>  20
+  plotCondiText: <sprite name=influence>3<sprite name=up>
+  plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}
   plotGrade: 1
   plotWeightBase: 15
   plotWeightMultiplier: 0
-  minInfluence: 0
-  pietyCost: 20
+  minInfluence: 3
+  pietyCost: 2
   diceItem: {fileID: 1943705692862981793, guid: 3b538abaa301d65488d1aa42aa95dcc4, type: 3}
   rewardCount: 2

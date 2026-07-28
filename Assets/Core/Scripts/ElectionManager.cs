@@ -15,15 +15,6 @@ public class ElectionManager : MonoBehaviour
     [Tooltip("당선 확정 후 이동할 엔딩 씬 이름")]
     [SerializeField] private string endingSceneName = "EndingScene";
 
-    [Header("당선 확률 공식 설정")]
-    [Tooltip("후보자 합산 점수(경건함+정치력)에 곲할 값 -> 가중치(기본: 0.035)")]
-    [SerializeField] private float scoreDivisor = 0.6f;
-    [Tooltip("진행도에 곱할 값 -> 가중치(기본: 0.035)")]
-    [SerializeField] private float progressDivisor = 0.035f;
-
-    [Tooltip("기본으로 깔고 가는 최소 당선 확률 (기본: 0)")]
-    [SerializeField] private float baseProbability = 0f;
-
     private Cardinal currentWinnerCandidate;
     public Cardinal CurrentWinnerCandidate => currentWinnerCandidate;
     private bool isElected = false;
@@ -122,11 +113,7 @@ public class ElectionManager : MonoBehaviour
     {
         if (currentWinnerCandidate == null || InGameManager.Instance == null) return;
 
-        float progress = InGameManager.Instance.GetProgress();
-
-        float candidateScore = currentWinnerCandidate.Piety + currentWinnerCandidate.Influence;
-
-        float winProbability = (progress * scoreDivisor) + (candidateScore * progressDivisor) + baseProbability;
+        float winProbability = CalculateWinProbability(currentWinnerCandidate);
 
         float diceRoll = UnityEngine.Random.Range(0f, 100f);
         isElected = diceRoll <= winProbability;
@@ -202,12 +189,9 @@ public class ElectionManager : MonoBehaviour
     {
         if (InGameManager.Instance == null) return 0f;
 
-        float progress = InGameManager.Instance.GetProgress();
-        float candidateScore = candidate.Piety + candidate.Influence;
-
-        float winProbability = (progress * scoreDivisor) + (candidateScore * progressDivisor) + baseProbability;
-
-        return Mathf.Clamp(winProbability, 0.1f, 200f);
+        int currentDay = Mathf.Max(1, InGameManager.Instance.GetCurrentDay());
+        float dayBonus = currentDay == 1 ? 0f : currentDay == 2 ? 5f : currentDay == 3 ? 10f : 15f;
+        return Mathf.Clamp(dayBonus + candidate.Influence, 0f, 100f);
     }
 
     private Cardinal FindPlayerCandidate()

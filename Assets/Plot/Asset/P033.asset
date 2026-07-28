@@ -18,11 +18,11 @@ MonoBehaviour:
   plotEffect: "\uB2E4\uC74C \uCF58\uD074\uB77C\uBCA0 \uB54C, \uC774\uBC88 \uCF58\uD074\uB77C\uBCA0
     \uB3D9\uC548 \uAC10\uC18C\uD55C \uCCB4\uB825<sprite name=hp>\uB9CC\uD07C \uBAA8\uB4E0
     \uC0C1\uB300 \uD6C4\uBCF4\uC758 \uCCB4\uB825<sprite name=hp> \uAC10\uC18C"
-  plotCondiText: <sprite name=influence>60<sprite name=up>
-  plotCostText: <sprite name=piety>  60
+  plotCondiText: <sprite name=influence>6<sprite name=up>
+  plotCostText: <sprite name=piety>  6
   plotImage: {fileID: 0}
   plotGrade: 2
   plotWeightBase: 15
   plotWeightMultiplier: 0
-  minInfluence: 60
-  pietyCost: 60
+  minInfluence: 6
+  pietyCost: 6

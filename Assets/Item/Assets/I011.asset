@@ -24,4 +24,4 @@ MonoBehaviour:
   itemGrade: 1
   itemExpirationType: 0
   usageType: 1
-  healAmount: 10
+  healAmount: 1

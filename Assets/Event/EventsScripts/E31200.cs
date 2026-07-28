@@ -51,7 +51,7 @@ public class E31200 : Event
 
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
-            SetCandidateStats(2, 60f, 60f, 60f);
+            SetCandidateStats(2, 6f, 6f, 6f);
 
             // TODO(태양만세 엔딩): 후보 2가 최종 당선될 때 전용 엔딩으로 전환한다.
             // EndingType과 엔딩 컷신이 아직 없으므로 여기서는 부활/분기 기록까지만 수행한다.

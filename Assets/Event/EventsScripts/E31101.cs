@@ -18,7 +18,7 @@ public class E31101 : Event
 
     public override bool CanChoiceOption1(Cardinal performer)
     {
-        if(performer.Piety < 80) return false;
+        if(performer.Piety < 8) return false;
         return true;
     }
 

@@ -27,21 +27,16 @@ MonoBehaviour:
   preEvents: []
   conflictEvents: []
   option1: "\uC8FC\uC2A4\uB97C \uB9C8\uC2E0\uB2E4."
-  option1Chance: 1
+  option1Chance: 0.5
   option1Requirement: '-'
-  option1SuccessDescription: "\uD478\uB8EC \uC8FC\uC2A4\uC600\uB2E4! \uB2F9\uC2E0\uC740
-    \uBC43\uC18D\uC774 \uC2EC\uC0C1\uCE58 \uC54A\uC74C\uC744 \uB290\uB080\uB2E4.\n\uB0A8\uC740
-    \uC77C\uC744 \uCD5C\uB300\uD55C \uD574\uCE58\uC6B0\uACE0 \uD654\uC7A5\uC2E4\uC5D0
-    \uAC00\uAE30 \uC704\uD55C \uD22C\uC9C0\uAC00 \uBD88\uD0C0\uC624\uB978\uB2E4!\n\n\uCCB4\uB825
-    20 \uAC10\uC18C!\n\uC774\uB3D9 \uC18D\uB3C4 2\uBC30 \uC99D\uAC00!"
-  option1SuccessResult: "\uCCB4\uB825 -20\n\uC774\uB3D9 \uC18D\uB3C4 +100%"
+  option1SuccessDescription: "푸룬 주스였다! 남은 일을 해치우려 했지만 배가 심상치 않다.\n\n체력 1 감소!\n다음 턴 행동 횟수 1회 감소!"
+  option1SuccessResult: "체력 -1\n다음 턴 행동 횟수 -1"
   option1FailDescription: "\uD478\uB8EC \uC8FC\uC2A4\uC600\uB2E4! \uB2F9\uC2E0\uC740
     \uBC43\uC18D\uC774 \uC2EC\uC0C1\uCE58 \uC54A\uC74C\uC744 \uB290\uB07C\uACE0 \uD654\uC7A5\uC2E4\uB85C
     \uC9C1\uD589\uD55C\uB2E4.\n\uC544\uBB34\uD2BC \uAC70\uC9D3\uB9D0\uC740 \uD558\uC9C0
     \uC54A\uC558\uB2E4.\n\n\uC774\uBC88 \uC36C\u3161\uD074\uB77C\uBCA0 \uC989\uC2DC
     \uC885\uB8CC!\n\uCCB4\uB825 10 \uC99D\uAC00!"
-  option1FailResult: "\uCCB4\uB825 + 10\n\uCF58\uD074\uB77C\uBCA0 \uC989\uC2DC \uC885\uB8CC,
-    \uAD50\uC8FC \uD310\uC815\uC73C\uB85C \uC9C1\uD589"
+  option1FailResult: "체력 +1\n콘클라베 즉시 종료, 교주 판정으로 직행"
   option2: 
   option2Chance: 0
   option2SuccessDescription: 

@@ -15,18 +15,15 @@ MonoBehaviour:
   plotID: P021
   plotName: "\uBB34\uB98E \uAFC7\uAE30"
   plotDescription: "\uCD94\uC9C4\uB825\uC744 \uC5BB\uAE30 \uC704\uD568\uC774\uC5C8\uB2E4!"
-  plotEffect: "\uBAA8\uB4E0 \uC0C1\uB300 \uD6C4\uBCF4 \uC815\uCE58\uB825<sprite name=influence>
-    15 \uAC10\uC18C\n\uB2E4\uC74C \uB0A0 \uCCAB \uCF58\uD074\uB77C\uBCA0 \uB54C \uC9C0\uB09C
-    \uCF58\uD074\uB77C\uBCA0 \uC218\uC5D0 \uB530\uB77C \uBAA8\uB4E0 \uC0C1\uB300
-    \uD6C4\uBCF4 \uC815\uCE58\uB825<sprite name=influence> 20 ~ 50 \uC99D\uAC00 "
-  plotCondiText: <sprite name=influence>55<sprite name=up>
-  plotCostText: <sprite name=piety>  10
+  plotEffect: "모든 상대 정치력 2 감소, 다음 날 첫 콘클라베에 지난 콘클라베 수만큼 체력 감소"
+  plotCondiText: <sprite name=influence>6<sprite name=up>
+  plotCostText: <sprite name=piety>  1
   plotImage: {fileID: 0}
   plotGrade: 1
   plotWeightBase: 15
   plotWeightMultiplier: 0.05
-  minInfluence: 55
-  pietyCost: 10
-  influenceDelta: -15
-  baseNextDayInfluenceDelta: 20
-  influenceGainPerConclave: 10
+  minInfluence: 6
+  pietyCost: 1
+  influenceDelta: -2
+  baseNextDayInfluenceDelta: 2
+  influenceGainPerConclave: 1

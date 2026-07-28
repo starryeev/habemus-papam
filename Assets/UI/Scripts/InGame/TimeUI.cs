@@ -42,14 +42,12 @@ public class TimeUI : MonoBehaviour
 
         if (InGameManager.Instance == null) return;
 
-        float remain = InGameManager.Instance.GetRemainingTime();
-        float max = InGameManager.Instance.Balance.MaxConclaveTime;
-
-        ClockHand.transform.rotation = Quaternion.Euler(0, 0, (remain / max) * 360f);
-
         if (InGameManager.Instance.IsTimeRunning)
         {
-            RightText2.text = $"{(int)(remain / 60)} : {(remain % 60).ToString("00.00")}";
+            int turn = InGameManager.Instance.GetCurrentTurn();
+            int phase = InGameManager.Instance.GetCurrentTurnPhase();
+            RightText2.text = $"Turn {turn}-{phase}";
+            ClockHand.transform.rotation = Quaternion.Euler(0, 0, -90f * (turn - 1));
         }
     }
 
@@ -81,14 +79,14 @@ public class TimeUI : MonoBehaviour
 
         LeftText1.text = $"Day {currentDay}";
         LeftText2.text = $"{currentCon}";
-        RightText1.text = "남은 시간";
+        RightText1.text = "턴";
 
         UpdateLights(currentCon);
     }
 
     public void EndConclaveUI()
     {
-        RightText2.text = "00 : 00.00";
+        RightText2.text = "Turn 4-2";
         ClockHand.transform.rotation = Quaternion.identity;
 
         Dawn.sprite = LightList[0];

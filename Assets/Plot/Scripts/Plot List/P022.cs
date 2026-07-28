@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 [CreateAssetMenu(fileName = "P022", menuName = "Plot/꼬리 자르기", order = 022)]
 
@@ -8,8 +7,6 @@ public class P022 : Plot
     [Header("해당 공작 설정")]
     [SerializeField] private int minHp;
     [SerializeField] private int hpCost;
-    [SerializeField] private float speedPercentDelta;
-    [SerializeField] private int duration;
 
     public override int cost => hpCost;
     public override PlotCostResource CostResource => PlotCostResource.Hp;
@@ -24,15 +21,13 @@ public class P022 : Plot
         plotWeightBase = 10;
         plotWeightMultiplier = 0.1f;
 
-        minHp = 50;
-        hpCost = 30;
-        speedPercentDelta = 0.3f;
-        duration = 30;
+        minHp = 5;
+        hpCost = 7;
 
         // 텍스트 기본값
         plotName = "꼬리 자르기";
         plotDescription = "쌀을 내주고 벼를 취한다";
-        plotEffect = "이동 속도 30% 증가 30초";
+        plotEffect = "이번 턴 행동 가능 횟수 2회 추가";
         plotCondiText = $"<sprite name=hp>{minHp}<sprite name=up>";
         plotCostText = $"<sprite name=hp>  {cost}";
     }
@@ -53,22 +48,9 @@ public class P022 : Plot
 
         PayCost(performer);
 
-        performer.StartCoroutine(SpeedBoostRoutine(performer));
-    }
-
-    private IEnumerator SpeedBoostRoutine(Cardinal target)
-    {
-        if (target == null) yield break;
-
-        float delta = speedPercentDelta;
-
-        target.ChangeSpeed(delta);
-
-        yield return new WaitForSeconds(duration);
-
-        if (target != null)
+        if (performer != null && performer.CompareTag("Player"))
         {
-            target.ChangeSpeed(-delta);
+            InGameManager.Instance.AddCurrentTurnActions(2);
         }
     }
 

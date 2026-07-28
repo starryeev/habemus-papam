@@ -16,16 +16,14 @@ MonoBehaviour:
   plotName: "\uD0DC\uC591\uC758 \uBC1C"
   plotDescription: "\uD0DC\uC591\uC758 \uBC1C\uC744 \uC9C0\uB2CC \uC790\uC5EC, \uACE0\uACB0\uD568\uC744
     \uC0C8\uACA8\uB77C."
-  plotEffect: "\uAC00\uC7A5 \uACBD\uAC74\uD568<sprite name=piety>\uC774 \uB0AE\uC740
-    \uC0C1\uB300 \uD6C4\uBCF4 \uCCB4\uB825<sprite name=hp> 10 \uAC10\uC18C, \uACBD\uAC74\uD568<sprite
-    name=piety> 20 \uC99D\uAC00"
-  plotCondiText: <sprite name=influence>20<sprite name=up>
+  plotEffect: "가장 경건함이 낮은 상대 후보 체력 1 감소, 경건함 2 증가"
+  plotCondiText: <sprite name=influence>2<sprite name=up>
   plotCostText: <sprite name=piety>  0
   plotImage: {fileID: 0}
   plotGrade: 0
   plotWeightBase: 20
   plotWeightMultiplier: 0
-  minInfluence: 20
+  minInfluence: 2
   pietyCost: 0
-  hpDelta: -10
-  pietyDelta: 20
+  hpDelta: -1
+  pietyDelta: 2

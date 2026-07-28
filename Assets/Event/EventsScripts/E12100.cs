@@ -23,7 +23,7 @@ public class E12100 : Event
 
     public override bool CanChoiceOption1(Cardinal performer)
     {
-        if(performer.Piety >= 30f) return true;
+        if(performer.Piety >= 3f) return true;
         else return false;
     }
 
@@ -37,7 +37,7 @@ public class E12100 : Event
         if(Random.value > option1Chance) return false;
         if(!CanChoiceOption1(performer)) return false;
 
-        performer.ChangeInfluence(5f);
+        performer.ChangeInfluence(1f);
 
         return true;
     }
@@ -49,12 +49,12 @@ public class E12100 : Event
 
         if(Random.value <= option2Chance)
         {
-            performer.ChangeHp(-10f);
+            performer.ChangeHp(-1f);
             return true;
         }
         else
         {
-            performer.ChangeHp(-20f);
+            performer.ChangeHp(-2f);
             performer.StartCoroutine(PlayWhiteFlash());
             return false;
         }

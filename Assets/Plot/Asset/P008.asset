@@ -15,19 +15,18 @@ MonoBehaviour:
   plotID: P008
   plotName: "\uC0BC\uC704\uC77C\uCCB4"
   plotDescription: "\uD2B8\uD3EC\uB2E4 \uD2B8\uD3EC"
-  plotEffect: "\uCCB4\uB825<sprite name=hp> 33 \uC99D\uAC00\n\uC815\uCE58\uB825<sprite
-    name=influence>, \uACBD\uAC74\uD568<sprite name=piety> 3 \uC99D\uAC00"
-  plotCondiText: <sprite name=hp>33<sprite name=hp> <sprite name=influence>33<sprite
-    name=up> <sprite name=piety>33<sprite name=up>
+  plotEffect: "체력/정치력/경건함 3 증가"
+  plotCondiText: <sprite name=hp>3<sprite name=up> <sprite name=influence>3<sprite
+    name=up> <sprite name=piety>3<sprite name=up>
   plotCostText: <sprite name=piety>  0
   plotImage: {fileID: 0}
   plotGrade: 0
   plotWeightBase: 20
   plotWeightMultiplier: 0
-  minHp: 33
-  minInfluence: 33
-  minPiety: 33
+  minHp: 3
+  minInfluence: 3
+  minPiety: 3
   pietyCost: 0
-  hpDelta: 33
+  hpDelta: 3
   influenceDelta: 3
   pietyDelta: 3

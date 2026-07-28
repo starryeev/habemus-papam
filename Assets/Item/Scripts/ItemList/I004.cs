@@ -18,7 +18,7 @@ public class I004 : Item
         itemDescription = "이 잔으로 미사를 드리자 추기경들의 눈길이 쏠린다. 럭셔리하니까!";
         itemEffectDescription = "이번 콘클라베 동안 연설 시 정치력 회복량 10 증가";
 
-        influenceDelta = 10;
+        influenceDelta = 1;
     }
 
     public override void OnSpeech(Cardinal owner)

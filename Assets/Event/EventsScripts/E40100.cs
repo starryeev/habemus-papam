@@ -27,7 +27,7 @@ public class E40100 : Event
 
     public override bool CanChoiceOption1(Cardinal performer)
     {
-        if(performer.Piety < 40f) return false;
+        if(performer.Piety < 4f) return false;
         return true;
     }
 
@@ -39,15 +39,15 @@ public class E40100 : Event
     public override bool OnChoiceOption1(Cardinal performer)
     {
         if(!CanChoiceOption1(performer)) return false;
-        performer.ChangeHp(10f);
-        performer.ChangeInfluence(10f);
+        performer.ChangeHp(1f);
+        performer.ChangeInfluence(1f);
         return true;
     }
 
     public override bool OnChoiceOption2(Cardinal performer)
     {
         if(!CanChoiceOption2(performer)) return false;
-        performer.ChangePiety(30f);
+        performer.ChangePiety(3f);
         return true;
     }
 }

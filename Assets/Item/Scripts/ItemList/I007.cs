@@ -11,7 +11,7 @@ public class I007 : Item
 
     [Header("태양의 은총 설정")]
     [Tooltip("처음 공작 사용 시 추가로 획득할 정치력")]
-    [SerializeField] private float plotInfluenceBonus = 20f;
+    [SerializeField] private float plotInfluenceBonus = 2f;
 
     private bool hasTriggeredToday;
 
@@ -26,7 +26,7 @@ public class I007 : Item
         itemDescription = "은으로 만든 총이다. 발사 기능은 없지만 뇌물로서의 가치는 뛰어나다.";
         itemEffectDescription = "오늘 공작 시 정치력 20 증가, 내일 0으로 초기화";
 
-        plotInfluenceBonus = 20f;
+        plotInfluenceBonus = 2f;
     }
 
     public override void OnAcquire()

@@ -20,9 +20,9 @@ public class P014 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 0;
+        minInfluence = 2;
         pietyCost = 0;
-        pietyDelta = 30;
+        pietyDelta = 3;
 
         // 텍스트 기본값
         plotName = "태양 경배 자세";

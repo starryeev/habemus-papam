@@ -26,9 +26,9 @@ public class P030 : Plot
         plotWeightBase = 10;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 55;
+        minInfluence = 6;
         pietyCost = 0;
-        influenceDelta = 20;
+        influenceDelta = 4;
 
         // 텍스트 기본값
         plotName = "결코 다시 전쟁!";

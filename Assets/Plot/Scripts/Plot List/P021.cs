@@ -26,11 +26,11 @@ public class P021 : Plot
         plotWeightBase = 15;
         plotWeightMultiplier = 0.05f;
 
-        minInfluence = 55;
-        pietyCost = 10;
-        influenceDelta = -15;
-        baseNextDayInfluenceDelta = 20;
-        influenceGainPerConclave = 10;
+        minInfluence = 6;
+        pietyCost = 1;
+        influenceDelta = -2;
+        baseNextDayInfluenceDelta = 2;
+        influenceGainPerConclave = 1;
 
         // 텍스트 기본값
         plotName = "무릎 꿇기";

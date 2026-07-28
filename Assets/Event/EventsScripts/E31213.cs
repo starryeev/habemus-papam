@@ -40,10 +40,10 @@ public class E31213 : Event
 
         if(Random.value <= option1Chance)
         {  // 성공했을 때 로직
-            performer.ChangeInfluence(10f);
+            performer.ChangeInfluence(1f);
 
             var aiCardinals = CardinalManager.Instance.GetAICardinlas();
-            aiCardinals[0].ChangeInfluence(30f);
+            aiCardinals[0].ChangeInfluence(3f);
 
             return FinishChoice(1, true);
         }
@@ -62,10 +62,10 @@ public class E31213 : Event
 
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
-            performer.ChangePiety(20f);
+            performer.ChangePiety(2f);
 
             var aiCardinals = CardinalManager.Instance.GetAICardinlas();
-            aiCardinals[2].ChangeInfluence(30f);
+            aiCardinals[2].ChangeInfluence(3f);
 
             return FinishChoice(2, true);
         }

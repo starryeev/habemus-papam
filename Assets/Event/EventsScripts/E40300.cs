@@ -49,7 +49,7 @@ public class E40300 : Event
             return true;
         }
 
-        performer.ChangeHp(-30f);
+        performer.ChangeHp(-3f);
         return false;
     }
 

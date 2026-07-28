@@ -9,6 +9,7 @@ public class P031 : Plot
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
     [SerializeField] private int influenceTarget;
+    [SerializeField] private int hpTarget;
 
     public override int cost => pietyCost;
 
@@ -22,14 +23,15 @@ public class P031 : Plot
         plotWeightBase = 10;
         plotWeightMultiplier = 0.05f;
 
-        minInfluence = 85;
-        pietyCost = 50;
-        influenceTarget = 20;
+        minInfluence = 9;
+        pietyCost = 5;
+        influenceTarget = 2;
+        hpTarget = 7;
 
         // 텍스트 기본값
         plotName = "숙면";
         plotDescription = "드르렁 쿨쿨...";
-        plotEffect = "정치력<sprite name=influence>을 20으로 조정\n이번 콘클라베 동안 행동 불가";
+        plotEffect = "정치력을 2, 체력을 7로 조정\n남은 콘클라베 동안 기도 불가";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }
@@ -54,12 +56,9 @@ public class P031 : Plot
 
         performer.ChangeInfluence(-currentInfluence);
         performer.ChangeInfluence(influenceTarget);
+        performer.ChangeHp(hpTarget - performer.Hp);
 
-        StateController performerSC = performer.GetComponent<StateController>();
-        if (performerSC != null)
-        {
-            performerSC.ApplyStun(-1f);
-        }
+        // 기도만 제한하는 공통 행동 권한 계약이 생기면 콘클라베 종료까지 해당 권한을 잠근다.
     }
 
 }

@@ -24,11 +24,11 @@ public class P011 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 20;
+        minInfluence = 2;
         pietyCost = 0;
-        hpIncrease = 10;
-        hpDecrease = -20;
-        influenceDelta = 20;
+        hpIncrease = 1;
+        hpDecrease = -2;
+        influenceDelta = 2;
 
         // 텍스트 기본값
         plotName = "태양의 혀";

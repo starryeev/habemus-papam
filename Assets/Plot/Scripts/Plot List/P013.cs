@@ -21,9 +21,9 @@ public class P013 : Plot
         plotWeightBase = 10;
         plotWeightMultiplier = 0.15f;
 
-        minInfluence = 0;
-        pietyCost = 15;
-        influenceDelta = 15;
+        minInfluence = 1;
+        pietyCost = 2;
+        influenceDelta = 2;
 
         // 텍스트 기본값
         plotName = "심도 있는 논의";

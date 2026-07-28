@@ -18,7 +18,7 @@ public class E30000 : Event
 
     public override bool CanChoiceOption1(Cardinal performer)
     {
-        if(performer.Piety < 30) return false;
+        if(performer.Piety < 3) return false;
         return true;
     }
 
@@ -52,14 +52,14 @@ public class E30000 : Event
 
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
-            performer.ChangeHp(30);
-            InGameManager.Instance.Context.ChangeRemainingTime(-20f);
+            performer.ChangeHp(3);
+            InGameManager.Instance.QueueNextTurnActionDelta(-1);
 
             return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
-            InGameManager.Instance.Context.ChangeRemainingTime(-99999f);
+            InGameManager.Instance.EndCurrentConclave();
             return FinishChoice(2, false);
         }
     }

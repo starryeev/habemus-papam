@@ -21,9 +21,9 @@ public class P024 : Plot
         plotWeightBase = 15;
         plotWeightMultiplier = 0f;
 
-        minHp = 40;
+        minHp = 4;
         pietyCost = 0;
-        statsDelta = 15;
+        statsDelta = 2;
 
         // 텍스트 기본값
         plotName = "가지치기";

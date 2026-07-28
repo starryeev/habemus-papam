@@ -21,8 +21,8 @@ public class P028 : Plot
         plotWeightBase = 5;
         plotWeightMultiplier = 0.15f;
 
-        maxInfluence = 30;
-        pietyCost = 40;
+        maxInfluence = 5;
+        pietyCost = 4;
 
         // 텍스트 기본값
         plotName = "레수르스망";

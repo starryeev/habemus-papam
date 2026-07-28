@@ -22,4 +22,4 @@ MonoBehaviour:
   itemGrade: 0
   itemExpirationType: 0
   usageType: 0
-  influenceDelta: 10
+  influenceDelta: 1

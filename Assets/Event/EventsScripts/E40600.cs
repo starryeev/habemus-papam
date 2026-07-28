@@ -27,7 +27,7 @@ public class E40600 : Event
 
     public override bool CanChoiceOption1(Cardinal performer)
     {
-        if(performer.Hp > 25f) return false;
+        if(performer.Hp > 3f) return false;
         return true;
     }
 
@@ -39,7 +39,7 @@ public class E40600 : Event
     public override bool OnChoiceOption1(Cardinal performer)
     {
         if(!CanChoiceOption1(performer)) return false;
-        performer.ChangeHp(40f);
+        performer.ChangeHp(4f);
         InGameManager.Instance.EventManager.GuaranteeNextPrayerOrSpeech();
         return FinishChoice(1, true);
     }

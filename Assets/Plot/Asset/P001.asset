@@ -15,13 +15,13 @@ MonoBehaviour:
   plotID: P001
   plotName: "\uD55C \uC228 \uB3CC\uB9AC\uAE30"
   plotDescription: "\uD734\uC6B0..."
-  plotEffect: "\uCCB4\uB825<sprite name=hp> 20 \uC99D\uAC00"
-  plotCondiText: <sprite name=influence>15<sprite name=up>
-  plotCostText: <sprite name=piety>  20
+  plotEffect: "체력<sprite name=hp> 2 증가"
+  plotCondiText: <sprite name=influence>2<sprite name=up>
+  plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}
   plotGrade: 0
   plotWeightBase: 20
   plotWeightMultiplier: 0
-  minInfluence: 15
-  pietyCost: 20
-  hpDelta: 20
+  minInfluence: 2
+  pietyCost: 2
+  hpDelta: 2

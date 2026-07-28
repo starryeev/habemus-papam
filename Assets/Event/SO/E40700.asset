@@ -28,22 +28,18 @@ MonoBehaviour:
   conflictEvents: []
   option1: "\uC544\uB2C8\uB2E4 \uC774 \uC545\uB9C8\uC57C!"
   option1Chance: 1
-  option1Requirement: "\uACBD\uAC74\uD568 60 \uC774\uC0C1"
+  option1Requirement: "\uACBD\uAC8\uD57 6 \uC78\uC0C1"
   option1SuccessDescription: "\uB098\uC758 \uB2A5\uB825\uC744 \uC870\uC2EC\uD558\uB77C,
     \uC194\uB77C \uB79C\uD134 \uBE5B!\n\uBA38\uB9AC\uC5D0\uC11C \uB098\uC628 \uCC2C\uB780\uD55C
     \uAD11\uD718\uC5D0 \uC545\uB9C8\uB294 \uC800\uD56D\uB3C4 \uBABB\uD558\uACE0 \uC2A4\uB7EC\uC84C\uB2E4.\n\n\uCCB4\uB825
     100 \uC99D\uAC00!"
-  option1SuccessResult: "\uCCB4\uB825 + 100"
+  option1SuccessResult: "체력 +10"
   option1FailDescription: 
   option1FailResult: 
   option2: "\uD760, \uB4E3\uACE0 \uBCF4\uB2C8 \uB9DE\uB294 \uB9D0\uC774\uAD70. \uBC18\uBC15\uD560
     \uC218\uAC00 \uC5C6\uB2E4."
   option2Chance: 1
-  option2SuccessDescription: "\uC5ED\uC0AC\uB294 \uBC18\uBCF5\uB418\uACE0 \uC0AC\uB78C\uC740
-    \uB04A\uC784\uC5C6\uC774 \uBA4D\uCCAD\uD55C \uC9D3\uC744 \uD55C\uB2E4.\n\n\uCCB4\uB825
-    20 \uAC10\uC18C!\n\uC774\uBC88 \uC36C\u3161\uD074\uB77C\uBCA0 \uB3D9\uC548 \uC774\uB3D9
-    \uC18D\uB3C4 30% \uAC10\uC18C!"
-  option2SuccessResult: "\uCCB4\uB825 - 20\n\uCF58\uD074\uB77C\uBCA0 \uC885\uB8CC\uAE4C\uC9C0
-    \uC774\uB3D9 \uC18D\uB3C4 - 30%"
+  option2SuccessDescription: "역사는 반복되고 사람은 끊임없이 멍청한 짓을 한다.\n\n체력 2 감소!\n다음 턴 행동 횟수 1회 감소!"
+  option2SuccessResult: "체력 -2\n다음 턴 행동 횟수 -1"
   option2FailDescription: 
   option2FailResult: 

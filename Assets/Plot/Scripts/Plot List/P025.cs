@@ -21,9 +21,9 @@ public class P025 : Plot
         plotWeightBase = 10;
         plotWeightMultiplier = 0.1f;
 
-        minInfluence = 60;
-        pietyCost = 40;
-        influenceDelta = 30;
+        minInfluence = 6;
+        pietyCost = 4;
+        influenceDelta = 3;
 
         // 텍스트 기본값
         plotName = "앙코르";

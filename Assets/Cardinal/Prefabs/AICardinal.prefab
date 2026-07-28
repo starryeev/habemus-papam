@@ -49,10 +49,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a15b5b6defa540e5a25f63bc7113600, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cardinal
-  hp: 100
+  hp: 10
   hpDrainMultiplier: 1
-  influence: 20
-  piety: 20
+  influence: 2
+  piety: 2
   baseMoveSpeed: 0
 --- !u!114 &7434970650133866091
 MonoBehaviour:

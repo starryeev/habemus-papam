@@ -20,8 +20,8 @@ public class I003 : Item
         itemDescription = "이 잔에 미사를 할 때마다 태양주를 한 잔씩 마실 수 있다. 그것이 미사니까! (끄덕)";
         
 
-        hpDelta = -5;
-        influenceDelta = 5;
+        hpDelta = -1;
+        influenceDelta = 1;
     }
 
     public override void OnPray(Cardinal owner)

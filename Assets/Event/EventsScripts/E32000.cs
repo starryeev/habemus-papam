@@ -51,8 +51,8 @@ public class E32000 : Event
             var aiCardinals = CardinalManager.Instance.GetAICardinlas();
             if(aiCardinals.Count > 1)
             {
-                aiCardinals[1].ChangePiety(80f);
-                aiCardinals[1].ChangeHp(-100f);
+                aiCardinals[1].ChangePiety(8f);
+                aiCardinals[1].ChangeHp(-10f);
             }
 
             return FinishChoice(1, true);
@@ -64,8 +64,8 @@ public class E32000 : Event
             EliminateCandidate(2);
             foreach(var cardinal in GetPlayerAndMainCandidates(performer))
             {
-                cardinal.ChangeHp(-20f);
-                cardinal.ChangeInfluence(-30f);
+                cardinal.ChangeHp(-2f);
+                cardinal.ChangeInfluence(-3f);
             }
 
             return FinishChoice(1, false);
@@ -83,7 +83,7 @@ public class E32000 : Event
 
             foreach(var cardinal in GetPlayerAndMainCandidates(performer))
             {
-                cardinal.ChangePiety(-40f);
+                cardinal.ChangePiety(-4f);
             }
 
             return FinishChoice(2, true);
@@ -99,7 +99,7 @@ public class E32000 : Event
     private void EndCurrentConclave()
     {
         // 해당 콘클라베 즉시 종료 처리
-        InGameManager.Instance.Context.ChangeRemainingTime(-99999f);
+        InGameManager.Instance.EndCurrentConclave();
     }
 
     private List<Cardinal> GetPlayerAndMainCandidates(Cardinal performer)

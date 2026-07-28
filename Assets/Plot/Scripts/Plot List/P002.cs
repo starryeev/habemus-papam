@@ -21,9 +21,9 @@ public class P002 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        maxInfluence = 30;
-        pietyCost = 20;
-        influenceDelta = 15;
+        maxInfluence = 1;
+        pietyCost = 2;
+        influenceDelta = 2;
 
         // 텍스트 기본값
         plotName = "은밀한 논의";

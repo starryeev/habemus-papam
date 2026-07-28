@@ -7,7 +7,7 @@ public class PlayerHealthVignetteController : MonoBehaviour
 {
     public static PlayerHealthVignetteController Instance { get; private set; }
 
-    private const float CriticalHpThreshold = 20f;
+    private const float CriticalHpThreshold = 2f;
     private const float LowHpMaxAlpha = 34f;
     private const float FirstDownMaxAlpha = 90f;
     private const float FinalGameOverMaxAlpha = 255f;

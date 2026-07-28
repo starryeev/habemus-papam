@@ -22,8 +22,8 @@ public class P026 : Plot
         plotWeightBase = 15;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 0;
-        pietyCost = 20;
+        minInfluence = 3;
+        pietyCost = 2;
         rewardCount = 2;
 
         // 텍스트 기본값

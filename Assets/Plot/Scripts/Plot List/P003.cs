@@ -21,9 +21,9 @@ public class P003 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 30;
-        pietyCost = 15;
-        pietyDelta = 30;
+        minInfluence = 3;
+        pietyCost = 2;
+        pietyDelta = 3;
 
         // 텍스트 기본값
         plotName = "마니또";

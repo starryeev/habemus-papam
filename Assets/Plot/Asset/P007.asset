@@ -15,15 +15,12 @@ MonoBehaviour:
   plotID: P007
   plotName: "\uB4DC\uB78D \uB354 \uBE44\uD2B8"
   plotDescription: "\uC0C8\uAE34\uB2E4! \uD0DC\uC591\uC758 \uBE44\uD2B8!"
-  plotEffect: "\uBAA8\uB4E0 \uD6C4\uBCF4 \uC774\uB3D9\uC18D\uB3C4 10% \uC99D\uAC00
-    20\uCD08"
-  plotCondiText: <sprite name=influence>20<sprite name=up>
-  plotCostText: <sprite name=piety>  15
+  plotEffect: "모든 후보의 다음 턴 행동 횟수 1회 감소"
+  plotCondiText: <sprite name=influence>4<sprite name=up>
+  plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}
   plotGrade: 0
   plotWeightBase: 15
   plotWeightMultiplier: 0
-  minInfluence: 20
-  pietyCost: 15
-  speedPercentDelta: 0.1
-  duration: 20
+  minInfluence: 4
+  pietyCost: 2

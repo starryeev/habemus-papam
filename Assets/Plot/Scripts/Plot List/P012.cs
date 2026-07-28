@@ -21,9 +21,9 @@ public class P012 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 40;
-        pietyCost = 35;
-        hpDelta = 20;
+        minInfluence = 3;
+        pietyCost = 3;
+        hpDelta = 2;
 
         // 텍스트 기본값
         plotName = "푹 쉬기";

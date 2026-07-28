@@ -23,8 +23,8 @@ public class P032 : Plot
         plotWeightBase = 15;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 70;
-        pietyCost = 70;
+        minInfluence = 7;
+        pietyCost = 7;
         rewardCount = 1;
 
         // 텍스트 기본값

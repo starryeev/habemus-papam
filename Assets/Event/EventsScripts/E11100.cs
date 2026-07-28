@@ -46,10 +46,8 @@ public class E11100 : Event
     {
         if(Random.value > option1Chance) return false;
 
-        performer.ChangePiety(80f);
-        performer.ChangeInfluence(40f);
-        performer.hpDrainMultiplier *= 2f;
-
+        performer.ChangePiety(8f);
+        performer.ChangeInfluence(4f);
         return FinishChoice(1, true);
     }
 

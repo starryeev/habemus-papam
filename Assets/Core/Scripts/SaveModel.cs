@@ -5,7 +5,7 @@ using UnityEngine;
 [Serializable]
 public class SaveModel
 {
-    public int version = 1;
+    public int version = 2;
     public string savedAtUtc;
     public string sceneName = "GameScene";
     public GameContextSaveData gameContext = new GameContextSaveData();
@@ -213,7 +213,16 @@ public class GameContextSaveData
 {
     public int day = 1;
     public int conclave;
-    public float remainingTime;
+    public int currentTurn = 1;
+    public int completedActions;
+    public int actionsThisTurn = 2;
+    public bool isEventPhase;
+    public int nextTurnActionModifier;
+    public bool blockNextTurn;
+    public bool blockRemainingCurrentTurn;
+    public bool awaitingTurnEvent;
+    public bool endConclaveAfterEvent;
+    public string currentEventId = string.Empty;
     public bool isTimeRunning;
     public bool isFirstStart = true;
     public bool isSushiOn;
@@ -264,6 +273,7 @@ public class EventManagerSaveData
     public List<EventRecordSaveData> records = new List<EventRecordSaveData>();
     public List<EventChoiceSaveData> choices = new List<EventChoiceSaveData>();
     public List<EventPlotDamageBonusSaveData> plotDamageBonuses = new List<EventPlotDamageBonusSaveData>();
+    public List<int> attemptedScheduledSlots = new List<int>();
     public bool guaranteeNextPrayerOrSpeech;
     public bool freePlotPietyForCurrentConclave;
 }

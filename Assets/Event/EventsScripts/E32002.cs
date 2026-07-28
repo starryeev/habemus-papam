@@ -44,7 +44,7 @@ public class E32002 : Event
 
         if(Random.value <= option1Chance)
         {  // 성공했을 때 로직
-            performer.ChangePiety(-10f);
+            performer.ChangePiety(-1f);
 
             return FinishChoiceWithEnding(1, EndingType.Crusade);
         }
@@ -63,7 +63,7 @@ public class E32002 : Event
 
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
-            performer.ChangeInfluence(10f);
+            performer.ChangeInfluence(1f);
 
             return FinishChoiceWithEnding(2, EndingType.DiplomaticVictory);
         }

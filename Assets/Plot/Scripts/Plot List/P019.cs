@@ -7,7 +7,6 @@ public class P019 : Plot
     [Header("해당 공작 설정")]
     [SerializeField] private int maxInfluence;
     [SerializeField] private int pietyCost;
-    [SerializeField] private float stunTime;
 
     public override int cost => pietyCost;
 
@@ -21,14 +20,13 @@ public class P019 : Plot
         plotWeightBase = 15;
         plotWeightMultiplier = 0f;
 
-        maxInfluence = 45;
-        pietyCost = 45;
-        stunTime = 45f;
+        maxInfluence = 4;
+        pietyCost = 4;
 
         // 텍스트 기본값
         plotName = "목 좀 축이세요";
         plotDescription = "푸룬 주스가 뭘까...?";
-        plotEffect = "가장 체력이 높은 상대 후보 행동 불가 45초";
+        plotEffect = "모든 후보의 다음 2회 행동 불가";
         plotCondiText = $"<sprite name=influence>{maxInfluence}<sprite name=down>";
         plotCostText = $"<sprite name=piety>  {cost}";
 
@@ -67,12 +65,8 @@ public class P019 : Plot
 
         if (target != null)
         {
-            StateController targetSC = target.GetComponent<StateController>();
-
-            if (targetSC != null)
-            {
-                targetSC.ApplyStun(stunTime);
-            }
+            if (target.CompareTag("Player")) InGameManager.Instance.BlockPlayerTurnActions();
+            else Debug.Log("[Turn] NPC 행동 슬롯 시스템 도입 전까지 P019 행동 불가 효과는 보류됩니다.");
         }
     }
 

@@ -25,13 +25,13 @@ public class P016 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minHp = 33;
-        minInfluence = 33;
-        minPiety = 33;
+        minHp = 3;
+        minInfluence = 3;
+        minPiety = 3;
         pietyCost = 0;
-        hpDelta = 33;
-        influenceDelta = -33;
-        pietyDelta = -33;
+        hpDelta = 3;
+        influenceDelta = -3;
+        pietyDelta = -3;
 
         // 텍스트 기본값
         plotName = "삼위일체?";

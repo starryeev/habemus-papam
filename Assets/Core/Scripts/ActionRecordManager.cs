@@ -326,14 +326,14 @@ public class ActionRecordManager : MonoBehaviour
             currentRunDirty = true;
         }
 
-        if (player.Piety <= 20f)
+        if (player.Piety <= 2f)
         {
             currentRunStats.lowPietyTime += deltaTime;
             persistentStats.lowPietyTime += deltaTime;
             currentRunDirty = true;
         }
 
-        if (player.Influence <= 20f)
+        if (player.Influence <= 2f)
         {
             currentRunStats.lowInfluenceTime += deltaTime;
             persistentStats.lowInfluenceTime += deltaTime;

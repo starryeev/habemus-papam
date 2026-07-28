@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "E40000", menuName = "Events/산책")]
@@ -30,7 +29,7 @@ public class E40000 : Event
 
     public override bool CanChoiceOption1(Cardinal performer)
     {
-        if(performer.Piety < 50f) return false;
+        if(performer.Piety < 5f) return false;
         return true;
     }
 
@@ -45,8 +44,8 @@ public class E40000 : Event
 
         if(Random.value <= option1Chance)
         {
-            performer.ChangeHp(15f);
-            performer.ChangePiety(5f);
+            performer.ChangeHp(2f);
+            performer.ChangePiety(1f);
             return true;
         }
 
@@ -59,30 +58,12 @@ public class E40000 : Event
 
         if(Random.value <= option2Chance)
         {
-            performer.ChangeHp(-10f);
-            performer.StartCoroutine(Co_ApplySpeedUntilConclaveEnd(performer, -0.15f));
+            performer.ChangeHp(-1f);
+            InGameManager.Instance.QueueNextTurnActionDelta(-1);
             return true;
         }
 
         return false;
     }
 
-    private IEnumerator Co_ApplySpeedUntilConclaveEnd(Cardinal target, float delta)
-    {
-        if(target == null || InGameManager.Instance == null || InGameManager.Instance.Context == null) yield break;
-
-        bool isEnded = false;
-        GameContext context = InGameManager.Instance.Context;
-
-        void OnContextEvent(GameContext.GameContextEvent eventType)
-        {
-            if(eventType == GameContext.GameContextEvent.ConclaveEnd) isEnded = true;
-        }
-
-        target.ChangeSpeed(delta);
-        context.OnGameContextEvent += OnContextEvent;
-        yield return new WaitUntil(() => isEnded || target == null);
-        if(target != null) target.ChangeSpeed(-delta);
-        context.OnGameContextEvent -= OnContextEvent;
-    }
 }

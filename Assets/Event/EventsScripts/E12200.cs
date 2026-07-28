@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "E12200", menuName = "Events/태양의 발")]
@@ -22,7 +21,7 @@ public class E12200 : Event
 
     public override bool CanChoiceOption1(Cardinal performer)
     {
-        if(performer.Piety >= 40f) return true;
+        if(performer.Piety >= 4f) return true;
         else return false;
     }
 
@@ -36,7 +35,7 @@ public class E12200 : Event
         if(Random.value > option1Chance) return false;
         if(!CanChoiceOption1(performer)) return false;
 
-        performer.ChangePiety(10);
+        performer.ChangePiety(1);
 
         return true;
     }
@@ -48,35 +47,17 @@ public class E12200 : Event
 
         if(Random.value <= option2Chance)
         {
-            performer.ChangeHp(-10f);
-            performer.StartCoroutine(Co_ApplySpeedUntilConclaveEnd(performer, 0.3f));
+            performer.ChangeHp(-1f);
+            InGameManager.Instance.QueueNextTurnActionDelta(1);
 
             return FinishChoice(2, true);
         }
         else
         {
-            performer.ChangeHp(-10f);
-            performer.StartCoroutine(Co_ApplySpeedUntilConclaveEnd(performer, -0.2f));
+            performer.ChangeHp(-1f);
+            InGameManager.Instance.QueueNextTurnActionDelta(-1);
             return FinishChoice(2, false);
         }
     }
 
-    private IEnumerator Co_ApplySpeedUntilConclaveEnd(Cardinal target, float delta)
-    {
-        if(target == null || InGameManager.Instance == null || InGameManager.Instance.Context == null) yield break;
-
-        bool isEnded = false;
-        GameContext context = InGameManager.Instance.Context;
-
-        void OnContextEvent(GameContext.GameContextEvent eventType)
-        {
-            if(eventType == GameContext.GameContextEvent.ConclaveEnd) isEnded = true;
-        }
-
-        target.ChangeSpeed(delta);
-        context.OnGameContextEvent += OnContextEvent;
-        yield return new WaitUntil(() => isEnded || target == null);
-        if(target != null) target.ChangeSpeed(-delta);
-        context.OnGameContextEvent -= OnContextEvent;
-    }
 }

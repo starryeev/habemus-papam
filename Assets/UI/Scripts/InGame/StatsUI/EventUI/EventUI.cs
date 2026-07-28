@@ -91,5 +91,9 @@ public class EventUI : MonoBehaviour
     {
         Debug.Log("EventUI.Close");
         SetState(EventUIState.NONE);
+        if (InGameManager.Instance != null)
+        {
+            InGameManager.Instance.OnTurnEventClosed();
+        }
     }
 }

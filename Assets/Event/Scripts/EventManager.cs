@@ -10,6 +10,7 @@ public class EventManager : MonoBehaviour
     private readonly Dictionary<Event, int> appearedCnt = new();
     private readonly Dictionary<string, ChoiceRecord> choiceRecords = new();
     private readonly Dictionary<int, float> plotDamageBonuses = new();
+    private readonly HashSet<int> attemptedScheduledSlots = new();
 
     private bool guaranteeNextPrayerOrSpeech;
     private bool freePlotPietyForCurrentConclave;
@@ -47,6 +48,29 @@ public class EventManager : MonoBehaviour
         { "E32002", NewIdSet("E32001") }
     };
 
+    // 기획표의 m-d 표기는 날짜가 아니라 일차-콘클라베 차수다.
+    // 한 슬롯에 여러 이벤트가 있으면 표의 발생 확률(가중치)로 하나를 선택한다.
+    private static readonly Dictionary<string, HashSet<int>> ScheduledConclaveSlots = new()
+    {
+        { "E12100", NewSlotSet(2, 2) },
+        { "E12200", NewSlotSet(2, 2) },
+        { "E12300", NewSlotSet(2, 2) },
+        { "E20000", NewSlotSet(2, 1) },
+        { "E21000", NewSlotSet(2, 3) },
+        { "E21100", NewSlotSet(3, 1) },
+        { "E21101", NewSlotSet(4, 1) },
+        { "E30000", NewSlotSet(1, 3) },
+        { "E31000", NewSlotSet(1, 4) },
+        { "E31100", NewSlotSet(3, 1, 3, 2, 3, 3, 3, 4) },
+        { "E31101", NewSlotSet(4, 3) },
+        { "E31200", NewSlotSet(3, 1, 3, 2, 3, 3, 3, 4) },
+        { "E31210", NewSlotSet(4, 1) },
+        { "E31211", NewSlotSet(4, 3) },
+        { "E31212", NewSlotSet(1, 4) },
+        { "E31213", NewSlotSet(2, 2) },
+        { "E32000", NewSlotSet(3, 1, 3, 2, 3, 3) }
+    };
+
     private struct ChoiceRecord
     {
         public int optionIndex;
@@ -81,12 +105,27 @@ public class EventManager : MonoBehaviour
             return null;
         }
 
-        List<Event> eligibleEvents = allEvents
+        List<Event> conditionSatisfied = allEvents
             .Where(e => e != null && HasRemaining(e) && PreEventSatisfied(e) &&
-                        ConflictEventSatisfied(e) && NarrativeConditionSatisfied(e))
+                        ConflictEventSatisfied(e) && NarrativeConditionSatisfied(e) &&
+                        IsSupportedByTurnSystem(e))
             .ToList();
 
-        Event pickedEvent = PickWeightedEvent(eligibleEvents);
+        bool scheduledSlotOpen = !IsCurrentScheduledSlotResolved() && HasScheduleForCurrentSlot();
+        List<Event> scheduledEvents = scheduledSlotOpen
+            ? conditionSatisfied.Where(IsScheduledForCurrentConclave).ToList()
+            : new List<Event>();
+        List<Event> scheduledStories = scheduledEvents.Where(IsStoryEvent).ToList();
+        if (scheduledStories.Count > 0) scheduledEvents = scheduledStories;
+        if (scheduledSlotOpen) attemptedScheduledSlots.Add(GetCurrentScheduleSlot());
+        Event pickedEvent = PickScheduledEvent(scheduledEvents);
+        if (pickedEvent == null)
+        {
+            List<Event> normalEvents = conditionSatisfied
+                .Where(e => !ScheduledConclaveSlots.ContainsKey(e.eventID))
+                .ToList();
+            pickedEvent = PickWeightedEvent(normalEvents);
+        }
         if (pickedEvent == null)
         {
             Debug.LogWarning("[Event] 현재 조건을 만족하는 이벤트가 없습니다.");
@@ -185,6 +224,7 @@ public class EventManager : MonoBehaviour
         appearedCnt.Clear();
         choiceRecords.Clear();
         plotDamageBonuses.Clear();
+        attemptedScheduledSlots.Clear();
         ClearConclaveEffects();
     }
 
@@ -209,6 +249,51 @@ public class EventManager : MonoBehaviour
         }
 
         return !succeeded.HasValue || record.succeeded == succeeded.Value;
+    }
+
+    public bool TryGetTemporaryFlagValue(string flagId, out int value)
+    {
+        value = 0;
+        switch (flagId)
+        {
+            // F10000은 기획표의 발생 이벤트(E21000)와 설명(콜버스의 선원)이 서로 달라 보류한다.
+            case "F10001":
+                value = WasChoice("E21101", 1) || WasChoice("E31100", 2) ||
+                    WasChoice("E31211", 1) || WasChoice("E32001", 1) ? 1 : 0;
+                return value != 0;
+            case "F10011": return TryGetRecordedOption("E21100", out value);
+            case "F20000": return TryGetBooleanChoice("E30000", 1, out value);
+            case "F21000": return TryGetRecordedOption("E31000", out value);
+            case "F21100": return TryGetBooleanChoice("E31100", 1, out value);
+            case "F21110": return TryGetRecordedOption("E31101", out value);
+            case "F21200": return TryGetBooleanChoice("E31200", 1, out value);
+            case "F21210":
+                value = WasChoice("E31210", 2, false) ? 1 : 0;
+                return value != 0;
+            case "F30000":
+                if (!choiceRecords.TryGetValue("E31212", out ChoiceRecord ascension) || ascension.optionIndex != 1)
+                    return false;
+                value = ascension.succeeded ? 1 : 0;
+                return true;
+            case "F31000": return TryGetBooleanChoice("E31213", 2, out value);
+            case "F31100": return TryGetBooleanChoice("E32000", 1, out value);
+            case "F31110": return TryGetBooleanChoice("E32001", 2, out value);
+            default: return false;
+        }
+    }
+
+    private bool TryGetRecordedOption(string eventId, out int optionIndex)
+    {
+        optionIndex = 0;
+        if (!choiceRecords.TryGetValue(eventId, out ChoiceRecord record)) return false;
+        optionIndex = record.optionIndex;
+        return true;
+    }
+
+    private bool TryGetBooleanChoice(string eventId, int expectedOption, out int value)
+    {
+        value = WasChoice(eventId, expectedOption) ? 1 : 0;
+        return value != 0;
     }
 
     public void SetPlotDamageBonus(int candidateNumber, float bonus)
@@ -296,6 +381,7 @@ public class EventManager : MonoBehaviour
 
         saveData.guaranteeNextPrayerOrSpeech = guaranteeNextPrayerOrSpeech;
         saveData.freePlotPietyForCurrentConclave = freePlotPietyForCurrentConclave;
+        saveData.attemptedScheduledSlots.AddRange(attemptedScheduledSlots.OrderBy(slot => slot));
 
         return saveData;
     }
@@ -306,6 +392,7 @@ public class EventManager : MonoBehaviour
         appearedCnt.Clear();
         choiceRecords.Clear();
         plotDamageBonuses.Clear();
+        attemptedScheduledSlots.Clear();
         ClearConclaveEffects();
 
         if (saveData == null)
@@ -379,6 +466,14 @@ public class EventManager : MonoBehaviour
             }
         }
 
+        if (saveData.attemptedScheduledSlots != null)
+        {
+            foreach (int slot in saveData.attemptedScheduledSlots)
+            {
+                if (slot >= 11 && slot <= 999) attemptedScheduledSlots.Add(slot);
+            }
+        }
+
         guaranteeNextPrayerOrSpeech = saveData.guaranteeNextPrayerOrSpeech;
         freePlotPietyForCurrentConclave = saveData.freePlotPietyForCurrentConclave;
     }
@@ -412,6 +507,37 @@ public class EventManager : MonoBehaviour
         return candidates[candidates.Count - 1];
     }
 
+    private Event PickScheduledEvent(List<Event> candidates)
+    {
+        if (candidates == null || candidates.Count == 0) return null;
+
+        float roll = Random.value;
+        float accumulated = 0f;
+        foreach (Event candidate in candidates.OrderBy(e => e.eventID))
+        {
+            accumulated += GetScheduledChance(candidate);
+            if (roll <= accumulated) return candidate;
+        }
+
+        // 합계가 1 미만인 슬롯은 남은 확률로 일반 이벤트가 등장한다.
+        return null;
+    }
+
+    private static float GetScheduledChance(Event e)
+    {
+        switch (e.eventID)
+        {
+            case "E12100":
+            case "E12200":
+            case "E12300": return 0.3333f;
+            case "E31000": return 0.7f;
+            case "E31212": return 0.3f;
+            case "E32000": return 0.3f;
+            case "E31101": return Mathf.Clamp01(e.GetEventWeight() / 100f);
+            default: return 1f;
+        }
+    }
+
     private float GetSelectionWeight(Event e)
     {
         switch (e.eventID)
@@ -441,6 +567,52 @@ public class EventManager : MonoBehaviour
             case "E32002": return !WasChoice("E32000", 1, false);
             default: return true;
         }
+    }
+
+    private static bool IsSupportedByTurnSystem(Event e)
+    {
+        return e != null;
+    }
+
+    private bool IsScheduledForCurrentConclave(Event e)
+    {
+        if (e == null || InGameManager.Instance == null ||
+            !ScheduledConclaveSlots.TryGetValue(e.eventID, out HashSet<int> slots))
+        {
+            return false;
+        }
+
+        int day = Mathf.Max(1, InGameManager.Instance.GetCurrentDay());
+        int conclave = (int)InGameManager.Instance.GetCurrentConclave() + 1;
+        return slots.Contains(day * 10 + conclave);
+    }
+
+    private bool IsCurrentScheduledSlotResolved()
+    {
+        if (InGameManager.Instance == null) return false;
+        int slot = GetCurrentScheduleSlot();
+
+        return attemptedScheduledSlots.Contains(slot) || appeared.Any(evt => evt != null &&
+            ScheduledConclaveSlots.TryGetValue(evt.eventID, out HashSet<int> slots) &&
+            slots.Contains(slot));
+    }
+
+    private static int GetCurrentScheduleSlot()
+    {
+        return Mathf.Max(1, InGameManager.Instance.GetCurrentDay()) * 10 +
+            (int)InGameManager.Instance.GetCurrentConclave() + 1;
+    }
+
+    private static bool HasScheduleForCurrentSlot()
+    {
+        int slot = GetCurrentScheduleSlot();
+        return ScheduledConclaveSlots.Values.Any(slots => slots.Contains(slot));
+    }
+
+    private static bool IsStoryEvent(Event e)
+    {
+        if (e == null || string.IsNullOrEmpty(e.eventID) || e.eventID.Length < 2) return false;
+        return int.TryParse(e.eventID.Substring(1, 1), out int category) && category >= 2 && category <= 3;
     }
 
     private bool HasAppeared(string eventId)
@@ -505,10 +677,30 @@ public class EventManager : MonoBehaviour
         plotDamageBonuses.Clear();
         guaranteeNextPrayerOrSpeech = false;
         freePlotPietyForCurrentConclave = false;
+
+        if (CardinalManager.Instance != null)
+        {
+            foreach (Cardinal cardinal in CardinalManager.Instance.Cardinals)
+            {
+                if (cardinal == null) continue;
+                cardinal.SetMinHpOneEffect("E50600", false);
+                cardinal.SetMinHpOneEffect("P030", false);
+            }
+        }
     }
 
     private static HashSet<string> NewIdSet(params string[] ids)
     {
         return new HashSet<string>(ids);
+    }
+
+    private static HashSet<int> NewSlotSet(params int[] dayAndConclavePairs)
+    {
+        HashSet<int> slots = new();
+        for (int index = 0; index + 1 < dayAndConclavePairs.Length; index += 2)
+        {
+            slots.Add(dayAndConclavePairs[index] * 10 + dayAndConclavePairs[index + 1]);
+        }
+        return slots;
     }
 }

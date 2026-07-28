@@ -324,6 +324,8 @@ public class SaveManager : MonoBehaviour
             return;
         }
 
+        MigrateBalanceScale(saveModel);
+
         Time.timeScale = 1f;
         currentGameNames = CloneNames(saveModel.names);
         EnsureCurrentPlayerName();
@@ -348,6 +350,8 @@ public class SaveManager : MonoBehaviour
             InGameManager.Instance.EventManager.RestoreFromSave(saveModel.events);
         }
 
+        InGameManager.Instance.RestorePendingTurnEventUI();
+
         if (PlotManager.Instance != null)
         {
             PlotManager.Instance.RestoreFromSave(saveModel.plots);
@@ -361,6 +365,49 @@ public class SaveManager : MonoBehaviour
         }
 
         RefreshSceneUi(saveModel);
+    }
+
+    private static void MigrateBalanceScale(SaveModel saveModel)
+    {
+        if (saveModel.version >= 2) return;
+
+        if (saveModel.cardinals != null)
+        {
+            foreach (CardinalSaveData cardinal in saveModel.cardinals)
+            {
+                if (cardinal == null) continue;
+                cardinal.hp = ScaleLegacyStat(cardinal.hp);
+                cardinal.influence = ScaleLegacyStat(cardinal.influence);
+                cardinal.piety = ScaleLegacyStat(cardinal.piety);
+                cardinal.prayDeltaHpEvent = ScaleLegacyStat(cardinal.prayDeltaHpEvent);
+            }
+        }
+
+        if (saveModel.gameContext != null)
+        {
+            saveModel.gameContext.currentTurn = 1;
+            saveModel.gameContext.completedActions = 0;
+            saveModel.gameContext.actionsThisTurn = 2;
+            saveModel.gameContext.isEventPhase = false;
+            saveModel.gameContext.awaitingTurnEvent = false;
+            saveModel.gameContext.endConclaveAfterEvent = false;
+            saveModel.gameContext.blockRemainingCurrentTurn = false;
+        }
+
+        if (saveModel.events != null && saveModel.events.plotDamageBonuses != null)
+        {
+            foreach (EventPlotDamageBonusSaveData bonus in saveModel.events.plotDamageBonuses)
+            {
+                if (bonus != null) bonus.bonus = ScaleLegacyStat(bonus.bonus);
+            }
+        }
+
+        saveModel.version = 2;
+    }
+
+    private static float ScaleLegacyStat(float value)
+    {
+        return Mathf.Sign(value) * Mathf.Ceil(Mathf.Abs(value) / 10f);
     }
 
     private void RefreshSceneUi(SaveModel saveModel)

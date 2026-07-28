@@ -21,17 +21,17 @@ public class Stats : MonoBehaviour
     public void SetHP(float hp)
     {
         this.hp.text = $"{(int)hp}";
-        HP.fillAmount = hp/100;
+        HP.fillAmount = hp/10;
     }
     public void SetPiety(float piety)
     {
         this.piety.text = $"{(int)piety}";
-        Piety.fillAmount = piety/100;
+        Piety.fillAmount = piety/10;
     }
     public void SetInfluence(float inf)
     {
         influence.text = $"{(int)inf}";
-        Influence.fillAmount = inf/100;
+        Influence.fillAmount = inf/10;
     }
 
     public void SetName(string displayName)

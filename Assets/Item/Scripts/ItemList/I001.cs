@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "I001", menuName = "Items/아령")]
 public class I001 : Item
@@ -7,18 +6,13 @@ public class I001 : Item
     [System.Serializable]
     private class RuntimeState
     {
-        public float currentReductionLevel;
+        public int heldTurns;
     }
 
     [Header("아령 설정")]
-    [SerializeField] private float initialReduction = 0.3f;
-    [SerializeField] private float reductionPerTick = 0.01f;
-    [SerializeField] private float tickInterval = 3.0f;
-    [SerializeField] private int healAmount = 40;
-
-    private Coroutine heavyRoutine;
-
-    private float currentReductionLevel;
+    [SerializeField] private int healPerHeldTurn = 1;
+    private int heldTurns;
+    private GameContext subscribedContext;
 
     // 초기화
     void Reset()
@@ -29,31 +23,26 @@ public class I001 : Item
         usageType = ItemUsageType.Active;
 
         itemName = "묵직한 아령";
-        itemEffectDescription = "소지 시 이동 속도 30% 감소, 3초마다 1%씩 추가 감소. 사용 시 체력 40 회복.";
-
-        initialReduction = 0.3f;
-        reductionPerTick = 0.01f;
-        tickInterval = 3.0f;
-        healAmount = 40;
+        itemEffectDescription = "소지 시 기도로 체력을 회복할 수 없다. 사용 시 소지했던 턴 수만큼 체력을 회복한다.";
+        healPerHeldTurn = 1;
     }
 
     public override void OnAcquire()
     {
-        currentReductionLevel = initialReduction;
-        StartEffect(FindPlayer());
-        Debug.Log("[아이템] 아령 획득: 무게 적용 시작");
+        heldTurns = Mathf.Max(1, heldTurns);
+        SubscribeToTurns();
+        Debug.Log("[아이템] 아령 획득: 기도 회복 차단 시작");
     }
 
     public override void OnReapply(Cardinal owner)
     {
-        StartEffect(owner);
+        SubscribeToTurns();
     }
 
     public override void OnRemove()
     {
-        Cardinal player = FindPlayer();
-        StopEffect(player);
-        Debug.Log("[아이템] 아령 제거: 무게 해제");
+        UnsubscribeFromTurns();
+        Debug.Log("[아이템] 아령 제거: 기도 회복 차단 해제");
     }
 
     public override void OnUse()
@@ -61,48 +50,30 @@ public class I001 : Item
         Cardinal player = FindPlayer();
         if (player != null)
         {
-            player.ChangeHp(healAmount);
+            player.ChangeHp(heldTurns * healPerHeldTurn);
         }
+        UnsubscribeFromTurns();
     }
 
-    private void StartEffect(Cardinal target)
+    private void SubscribeToTurns()
     {
-        if (target != null)
-        {
-            if (heavyRoutine != null) target.StopCoroutine(heavyRoutine);
-
-            heavyRoutine = target.StartCoroutine(BecomeHeavierRoutine(target));
-        }
+        GameContext context = InGameManager.Instance != null ? InGameManager.Instance.Context : null;
+        if (context == null || context == subscribedContext) return;
+        UnsubscribeFromTurns();
+        subscribedContext = context;
+        subscribedContext.OnGameContextEvent += HandleContextEvent;
     }
 
-    private void StopEffect(Cardinal target)
+    private void UnsubscribeFromTurns()
     {
-        if (target != null)
-        {
-            if (heavyRoutine != null)
-            {
-                target.StopCoroutine(heavyRoutine);
-                heavyRoutine = null;
-            }
-            target.ChangeSpeed(currentReductionLevel);
-        }
+        if (subscribedContext == null) return;
+        subscribedContext.OnGameContextEvent -= HandleContextEvent;
+        subscribedContext = null;
     }
 
-    private IEnumerator BecomeHeavierRoutine(Cardinal target)
+    private void HandleContextEvent(GameContext.GameContextEvent eventType)
     {
-        target.ChangeSpeed(-currentReductionLevel);
-
-        while (true)
-        {
-            yield return new WaitForSeconds(tickInterval);
-
-            if (currentReductionLevel < 0.99f)
-            {
-                target.ChangeSpeed(-reductionPerTick);
-
-                currentReductionLevel += reductionPerTick;
-            }
-        }
+        if (eventType == GameContext.GameContextEvent.TurnStart) heldTurns++;
     }
 
     private Cardinal FindPlayer()
@@ -113,15 +84,15 @@ public class I001 : Item
 
     public override void ResetRuntimeState()
     {
-        heavyRoutine = null;
-        currentReductionLevel = initialReduction;
+        UnsubscribeFromTurns();
+        heldTurns = 0;
     }
 
     public override string CaptureRuntimeState()
     {
         RuntimeState state = new RuntimeState
         {
-            currentReductionLevel = currentReductionLevel
+            heldTurns = heldTurns
         };
 
         return JsonUtility.ToJson(state);
@@ -139,7 +110,7 @@ public class I001 : Item
         RuntimeState state = JsonUtility.FromJson<RuntimeState>(runtimeStateJson);
         if (state != null)
         {
-            currentReductionLevel = state.currentReductionLevel;
+            heldTurns = Mathf.Max(1, state.heldTurns);
         }
     }
 }

@@ -18,7 +18,7 @@ public class I010 : Item
         itemExpirationType = ItemExpirationType.Day; 
         usageType = ItemUsageType.Passive;
 
-        pietyBonus = 5f;
+        pietyBonus = 1f;
     }
 
     public override float ModifySpeechInfluence(float originalDelta, GameBalance balance, bool isSuccess)

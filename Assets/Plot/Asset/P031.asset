@@ -15,14 +15,14 @@ MonoBehaviour:
   plotID: P031
   plotName: "\uC219\uBA74"
   plotDescription: "\uB4DC\uB974\uB801 \uCFE8\uCFE8..."
-  plotEffect: "\uC815\uCE58\uB825<sprite name=influence>\uC744 20\uC73C\uB85C \uC870\uC815\n\uC774\uBC88
-    \uCF58\uD074\uB77C\uBCA0 \uB3D9\uC548 \uD589\uB3D9 \uBD88\uAC00"
-  plotCondiText: <sprite name=influence>85<sprite name=up>
-  plotCostText: <sprite name=piety>  50
+  plotEffect: "정치력을 2, 체력을 7로 조정\n남은 콘클라베 동안 기도 불가"
+  plotCondiText: <sprite name=influence>9<sprite name=up>
+  plotCostText: <sprite name=piety>  5
   plotImage: {fileID: 0}
   plotGrade: 2
   plotWeightBase: 10
   plotWeightMultiplier: 0.05
-  minInfluence: 85
-  pietyCost: 50
-  influenceTarget: 20
+  minInfluence: 9
+  pietyCost: 5
+  influenceTarget: 2
+  hpTarget: 7

@@ -23,4 +23,4 @@ MonoBehaviour:
   itemGrade: 0
   itemExpirationType: 1
   usageType: 0
-  pietyBonus: 5
+  pietyBonus: 1

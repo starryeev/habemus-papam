@@ -3,8 +3,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "E50100", menuName = "Events/커피 회동")]
 public class E50100 : Event
 {
-    [SerializeField] private float columnProximityDistance = 1.5f;
-
     void Reset()
     {
         eventID = "E50100";
@@ -40,15 +38,13 @@ public class E50100 : Event
     {
         if(!CanChoiceOption1(performer)) return false;
 
-        float successChance = IsNearColumn(performer) ? 0.8f : option1Chance;
-        if(Random.value <= successChance)
+        if(Random.value <= option1Chance)
         {
-            StateController stateController = performer.GetComponent<StateController>();
-            if(stateController != null) stateController.ApplyStun(5f);
+            InGameManager.Instance.BlockPlayerTurnActions();
             return true;
         }
 
-        performer.ChangeHp(-25f);
+        performer.ChangeHp(-3f);
         return false;
     }
 
@@ -57,21 +53,4 @@ public class E50100 : Event
         return true;
     }
 
-    private bool IsNearColumn(Cardinal performer)
-    {
-        if (performer == null) return false;
-
-        float maxSqrDistance = columnProximityDistance * columnProximityDistance;
-        SpriteRenderer[] renderers = FindObjectsByType<SpriteRenderer>(
-            FindObjectsInactive.Exclude,
-            FindObjectsSortMode.None);
-
-        foreach (SpriteRenderer renderer in renderers)
-        {
-            if (!renderer.gameObject.name.StartsWith("columns_", System.StringComparison.OrdinalIgnoreCase)) continue;
-            if (renderer.bounds.SqrDistance(performer.transform.position) <= maxSqrDistance) return true;
-        }
-
-        return false;
-    }
 }

@@ -22,7 +22,7 @@ public class I012 : Item
 
     public bool TryDefendElection(float playerPiety)
     {
-        float defenseChance = Mathf.Clamp(100f - playerPiety, 0f, 100f);
+        float defenseChance = Mathf.Clamp((10f - playerPiety) * 10f, 0f, 100f);
         float roll = Random.Range(0f, 100f);
 
         if (roll < defenseChance)

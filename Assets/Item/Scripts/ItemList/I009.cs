@@ -30,8 +30,8 @@ public class I009 : Item
         itemExpirationType = ItemExpirationType.Permanent;
         usageType = ItemUsageType.Passive;
 
-        pietyBonus = 5f;
-        reviveHpAmount = 30f;
+        pietyBonus = 1f;
+        reviveHpAmount = 3f;
     }
 
     // 아이템을 처음 획득할 때 1회 방어 기회 활성화

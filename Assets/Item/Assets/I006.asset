@@ -23,4 +23,4 @@ MonoBehaviour:
   itemGrade: 1
   itemExpirationType: 1
   usageType: 1
-  prayerBonusHp: 10
+  prayerBonusHp: 1

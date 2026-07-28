@@ -21,7 +21,7 @@ public class I011 : Item
         itemExpirationType = ItemExpirationType.Conclave; // 콘클라베 종료 시 소멸
         usageType = ItemUsageType.Active; // 사용해야 발동
 
-        healAmount = 10f;
+        healAmount = 1f;
     }
 
     // 1. 인벤토리에서 클릭하여 사용했을 때

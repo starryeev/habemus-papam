@@ -22,10 +22,10 @@ public class P010 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 20;
+        minInfluence = 2;
         pietyCost = 0;
-        hpDelta = -10;
-        pietyDelta = 20;
+        hpDelta = -1;
+        pietyDelta = 2;
 
         // 텍스트 기본값
         plotName = "태양의 발";

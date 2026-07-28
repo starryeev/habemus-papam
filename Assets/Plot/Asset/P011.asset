@@ -16,18 +16,15 @@ MonoBehaviour:
   plotName: "\uD0DC\uC591\uC758 \uD600"
   plotDescription: "\uD0DC\uC591\uC758 \uD600\uB97C \uC9C0\uB2CC \uC790\uC5EC, \uC815\uB2F9\uD568\uC744
     \uB9D0\uD558\uB77C."
-  plotEffect: "\uC790\uC2E0\uC744 \uD3EC\uD568\uD55C \uBAA8\uB4E0 \uD6C4\uBCF4, 50%
-    \uD655\uB960\uB85C \uCCB4\uB825<sprite name=hp> 20 \uAC10\uC18C \uBC0F \uC815\uCE58\uB825<sprite
-    name=influence> 20 \uC99D\uAC00.\n50% \uD655\uB960\uB85C \uCCB4\uB825<sprite
-    name=hp> 10 \uC99D\uAC00."
-  plotCondiText: <sprite name=influence>20<sprite name=up>
+  plotEffect: "모든 후보가 50%로 체력 2 감소/정치력 2 증가, 아니면 체력 1 증가"
+  plotCondiText: <sprite name=influence>2<sprite name=up>
   plotCostText: <sprite name=piety>  0
   plotImage: {fileID: 0}
   plotGrade: 0
   plotWeightBase: 20
   plotWeightMultiplier: 0
-  minInfluence: 20
+  minInfluence: 2
   pietyCost: 0
-  hpIncrease: 10
-  hpDecrease: -20
-  influenceDelta: 20
+  hpIncrease: 1
+  hpDecrease: -2
+  influenceDelta: 2

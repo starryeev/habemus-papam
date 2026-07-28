@@ -15,14 +15,13 @@ MonoBehaviour:
   plotID: P015
   plotName: "\uC5F4\uB82C\uD55C \uCC2C\uC591"
   plotDescription: "\uCD94\uAE30\uACBD\uB2D8 \uCD95\uC9C0\uBC95 \uC4F0\uC2E0\uB2E4"
-  plotEffect: "\uAC00\uC7A5 \uC815\uCE58\uB825<sprite name=influence>\uC774 \uB192\uC740
-    \uC0C1\uB300 \uD6C4\uBCF4 \uACBD\uAC74\uD568<sprite name=piety> 30 \uC99D\uAC00"
-  plotCondiText: <sprite name=influence>40<sprite name=up>
-  plotCostText: <sprite name=piety>  15
+  plotEffect: "가장 정치력이 높은 상대 후보 경건함<sprite name=piety> 3 증가"
+  plotCondiText: <sprite name=influence>4<sprite name=up>
+  plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}
   plotGrade: 0
   plotWeightBase: 20
   plotWeightMultiplier: 0
-  minInfluence: 40
-  pietyCost: 15
-  pietyDelta: 30
+  minInfluence: 4
+  pietyCost: 2
+  pietyDelta: 3

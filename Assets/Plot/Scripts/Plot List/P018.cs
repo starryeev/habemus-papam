@@ -22,10 +22,10 @@ public class P018 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 40;
-        pietyCost = 35;
-        hpDelta = -15;
-        influenceDelta = 20;
+        minInfluence = 4;
+        pietyCost = 4;
+        hpDelta = -2;
+        influenceDelta = 2;
 
         // 텍스트 기본값
         plotName = "스몰 토크";

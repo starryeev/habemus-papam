@@ -22,9 +22,9 @@ public class P017 : Plot
         plotWeightBase = 10;
         plotWeightMultiplier = 0.05f;
 
-        minInfluence = 50;
-        pietyCost = 50;
-        hpDelta = -40;
+        minInfluence = 5;
+        pietyCost = 5;
+        hpDelta = -4;
 
         // 텍스트 기본값
         plotName = "이 불경한 자가";

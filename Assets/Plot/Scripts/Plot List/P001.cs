@@ -22,9 +22,9 @@ public class P001 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 15;
-        pietyCost = 20;
-        hpDelta = 20;
+        minInfluence = 2;
+        pietyCost = 2;
+        hpDelta = 2;
 
         // 텍스트 기본값
         plotName = "한 숨 돌리기";

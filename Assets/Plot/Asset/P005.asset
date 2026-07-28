@@ -15,14 +15,13 @@ MonoBehaviour:
   plotID: P005
   plotName: "\uACE8\uD0D5 \uBA39\uC774\uAE30"
   plotDescription: "\uC548 \uC544 \uC918 \uC694"
-  plotEffect: "\uBB34\uC791\uC704 \uC0C1\uB300 \uD6C4\uBCF4 \uD55C\uBA85 \uCCB4\uB825<sprite
-    name=hp> 15 \uAC10\uC18C"
-  plotCondiText: <sprite name=influence>0<sprite name=up>
-  plotCostText: <sprite name=piety>  0
+  plotEffect: "무작위 상대 후보 한 명 체력<sprite name=hp> 2 감소"
+  plotCondiText: <sprite name=influence>2<sprite name=up>
+  plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}
   plotGrade: 0
   plotWeightBase: 20
   plotWeightMultiplier: 0
-  minInfluence: 20
-  pietyCost: 15
-  hpDelta: -15
+  minInfluence: 2
+  pietyCost: 2
+  hpDelta: -2

@@ -22,9 +22,9 @@ public class P006 : Plot
         plotWeightBase = 15;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 25;
-        pietyCost = 20;
-        influenceDelta = 10;
+        minInfluence = 3;
+        pietyCost = 2;
+        influenceDelta = 1;
 
         // 텍스트 기본값
         plotName = "커피 회동";

@@ -21,15 +21,15 @@ public class P020 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 0;
-        pietyCost = 20;
+        minInfluence = 8;
+        pietyCost = 3;
         rewardCount = 2;
 
         // 텍스트 기본값
         plotName = "선물 개봉";
         plotDescription = "한 번 만에 나왔는데 이거 좋은 건가요?";
         plotEffect = "랜덤 아이템 2개 획득";
-        plotCondiText = $"";
+        plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }
 

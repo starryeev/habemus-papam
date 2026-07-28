@@ -32,10 +32,10 @@ public class E21100 : Event
 
         if(Random.value <= option1Chance)
         {  // 성공했을 때 로직
-            performer.ChangeInfluence(10f);
+            performer.ChangeInfluence(1f);
             Cardinal candidate1 = GetCandidate(1);
-            if(candidate1 != null) candidate1.ChangeInfluence(10f);
-            InGameManager.Instance.EventManager.SetPlotDamageBonus(2, 10f);
+            if(candidate1 != null) candidate1.ChangeInfluence(1f);
+            InGameManager.Instance.EventManager.SetPlotDamageBonus(2, 1f);
 
             return FinishChoice(1, true);
         }
@@ -54,9 +54,9 @@ public class E21100 : Event
 
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
-            performer.ChangeInfluence(10f);
+            performer.ChangeInfluence(1f);
             Cardinal candidate2 = GetCandidate(2);
-            if(candidate2 != null) candidate2.ChangeInfluence(10f);
+            if(candidate2 != null) candidate2.ChangeInfluence(1f);
 
             performer.prayDeltaHpEvent = 5f;
 

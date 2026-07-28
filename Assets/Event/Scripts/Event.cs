@@ -33,9 +33,8 @@ public abstract class Event : ScriptableObject
 
     public float GetEventWeight()
     {
-        float progressWeight = eventWeightMultiplier * InGameManager.Instance.GetProgress();
-        
-        return eventWeightBase + progressWeight;
+        int day = InGameManager.Instance != null ? InGameManager.Instance.GetCurrentDay() : 1;
+        return eventWeightBase + eventWeightMultiplier * Mathf.Max(1, day);
     }
 
     public virtual bool CanChoiceOption1(Cardinal performer)

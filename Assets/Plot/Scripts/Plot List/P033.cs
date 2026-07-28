@@ -24,8 +24,8 @@ public class P033 : Plot
         plotWeightBase = 15;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 60;
-        pietyCost = 60;
+        minInfluence = 6;
+        pietyCost = 6;
 
         // 텍스트 기본값
         plotName = "나는 용서하마";

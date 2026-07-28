@@ -201,9 +201,9 @@ public class Cardinal : MonoBehaviour
     {
         ApplyBalanceDefaults();
 
-        hp = saveData.hp;
-        influence = saveData.influence;
-        piety = saveData.piety;
+        hp = Mathf.Clamp(saveData.hp, 0f, 10f);
+        influence = Mathf.Clamp(saveData.influence, 0f, 10f);
+        piety = Mathf.Clamp(saveData.piety, 0f, 10f);
         hpDrainMultiplier = saveData.hpDrainMultiplier;
         prayDeltaHpEvent = saveData.prayDeltaHpEvent;
         minHpOneEffectSources.Clear();
@@ -305,22 +305,22 @@ public class Cardinal : MonoBehaviour
 
         if (minHpOneEffectSources.Count > 0 && delta < 0f)
         {
-            hp = Mathf.Clamp(nextHp, 1f, 100f);
+            hp = Mathf.Clamp(nextHp, 1f, 10f);
         }
         else
         {
-            hp = Mathf.Clamp(nextHp, 0f, 100f);
+            hp = Mathf.Clamp(nextHp, 0f, 10f);
         }
     }
 
     public void ChangeInfluence(float delta)
     {
-        influence = Mathf.Clamp(influence + delta, 0f, 100f);
+        influence = Mathf.Clamp(influence + delta, 0f, 10f);
     }
 
     public void ChangePiety(float delta)
     {
-        piety = Mathf.Clamp(piety + delta, 0f, 100f);
+        piety = Mathf.Clamp(piety + delta, 0f, 10f);
     }
 
     private void SubscribeToGameContext()
@@ -376,7 +376,7 @@ public class Cardinal : MonoBehaviour
 
     public void Pray()
     {
-        if (InGameManager.Instance == null)
+        if (InGameManager.Instance == null || !InGameManager.Instance.CanPerformPlayerAction(this))
         {
             return;
         }
@@ -385,6 +385,9 @@ public class Cardinal : MonoBehaviour
         bool guaranteedSuccess = InGameManager.Instance.EventManager != null &&
             InGameManager.Instance.EventManager.TryConsumeGuaranteedPrayerOrSpeech(this);
         bool rolledSuccess = Random.value < balance.PraySuccessChance;
+
+        float hpBeforePrayer = Hp;
+        bool blocksPrayerHealing = items.Exists(item => item is I001);
 
         if (guaranteedSuccess || rolledSuccess)
         {
@@ -402,15 +405,21 @@ public class Cardinal : MonoBehaviour
             item?.OnPray(this);
         }
 
+        if (blocksPrayerHealing && Hp > hpBeforePrayer)
+        {
+            ChangeHp(hpBeforePrayer - Hp);
+        }
+
         if (ActionRecordManager.Instance != null)
         {
             ActionRecordManager.Instance.RecordPray(this);
         }
+        InGameManager.Instance.CompletePlayerAction(this);
     }
 
     public void Speech()
     {
-        if (InGameManager.Instance == null)
+        if (InGameManager.Instance == null || !InGameManager.Instance.CanPerformPlayerAction(this))
         {
             return;
         }
@@ -476,6 +485,7 @@ public class Cardinal : MonoBehaviour
         {
             ActionRecordManager.Instance.RecordSpeech(this);
         }
+        InGameManager.Instance.CompletePlayerAction(this);
     }
 
     public void OnPlotExecuted()

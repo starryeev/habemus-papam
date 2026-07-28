@@ -37,7 +37,7 @@ public class E50000 : Event
 
         if(Random.value <= option1Chance)
         {
-            performer.ChangePiety(30f);
+            performer.ChangePiety(3f);
             return true;
         }
 

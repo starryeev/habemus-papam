@@ -18,19 +18,26 @@ public class GameContext
     public enum GameContextEvent
     {
         ConclaveStart,
-        ConclaveEnd
+        ConclaveEnd,
+        TurnStart
     }
 
     int currentDay;
     Conclave currentConclave;
-    float remainingTime;
-    bool[] triggeredEventTimes;
+    int currentTurn;
+    int completedActions;
+    int actionsThisTurn;
+    bool isEventPhase;
 
     public event Action<GameContextEvent> OnGameContextEvent;
 
     public int CurrentDay => currentDay;
     public Conclave CurrentConclave => currentConclave;
-    public float RemainingTime => remainingTime;
+    public int CurrentTurn => currentTurn;
+    public int CompletedActions => completedActions;
+    public int ActionsThisTurn => actionsThisTurn;
+    public bool IsEventPhase => isEventPhase;
+    public int DisplayPhase => isEventPhase ? 3 : Mathf.Clamp(completedActions + 1, 1, 2);
 
     private Event currentEvent;
     public Event CurrentEvent => currentEvent;
@@ -40,15 +47,18 @@ public class GameContext
         currentDay = day;
         currentConclave = conclave;
         currentEvent = ScriptableObject.CreateInstance<E11100>();
-        remainingTime = InGameManager.Instance.Balance.MaxConclaveTime;
-        ResetEventTimeTriggers();
+        ResetTurns();
     }
 
-    public void RestoreState(int day, Conclave conclave, float restoredRemainingTime)
+    public void RestoreState(int day, Conclave conclave, int restoredTurn, int restoredCompletedActions,
+        int restoredActionsThisTurn, bool restoredEventPhase)
     {
         currentDay = day;
         currentConclave = conclave;
-        remainingTime = Mathf.Clamp(restoredRemainingTime, 0f, InGameManager.Instance.Balance.MaxConclaveTime);
+        currentTurn = Mathf.Clamp(restoredTurn, 1, 4);
+        actionsThisTurn = Mathf.Clamp(restoredActionsThisTurn, 0, 4);
+        completedActions = Mathf.Clamp(restoredCompletedActions, 0, actionsThisTurn);
+        isEventPhase = restoredEventPhase;
     }
 
     public void AdvanceConclave()
@@ -63,33 +73,48 @@ public class GameContext
             currentConclave++;
         }
 
-        remainingTime = InGameManager.Instance.Balance.MaxConclaveTime;
-        ResetEventTimeTriggers();
+        ResetTurns();
 
         OnGameContextEvent?.Invoke(GameContextEvent.ConclaveStart);
     }
 
-    public void TimeOver()
+    public void EndConclave()
     {
         OnGameContextEvent?.Invoke(GameContextEvent.ConclaveEnd);
     }
 
-    public void Tick(float deltaTime)
+    public void BeginTurn(int actionModifier, bool blockActions)
     {
-        if (remainingTime > 0)
-        {
-            float previousRemainingTime = remainingTime;
-            remainingTime -= deltaTime;
-            if (remainingTime < 0) remainingTime = 0;
-            CheckEventTimeThresholds(previousRemainingTime);
-        }
+        completedActions = 0;
+        actionsThisTurn = blockActions ? 0 : Mathf.Clamp(2 + actionModifier, 1, 3);
+        isEventPhase = false;
+        OnGameContextEvent?.Invoke(GameContextEvent.TurnStart);
     }
 
-    public void ChangeRemainingTime(float deltaTime)
+    public bool CompleteAction()
     {
-        float previousRemainingTime = remainingTime;
-        remainingTime = Mathf.Clamp(remainingTime + deltaTime, 0f, InGameManager.Instance.Balance.MaxConclaveTime);
-        CheckEventTimeThresholds(previousRemainingTime);
+        if (isEventPhase || completedActions >= actionsThisTurn) return false;
+        completedActions++;
+        return true;
+    }
+
+    public bool AreActionsComplete() => completedActions >= actionsThisTurn;
+
+    public void CompleteRemainingActions() => completedActions = actionsThisTurn;
+
+    public void AddCurrentTurnActions(int count)
+    {
+        if (isEventPhase || count <= 0) return;
+        actionsThisTurn = Mathf.Clamp(actionsThisTurn + count, completedActions, 4);
+    }
+
+    public void EnterEventPhase() => isEventPhase = true;
+
+    public bool AdvanceTurn()
+    {
+        if (currentTurn >= 4) return false;
+        currentTurn++;
+        return true;
     }
 
     public void StartGame()
@@ -105,35 +130,12 @@ public class GameContext
         currentEvent = evt;
     }
 
-    void ResetEventTimeTriggers() //AI Slop
+    private void ResetTurns()
     {
-        float[] eventTimes = InGameManager.Instance.Balance.EventTime;
-        triggeredEventTimes = eventTimes == null ? Array.Empty<bool>() : new bool[eventTimes.Length];
-    }
-
-    void CheckEventTimeThresholds(float previousRemainingTime)
-    {
-        float[] eventTimes = InGameManager.Instance.Balance.EventTime;
-        if (eventTimes == null || eventTimes.Length == 0) return;
-        if (triggeredEventTimes == null || triggeredEventTimes.Length != eventTimes.Length)
-        {
-            ResetEventTimeTriggers();
-        }
-
-        for (int i = 0; i < eventTimes.Length; i++)
-        {
-            if (triggeredEventTimes[i]) continue;
-
-            float threshold = eventTimes[i];
-            if (previousRemainingTime > threshold && remainingTime <= threshold)
-            {
-                triggeredEventTimes[i] = true;
-                Debug.Log(i + "번째 이벤트 발생");
-                SetNewEvent();
-
-                UIManager.Instance.Ingame.Event.UISetEvent();
-            }
-        }
+        currentTurn = 1;
+        completedActions = 0;
+        actionsThisTurn = 2;
+        isEventPhase = false;
     }
 }
 
@@ -173,6 +175,11 @@ public class InGameManager : MonoBehaviour
     private bool isHandlingFinalPlayerHpZero = false;
     private bool isEndingConclaveAfterPlayerHpZero = false;
     private bool isConclaveExitInProgress = false;
+    private int nextTurnActionModifier;
+    private bool blockNextTurn;
+    private bool blockRemainingCurrentTurn;
+    private bool awaitingTurnEvent;
+    private bool endConclaveAfterEvent;
 
     public GameBalance Balance => balance;
     public GameContext Context => gameContext;
@@ -181,6 +188,7 @@ public class InGameManager : MonoBehaviour
     public bool IsFirstStart => isFirstStart;
     public bool IsSushiOn => isSushiOn;
     public bool IsConclaveExitInProgress => isConclaveExitInProgress;
+    public bool IsAwaitingTurnEvent => awaitingTurnEvent;
 
     void Awake()
     {
@@ -229,30 +237,17 @@ public class InGameManager : MonoBehaviour
 
     void Update()
     {
-        if (!isTimeRunning)
-        {
-            return;
-        }
-
-        gameContext.Tick(Time.deltaTime);
-
-        if (gameContext.RemainingTime <= 0)
-        {
-            StopTimer();
-            gameContext.TimeOver();
-        }
-
-        if (CardinalManager.Instance != null)
-        {
-            CardinalManager.Instance.DrainAllCardinalHp(balance.HpDeltaPerSec * Time.deltaTime);
-        }
     }
 
     public void StartTimer()
     {
         isEndingConclaveAfterPlayerHpZero = false;
         isTimeRunning = true;
-        Debug.Log("타이머 작동 시작");
+        awaitingTurnEvent = false;
+        endConclaveAfterEvent = false;
+        blockRemainingCurrentTurn = false;
+        gameContext.BeginTurn(ConsumeNextTurnActionModifier(), ConsumeNextTurnBlock());
+        Debug.Log("턴 진행 시작");
 
         if (inventoryUIPanel != null)
         {
@@ -260,6 +255,7 @@ public class InGameManager : MonoBehaviour
         }
 
         SpawnFieldItems();
+        TryResolveTurnWithoutActions();
     }
 
     public void StopTimer()
@@ -290,6 +286,11 @@ public class InGameManager : MonoBehaviour
         isFirstStart = true;
         isSushiOn = false;
         isConclaveExitInProgress = false;
+        nextTurnActionModifier = 0;
+        blockNextTurn = false;
+        blockRemainingCurrentTurn = false;
+        awaitingTurnEvent = false;
+        endConclaveAfterEvent = false;
 
         gameContext.InitGameContext();
         ConfigureStartButton(true, true);
@@ -324,7 +325,7 @@ public class InGameManager : MonoBehaviour
             case GameContext.GameContextEvent.ConclaveEnd:
                 isConclaveExitInProgress = true;
                 GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
-                Debug.Log("[InGameManager] 콘클라베 종료 (Time Over)");
+                Debug.Log("[InGameManager] 콘클라베 종료 (Turn Complete)");
 
                 if (inventoryUIPanel != null)
                 {
@@ -526,7 +527,16 @@ public class InGameManager : MonoBehaviour
         {
             day = gameContext.CurrentDay,
             conclave = (int)gameContext.CurrentConclave,
-            remainingTime = gameContext.RemainingTime,
+            currentTurn = gameContext.CurrentTurn,
+            completedActions = gameContext.CompletedActions,
+            actionsThisTurn = gameContext.ActionsThisTurn,
+            isEventPhase = gameContext.IsEventPhase,
+            nextTurnActionModifier = nextTurnActionModifier,
+            blockNextTurn = blockNextTurn,
+            blockRemainingCurrentTurn = blockRemainingCurrentTurn,
+            awaitingTurnEvent = awaitingTurnEvent,
+            endConclaveAfterEvent = endConclaveAfterEvent,
+            currentEventId = gameContext.CurrentEvent != null ? gameContext.CurrentEvent.eventID : string.Empty,
             isTimeRunning = isTimeRunning,
             isFirstStart = isFirstStart,
             isSushiOn = isSushiOn,
@@ -545,10 +555,21 @@ public class InGameManager : MonoBehaviour
 
         GameContext.Conclave conclave = (GameContext.Conclave)Mathf.Clamp(saveData.conclave, 0, Enum.GetValues(typeof(GameContext.Conclave)).Length - 1);
 
-        gameContext.RestoreState(saveData.day, conclave, saveData.remainingTime);
+        gameContext.RestoreState(saveData.day, conclave, saveData.currentTurn, saveData.completedActions,
+            saveData.actionsThisTurn, saveData.isEventPhase);
         isTimeRunning = saveData.isTimeRunning;
         isFirstStart = saveData.isFirstStart;
         isSushiOn = saveData.isSushiOn;
+        nextTurnActionModifier = Mathf.Clamp(saveData.nextTurnActionModifier, -2, 1);
+        blockNextTurn = saveData.blockNextTurn;
+        blockRemainingCurrentTurn = saveData.blockRemainingCurrentTurn;
+        awaitingTurnEvent = saveData.awaitingTurnEvent;
+        endConclaveAfterEvent = saveData.endConclaveAfterEvent;
+        if (!string.IsNullOrWhiteSpace(saveData.currentEventId) && eventManager != null)
+        {
+            Event restoredEvent = eventManager.GetEventById(saveData.currentEventId);
+            if (restoredEvent != null) gameContext.SetEvent(restoredEvent);
+        }
 
         ConfigureStartButton(saveData.showStartButton, saveData.startButtonInteractable);
 
@@ -652,10 +673,10 @@ public class InGameManager : MonoBehaviour
             return;
         }
 
-        player.ChangeHp(50f - player.Hp);
+        player.ChangeHp(5f - player.Hp);
         shouldRevivePlayerOnNextConclave = false;
 
-        Debug.Log("[Player HP] Player revived to 50 HP for the next conclave.");
+        Debug.Log("[Player HP] Player revived to 5 HP for the next conclave.");
     }
 
     private Cardinal FindPlayerCardinal()
@@ -702,29 +723,13 @@ public class InGameManager : MonoBehaviour
         {
             if (cardinal != null && cardinal.CompareTag("Player"))
             {
-                cardinal.ChangeHp(21f - cardinal.Hp);
+                cardinal.ChangeHp(3f - cardinal.Hp);
                 Debug.Log($"[Debug] Player HP set to {cardinal.Hp}.");
                 return;
             }
         }
 
         Debug.LogWarning("[Debug] Player cardinal was not found. Cannot set player HP.");
-    }
-
-    public int GetProgress()
-    {
-        if (CardinalManager.Instance == null)
-        {
-            return 0;
-        }
-
-        CardinalManager cm = CardinalManager.Instance;
-
-        int dayFactor = (gameContext.CurrentDay - 1) * 10;
-        int hpFactor = Mathf.RoundToInt(Mathf.Clamp((400 - cm.GetCardinalHpSum()) * 0.05f, 0, 10));
-        int polFactor = Mathf.RoundToInt(Mathf.Clamp(cm.GetCardinalPolSum() * 0.2f, 0, 30));
-
-        return Mathf.Clamp(dayFactor + hpFactor + polFactor, 0, 100);
     }
 
     public int GetCurrentDay()
@@ -737,9 +742,136 @@ public class InGameManager : MonoBehaviour
         return gameContext.CurrentConclave;
     }
 
-    public float GetRemainingTime()
+    public int GetCurrentTurn()
     {
-        return gameContext.RemainingTime;
+        return gameContext.CurrentTurn;
+    }
+    public int GetCurrentTurnPhase() => gameContext.DisplayPhase;
+
+    public bool CanPerformPlayerAction(Cardinal performer)
+    {
+        return performer == null || !performer.CompareTag("Player") ||
+            (isTimeRunning && !awaitingTurnEvent && !gameContext.IsEventPhase && !gameContext.AreActionsComplete());
+    }
+
+    public void CompletePlayerAction(Cardinal performer)
+    {
+        if (performer == null || !performer.CompareTag("Player") || !CanPerformPlayerAction(performer)) return;
+        if (!gameContext.CompleteAction()) return;
+        if (blockRemainingCurrentTurn)
+        {
+            blockRemainingCurrentTurn = false;
+            gameContext.CompleteRemainingActions();
+        }
+        if (gameContext.AreActionsComplete()) ResolveCompletedTurn();
+    }
+
+    public void QueueNextTurnActionDelta(int delta)
+    {
+        nextTurnActionModifier = Mathf.Clamp(nextTurnActionModifier + delta, -2, 1);
+    }
+
+    public void AddCurrentTurnActions(int count)
+    {
+        gameContext.AddCurrentTurnActions(count);
+    }
+
+    public void BlockPlayerTurnActions()
+    {
+        if (awaitingTurnEvent || gameContext.IsEventPhase) blockNextTurn = true;
+        else blockRemainingCurrentTurn = true;
+    }
+
+    public void OnTurnEventClosed()
+    {
+        if (!awaitingTurnEvent) return;
+        awaitingTurnEvent = false;
+        if (endConclaveAfterEvent)
+        {
+            endConclaveAfterEvent = false;
+            FinishCurrentConclave();
+            return;
+        }
+        StartNextTurnOrEndConclave();
+    }
+
+    public void EndCurrentConclave()
+    {
+        if (!isTimeRunning || isConclaveExitInProgress) return;
+        if (awaitingTurnEvent)
+        {
+            endConclaveAfterEvent = true;
+            return;
+        }
+        FinishCurrentConclave();
+    }
+
+    private void FinishCurrentConclave()
+    {
+        StopTimer();
+        awaitingTurnEvent = false;
+        gameContext.EndConclave();
+    }
+
+    public void RestorePendingTurnEventUI()
+    {
+        if (!awaitingTurnEvent || gameContext.CurrentEvent == null || UIManager.Instance == null ||
+            UIManager.Instance.Ingame == null) return;
+        UIManager.Instance.Ingame.Event.UISetEvent();
+    }
+
+    private void ResolveCompletedTurn()
+    {
+        if (gameContext.CurrentTurn >= 4)
+        {
+            EndCurrentConclave();
+            return;
+        }
+
+        gameContext.EnterEventPhase();
+        awaitingTurnEvent = true;
+        gameContext.SetNewEvent();
+
+        if (gameContext.CurrentEvent != null && UIManager.Instance != null && UIManager.Instance.Ingame != null)
+        {
+            UIManager.Instance.Ingame.Event.UISetEvent();
+        }
+        else
+        {
+            Debug.LogWarning("[Turn] 표시할 이벤트가 없어 다음 턴으로 진행합니다.");
+            OnTurnEventClosed();
+        }
+    }
+
+    private void StartNextTurnOrEndConclave()
+    {
+        if (!gameContext.AdvanceTurn())
+        {
+            EndCurrentConclave();
+            return;
+        }
+
+        gameContext.BeginTurn(ConsumeNextTurnActionModifier(), ConsumeNextTurnBlock());
+        TryResolveTurnWithoutActions();
+    }
+
+    private void TryResolveTurnWithoutActions()
+    {
+        if (isTimeRunning && gameContext.AreActionsComplete()) ResolveCompletedTurn();
+    }
+
+    private int ConsumeNextTurnActionModifier()
+    {
+        int modifier = nextTurnActionModifier;
+        nextTurnActionModifier = 0;
+        return modifier;
+    }
+
+    private bool ConsumeNextTurnBlock()
+    {
+        bool blocked = blockNextTurn;
+        blockNextTurn = false;
+        return blocked;
     }
     public Event GetCurrentEvent()
     {

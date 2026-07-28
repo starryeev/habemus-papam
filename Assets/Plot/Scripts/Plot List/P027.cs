@@ -20,8 +20,8 @@ public class P027 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 50;
-        pietyCost = 70;
+        minInfluence = 6;
+        pietyCost = 7;
 
         // 텍스트 기본값
         plotName = "젠체하기";

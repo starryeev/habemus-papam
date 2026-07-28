@@ -16,13 +16,13 @@ MonoBehaviour:
   plotName: "\uAD74\uB69D \uC870\uC791"
   plotDescription: "\uAE08\uB2E8\uC758 \uBE44\uAE30"
   plotEffect: "\uD2B9\uC218 \uC544\uC774\uD15C '\uC5F0\uB9C9\uD0C4' 1\uAC1C \uD68D\uB4DD"
-  plotCondiText: <sprite name=influence>70<sprite name=up>
-  plotCostText: <sprite name=piety>  70
+  plotCondiText: <sprite name=influence>7<sprite name=up>
+  plotCostText: <sprite name=piety>  7
   plotImage: {fileID: 0}
   plotGrade: 2
   plotWeightBase: 15
   plotWeightMultiplier: 0
-  minInfluence: 70
-  pietyCost: 70
+  minInfluence: 7
+  pietyCost: 7
   smokeBomb: {fileID: 0}
   rewardCount: 1

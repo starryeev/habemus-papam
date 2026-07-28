@@ -39,10 +39,10 @@ public class Closeup : MonoBehaviour
     public void SetStats(float hp, float piety, float influence)
     {
         this.hp.text = $"{(int)hp}";
-        HP.fillAmount = hp/100;
+        HP.fillAmount = hp/10;
         this.piety.text = $"{(int)piety}";
-        Piety.fillAmount = piety/100;
+        Piety.fillAmount = piety/10;
         this.influence.text = $"{(int)influence}";
-        Influence.fillAmount = influence/100;
+        Influence.fillAmount = influence/10;
     }
 }

@@ -24,5 +24,5 @@ MonoBehaviour:
   itemGrade: 1
   itemExpirationType: 2
   usageType: 0
-  pietyBonus: 5
-  reviveHpAmount: 30
+  pietyBonus: 1
+  reviveHpAmount: 3

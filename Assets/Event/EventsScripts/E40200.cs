@@ -23,13 +23,13 @@ public class E40200 : Event
         option2Chance = 0.5f;
         option2SuccessDescription = "문이 열렸다. 씨름한 보람이 있네!\n\n정치력 5 감소!";
         option2SuccessResult = "정치력 - 5";
-        option2FailDescription = "꿈쩍도 안 하네. 괜히 시간만 버렸다.\n\n6초간 행동 불가!";
-        option2FailResult = "행동 불가 6초";
+        option2FailDescription = "꿈쩍도 안 하네. 괜히 시간만 버렸다.\n\n다음 턴 행동 횟수 1회 감소!";
+        option2FailResult = "다음 턴 행동 횟수 -1";
     }
 
     public override bool CanChoiceOption1(Cardinal performer)
     {
-        if(performer.Hp < 60f) return false;
+        if(performer.Hp < 6f) return false;
         return true;
     }
 
@@ -41,8 +41,8 @@ public class E40200 : Event
     public override bool OnChoiceOption1(Cardinal performer)
     {
         if(!CanChoiceOption1(performer)) return false;
-        performer.ChangeHp(5f);
-        performer.ChangeInfluence(-15f);
+        performer.ChangeHp(1f);
+        performer.ChangeInfluence(-2f);
         return true;
     }
 
@@ -52,12 +52,12 @@ public class E40200 : Event
 
         if(Random.value <= option2Chance)
         {
-            performer.ChangeInfluence(-5f);
+            performer.ChangeInfluence(-1f);
             return true;
         }
 
-        StateController stateController = performer.GetComponent<StateController>();
-        if(stateController != null) stateController.ApplyStun(6f);
+        // 이벤트는 행동 2회 뒤에 열리므로 "이번 턴 1회 감소"는 다음 플레이 가능 턴에 적용한다.
+        InGameManager.Instance.QueueNextTurnActionDelta(-1);
         return false;
     }
 }

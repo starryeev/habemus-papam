@@ -21,9 +21,17 @@ public abstract class Plot : ScriptableObject
 
     public float GetPlotWeight()
     {
-        float progressWeight = plotWeightMultiplier * InGameManager.Instance.GetProgress();
-        
-        return plotWeightBase + progressWeight;
+        int day = InGameManager.Instance != null ? InGameManager.Instance.GetCurrentDay() : 1;
+        return plotWeightBase + plotWeightMultiplier * Mathf.Max(1, day);
+    }
+
+    public int GetInfluenceRequirement()
+    {
+        if (string.IsNullOrWhiteSpace(plotCondiText)) return 0;
+        System.Text.RegularExpressions.Match match = System.Text.RegularExpressions.Regex.Match(
+            plotCondiText, @"name=influence>(-?\d+)");
+        if (!match.Success || !int.TryParse(match.Groups[1].Value, out int value)) return 0;
+        return Mathf.Clamp(value, 0, 10);
     }
 
     // 조건 확인 함수, 구현은 자식 클래스에서 직접

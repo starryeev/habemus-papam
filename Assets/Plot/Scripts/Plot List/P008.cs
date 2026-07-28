@@ -26,11 +26,11 @@ public class P008 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minHp = 33;
-        minInfluence = 33;
-        minPiety = 33;
+        minHp = 3;
+        minInfluence = 3;
+        minPiety = 3;
         pietyCost = 0;
-        hpDelta = 33;
+        hpDelta = 3;
         influenceDelta = 3;
         pietyDelta = 3;
 

@@ -29,9 +29,9 @@ public class P009 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 20;
+        minInfluence = 2;
         pietyCost = 0;
-        hpDelta = -20;
+        hpDelta = -2;
     }
 
     public override bool CanExecute(Cardinal performer)

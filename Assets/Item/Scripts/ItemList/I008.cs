@@ -18,7 +18,7 @@ public class I008 : Item
         itemExpirationType = ItemExpirationType.Permanent;
         usageType = ItemUsageType.Passive; 
 
-        pietyBonus = 5f;
+        pietyBonus = 1f;
     }
 
     public override void OnPray(Cardinal owner)

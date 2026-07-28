@@ -48,7 +48,7 @@ MonoBehaviour:
   option2SuccessDescription: "\uD479 \uC7A4\uB354\uB2C8 \uCCB4\uB825\uC774 \uD68C\uBCF5\uB418\uC5C8\uB2E4!\n\uD0DC\uC591\uB9CC\uC138
     \uBBF8\uC0AC? \uC54C \uAC8C \uBB50\uB78C?\n\n\uB0A8\uC740 \uD68C\uC758 \uC2DC\uAC04
     20\uCD08 \uAC10\uC18C!\n\uCCB4\uB825 30% \uD68C\uBCF5!\""
-  option2SuccessResult: 
+  option2SuccessResult: "체력 +3\n다음 턴 행동 횟수 -1"
   option2FailDescription: "\uB108\uBB34 \uD479 \uC7A4\uB098? \uC790\uACE0 \uC77C\uC5B4\uB098
     \uBCF4\uB2C8 \uD68C\uC758\uAC00 \uC804\uBD80 \uB05D\uB098 \uC788\uC5C8\uB2E4!"
-  option2FailResult: "\uC774\uBC88 \uC36C\u3161\uD074\uB77C\uBCA0 \uC989\uC2DC \uC885\uB8CC!"
+  option2FailResult: "이번 썬ㅡ클라베 즉시 종료"

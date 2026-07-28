@@ -44,7 +44,7 @@ public class E50600 : Event
 
         foreach(Cardinal cardinal in GetRepresentativeCardinals(performer))
         {
-            cardinal.ChangeInfluence(40f);
+            cardinal.ChangeInfluence(4f);
             cardinal.SetMinHpOneEffect(MinHpEffectSource, true);
         }
 

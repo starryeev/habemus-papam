@@ -21,7 +21,7 @@ public class I005 : Item
         itemDescription = "고향집 뒷산 포도밭에서 따온 포도를 대충 증류해서 만든 달달한 술";
         itemEffectDescription = "이번 콘클라베 동안 기도 시 체력 회복량 두 배";
 
-        prayerBonusHp = 5;
+        prayerBonusHp = 1;
     }
 
     public override void OnUse()

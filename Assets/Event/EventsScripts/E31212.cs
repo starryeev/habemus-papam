@@ -30,7 +30,7 @@ public class E31212 : Event
 
     public override bool CanChoiceOption1(Cardinal performer)
     {
-        if(performer.Piety < 30f) return false;
+        if(performer.Piety < 3f) return false;
         return true;
     }
 

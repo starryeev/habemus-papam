@@ -15,14 +15,9 @@ MonoBehaviour:
   itemID: I001
   itemName: "\uBB35\uC9C1\uD55C \uC544\uB839"
   itemDescription: 
-  itemEffectDescription: "\uC18C\uC9C0 \uC2DC \uC774\uB3D9 \uC18D\uB3C4 30% \uAC10\uC18C,
-    3\uCD08\uB9C8\uB2E4 1%\uC529 \uCD94\uAC00 \uAC10\uC18C (\uCD5C\uB300 99%\uAE4C\uC9C0).
-    \uC0AC\uC6A9 \uC2DC \uCCB4\uB825 40 \uD68C\uBCF5."
+  itemEffectDescription: "소지 시 기도로 체력을 회복할 수 없다. 사용 시 소지했던 턴 수만큼 체력을 회복한다."
   itemImage: {fileID: 4605720897566545993, guid: 8427b69ee6075c24d9de1bbe9c875bb0, type: 3}
   itemGrade: 0
   itemExpirationType: 2
   usageType: 1
-  initialReduction: 0.3
-  reductionPerTick: 0.01
-  tickInterval: 3
-  healAmount: 40
+  healPerHeldTurn: 1

@@ -15,13 +15,13 @@ MonoBehaviour:
   plotID: P002
   plotName: "\uC740\uBC00\uD55C \uB17C\uC758"
   plotDescription: "...\uC810\uC2EC \uBB50 \uBA39\uC9C0?"
-  plotEffect: "\uC815\uCE58\uB825<sprite name=influence> 15 \uC99D\uAC00"
-  plotCondiText: <sprite name=influence>30<sprite name=down>
-  plotCostText: <sprite name=piety>  20
+  plotEffect: "정치력<sprite name=influence> 2 증가"
+  plotCondiText: <sprite name=influence>1<sprite name=down>
+  plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}
   plotGrade: 0
   plotWeightBase: 20
   plotWeightMultiplier: 0
-  maxInfluence: 30
-  pietyCost: 20
-  influenceDelta: 15
+  maxInfluence: 1
+  pietyCost: 2
+  influenceDelta: 2

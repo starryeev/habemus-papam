@@ -70,35 +70,72 @@ public class PlotManager : MonoBehaviour
 
     public PlotSet GeneratePlotSet()
     {
-        float p = InGameManager.Instance.GetProgress(); // 진행도 (0~100 가정)
+        float playerInfluence = GetPlayerInfluence();
         Plot[] selectedPlots = new Plot[3];
 
-        // 1. 가운데 슬롯 (index 1) : 희귀 / 전설
-        float midRoll = Random.Range(0f, 100f);
-        float midLegendaryProb = 10f + (p * 0.3f);
-        
-        PlotGrade midGrade = (midRoll < midLegendaryProb) ? PlotGrade.Legendary : PlotGrade.Rare;
-        selectedPlots[1] = GetWeightedRandPlot(midGrade);
-
-        // 2. 양 옆 슬롯 (index 0, 2) : 일반 / 희귀 / 전설
-        float commonLimit = 70f - (p * 0.5f);
-        float rareLimit = commonLimit + (20f + (p * 0.4f));
-
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < selectedPlots.Length; i++)
         {
-            if (i == 1) continue; // 가운데는 이미 뽑음
-
-            float sideRoll = Random.Range(0f, 100f);
-            PlotGrade sideGrade;
-
-            if (sideRoll < commonLimit) sideGrade = PlotGrade.Common;
-            else if (sideRoll < rareLimit) sideGrade = PlotGrade.Rare;
-            else sideGrade = PlotGrade.Legendary;
-
-            selectedPlots[i] = GetWeightedRandPlot(sideGrade);
+            selectedPlots[i] = PickByInfluenceBand(playerInfluence, selectedPlots);
         }
 
         return new PlotSet(selectedPlots);
+    }
+
+    private float GetPlayerInfluence()
+    {
+        if (CardinalManager.Instance == null) return 0f;
+        Cardinal player = CardinalManager.Instance.Cardinals.FirstOrDefault(
+            candidate => candidate != null && candidate.CompareTag("Player"));
+        return player != null ? player.Influence : 0f;
+    }
+
+    private Plot PickByInfluenceBand(float playerInfluence, Plot[] alreadySelected)
+    {
+        List<Plot> available = plots.Where(plot => plot != null && IsSupportedByTurnSystem(plot) && !usedPlots.Contains(plot) &&
+            !alreadySelected.Contains(plot)).ToList();
+        List<Plot> low = available.Where(plot => plot.GetInfluenceRequirement() < playerInfluence - 2f).ToList();
+        List<Plot> middle = available.Where(plot => plot.GetInfluenceRequirement() > playerInfluence - 2f &&
+            plot.GetInfluenceRequirement() < playerInfluence).ToList();
+        List<Plot> high = available.Where(plot => plot.GetInfluenceRequirement() > playerInfluence &&
+            plot.GetInfluenceRequirement() < playerInfluence + 2f).ToList();
+
+        var bands = new List<(List<Plot> candidates, float weight)>();
+        if (low.Count > 0) bands.Add((low, 30f));
+        if (middle.Count > 0) bands.Add((middle, 50f));
+        if (high.Count > 0) bands.Add((high, 20f));
+        if (bands.Count == 0) return PickWeightedPlot(available);
+
+        float roll = Random.Range(0f, bands.Sum(band => band.weight));
+        foreach (var band in bands)
+        {
+            roll -= band.weight;
+            if (roll <= 0f) return PickWeightedPlot(band.candidates);
+        }
+        return PickWeightedPlot(bands[bands.Count - 1].candidates);
+    }
+
+    private static bool IsSupportedByTurnSystem(Plot plot)
+    {
+        // P007/P019는 NPC 행동 슬롯, P021은 저장 가능한 익일 예약 효과,
+        // P031은 콘클라베 단위 기도 제한 계약, P033은 저장 가능한 차회 예약 효과가 필요하다.
+        // 부분 효과로 소비되지 않게 제외한다.
+        return plot.plotID != "P007" && plot.plotID != "P019" &&
+            plot.plotID != "P021" && plot.plotID != "P031" && plot.plotID != "P033";
+    }
+
+    private Plot PickWeightedPlot(List<Plot> candidates)
+    {
+        if (candidates == null || candidates.Count == 0) return null;
+        float sum = candidates.Sum(plot => Mathf.Max(0f, plot.GetPlotWeight()));
+        if (sum <= 0f) return candidates[Random.Range(0, candidates.Count)];
+
+        float roll = Random.Range(0f, sum);
+        foreach (Plot candidate in candidates)
+        {
+            roll -= Mathf.Max(0f, candidate.GetPlotWeight());
+            if (roll <= 0f) return candidate;
+        }
+        return candidates[candidates.Count - 1];
     }
 
     public void RefreshPlotManager()
@@ -139,6 +176,7 @@ public class PlotManager : MonoBehaviour
 
     public void InitializePlotSession(Cardinal performer)
     {
+        if (InGameManager.Instance != null && !InGameManager.Instance.CanPerformPlayerAction(performer)) return;
         this.performer = performer;
 
         plotUI.ShowPlotUI(performer);
@@ -146,6 +184,7 @@ public class PlotManager : MonoBehaviour
 
     public void UsePlot(int plotSet, int index)
     {
+        if (InGameManager.Instance != null && !InGameManager.Instance.CanPerformPlayerAction(performer)) return;
         AvailPlotSets[plotSet].plots[index].Execute(performer);
         performer?.OnPlotExecuted();
         AvailPlotSets[plotSet].use(index);
@@ -154,6 +193,7 @@ public class PlotManager : MonoBehaviour
         {
             ActionRecordManager.Instance.RecordPlot(performer);
         }
+        if (InGameManager.Instance != null) InGameManager.Instance.CompletePlayerAction(performer);
 
         CheckIsAllUsed(plotSet);
     }

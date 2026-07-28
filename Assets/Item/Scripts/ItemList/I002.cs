@@ -4,11 +4,8 @@
 public class I002 : Item
 {
     [Header("나무지팡이 설정")]
-    [Tooltip("이동 속도 증가율 (0.4 = 40% 증가)")]
-    [SerializeField] private float speedMultiplier = 0.4f;
-
     [Tooltip("사용 시 감소시킬 체력")]
-    [SerializeField] private int damageAmount = 40;
+    [SerializeField] private int damageAmount = 4;
 
     void Reset()
     {
@@ -19,36 +16,31 @@ public class I002 : Item
 
         itemName = "나무지팡이";
         itemDescription = "걷기가 편해진다. 마음에 안 드는 사람을 위협할 수도 있다!";
-        itemEffectDescription = "소지 시 이동 속도 40% 증가. 사용 시 체력이 가장 낮은 후보(NPC)의 체력 40 감소.";
+        itemEffectDescription = "획득 시 다음 턴 행동 횟수 1회 증가. 사용 시 체력이 가장 낮은 후보(NPC)의 체력 4 감소.";
 
-        speedMultiplier = 0.4f;
-        damageAmount = 40;
+        damageAmount = 4;
     }
 
     public override void OnAcquire()
     {
         Cardinal player = FindPlayer();
-        if (player != null)
+        if (player != null && InGameManager.Instance != null)
         {
-            player.ChangeSpeed(speedMultiplier);
+            InGameManager.Instance.QueueNextTurnActionDelta(1);
         }
     }
 
     public override void OnReapply(Cardinal owner)
     {
-        if (owner != null)
+        if (owner != null && InGameManager.Instance != null)
         {
-            owner.ChangeSpeed(speedMultiplier);
+            InGameManager.Instance.QueueNextTurnActionDelta(1);
         }
     }
 
     public override void OnRemove()
     {
-        Cardinal player = FindPlayer();
-        if (player != null)
-        {
-            player.ChangeSpeed(-speedMultiplier);
-        }
+        // 예약된 행동 보너스는 다른 효과와 섞일 수 있어 제거 시 역보정을 하지 않는다.
     }
 
     public override void OnUse()

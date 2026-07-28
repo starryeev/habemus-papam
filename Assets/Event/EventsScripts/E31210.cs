@@ -18,7 +18,7 @@ public class E31210 : Event
 
     public override bool CanChoiceOption1(Cardinal performer)
     {
-        if(performer.Piety < 40) return false;
+        if(performer.Piety < 4) return false;
         return true;
     }
 
@@ -33,11 +33,11 @@ public class E31210 : Event
 
         if(Random.value <= option1Chance)
         {  // 성공했을 때 로직
-            performer.ChangeHp(-20f);
-            performer.ChangeInfluence(20f);
+            performer.ChangeHp(-2f);
+            performer.ChangeInfluence(2f);
 
             Cardinal candidate3 = GetCandidate(3);
-            if(candidate3 != null) candidate3.ChangeInfluence(-30f);
+            if(candidate3 != null) candidate3.ChangeInfluence(-3f);
 
             return FinishChoice(1, true);
         }
@@ -56,12 +56,12 @@ public class E31210 : Event
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
             Cardinal candidate3 = GetCandidate(3);
-            if(candidate3 != null) candidate3.ChangeInfluence(-50f);
+            if(candidate3 != null) candidate3.ChangeInfluence(-5f);
 
             var cardinals = CardinalManager.Instance.Cardinals;
             foreach(var c in cardinals)
             {
-                c.ChangeHp(-20f);
+                c.ChangeHp(-2f);
             }
 
             return FinishChoice(2, true);
@@ -72,8 +72,8 @@ public class E31210 : Event
             Cardinal candidate3 = GetCandidate(3);
             if(candidate3 != null)
             {
-                candidate3.ChangeHp(-40f);
-                candidate3.ChangeInfluence(50f);
+                candidate3.ChangeHp(-4f);
+                candidate3.ChangeInfluence(5f);
             }
 
             return FinishChoice(2, false);

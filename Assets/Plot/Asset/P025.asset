@@ -15,14 +15,13 @@ MonoBehaviour:
   plotID: P025
   plotName: "\uC559\uCF54\uB974"
   plotDescription: "\uC88B\uC740 \uAC74 \uD55C \uBC88 \uB354 \uD574\uC57C\uC9C0"
-  plotEffect: "\uC800\uBC88 \uCF58\uD074\uB77C\uBCA0\uC5D0\uC11C \uC120\uCD9C\uB418\uC5C8\uB358
-    \uD6C4\uBCF4 \uC815\uCE58\uB825<sprite name=influence> 30 \uC99D\uAC00"
-  plotCondiText: <sprite name=influence>60<sprite name=up>
-  plotCostText: <sprite name=piety>  40
+  plotEffect: "지난 콘클라베 선출 후보 정치력 3 증가"
+  plotCondiText: <sprite name=influence>6<sprite name=up>
+  plotCostText: <sprite name=piety>  4
   plotImage: {fileID: 0}
   plotGrade: 1
   plotWeightBase: 10
   plotWeightMultiplier: 0.1
-  minInfluence: 60
-  pietyCost: 40
-  influenceDelta: 30
+  minInfluence: 6
+  pietyCost: 4
+  influenceDelta: 3
