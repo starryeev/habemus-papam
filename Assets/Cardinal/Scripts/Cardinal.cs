@@ -329,8 +329,11 @@ public class Cardinal : MonoBehaviour
         }
 
         GameBalance balance = InGameManager.Instance.Balance;
+        bool guaranteedSuccess = InGameManager.Instance.EventManager != null &&
+            InGameManager.Instance.EventManager.TryConsumeGuaranteedPrayerOrSpeech(this);
+        bool rolledSuccess = Random.value < balance.PraySuccessChance;
 
-        if (Random.value < balance.PraySuccessChance)
+        if (guaranteedSuccess || rolledSuccess)
         {
             ChangePiety(balance.PraySuccessDeltaPiety);
             ChangeHp(balance.PraySuccessDeltaHp + prayDeltaHpEvent);
@@ -360,6 +363,9 @@ public class Cardinal : MonoBehaviour
         }
 
         GameBalance balance = InGameManager.Instance.Balance;
+        bool guaranteedSuccess = InGameManager.Instance.EventManager != null &&
+            InGameManager.Instance.EventManager.TryConsumeGuaranteedPrayerOrSpeech(this);
+        bool rolledSuccess = Random.value < balance.SpeechSuccessChance;
 
         Animation_Controller anim = GetComponent<Animation_Controller>();
         if (anim == null)
@@ -367,7 +373,7 @@ public class Cardinal : MonoBehaviour
             anim = GetComponentInChildren<Animation_Controller>();
         }
 
-        if (Random.value < balance.SpeechSuccessChance)
+        if (guaranteedSuccess || rolledSuccess)
         {
             if (anim != null)
             {

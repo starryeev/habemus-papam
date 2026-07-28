@@ -41,12 +41,12 @@ public class E40600 : Event
         if(!CanChoiceOption1(performer)) return false;
         performer.ChangeHp(40f);
         InGameManager.Instance.EventManager.GuaranteeNextPrayerOrSpeech();
-        return true;
+        return FinishChoice(1, true);
     }
 
     public override bool OnChoiceOption2(Cardinal performer)
     {
         if(!CanChoiceOption2(performer)) return false;
-        return true;
+        return FinishChoice(2, true);
     }
 }

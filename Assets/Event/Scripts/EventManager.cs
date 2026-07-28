@@ -226,8 +226,9 @@ public class EventManager : MonoBehaviour
         guaranteeNextPrayerOrSpeech = true;
     }
 
-    public bool TryConsumeGuaranteedPrayerOrSpeech()
+    public bool TryConsumeGuaranteedPrayerOrSpeech(Cardinal performer)
     {
+        if (performer == null || !performer.CompareTag("Player")) return false;
         if (!guaranteeNextPrayerOrSpeech) return false;
         guaranteeNextPrayerOrSpeech = false;
         return true;
@@ -258,6 +259,28 @@ public class EventManager : MonoBehaviour
             });
         }
 
+        foreach (var pair in choiceRecords.OrderBy(pair => pair.Key))
+        {
+            saveData.choices.Add(new EventChoiceSaveData
+            {
+                eventId = pair.Key,
+                optionIndex = pair.Value.optionIndex,
+                succeeded = pair.Value.succeeded
+            });
+        }
+
+        foreach (var pair in plotDamageBonuses.OrderBy(pair => pair.Key))
+        {
+            saveData.plotDamageBonuses.Add(new EventPlotDamageBonusSaveData
+            {
+                candidateNumber = pair.Key,
+                bonus = pair.Value
+            });
+        }
+
+        saveData.guaranteeNextPrayerOrSpeech = guaranteeNextPrayerOrSpeech;
+        saveData.freePlotPietyForCurrentConclave = freePlotPietyForCurrentConclave;
+
         return saveData;
     }
 
@@ -265,29 +288,83 @@ public class EventManager : MonoBehaviour
     {
         appeared.Clear();
         appearedCnt.Clear();
+        choiceRecords.Clear();
+        plotDamageBonuses.Clear();
+        ClearConclaveEffects();
 
-        if (saveData == null || saveData.records == null)
+        if (saveData == null)
         {
             return;
         }
 
-        foreach (var record in saveData.records)
+        if (saveData.records != null)
         {
-            if (record == null || string.IsNullOrWhiteSpace(record.eventId))
+            foreach (var record in saveData.records)
             {
-                continue;
-            }
+                if (record == null || string.IsNullOrWhiteSpace(record.eventId))
+                {
+                    continue;
+                }
 
-            Event restoredEvent = GetEventById(record.eventId);
-            if (restoredEvent == null)
-            {
-                Debug.LogWarning($"[Save] 이벤트 '{record.eventId}'를 찾지 못해 복원을 건너뜁니다.");
-                continue;
-            }
+                Event restoredEvent = GetEventById(record.eventId);
+                if (restoredEvent == null)
+                {
+                    Debug.LogWarning($"[Save] 이벤트 '{record.eventId}'를 찾지 못해 복원을 건너뜁니다.");
+                    continue;
+                }
 
-            appeared.Add(restoredEvent);
-            appearedCnt[restoredEvent] = Mathf.Max(0, record.appearCount);
+                appeared.Add(restoredEvent);
+                appearedCnt[restoredEvent] = Mathf.Max(0, record.appearCount);
+            }
         }
+
+        if (saveData.choices != null)
+        {
+            foreach (var choice in saveData.choices)
+            {
+                if (choice == null || string.IsNullOrWhiteSpace(choice.eventId) ||
+                    choice.optionIndex < 1 || choice.optionIndex > 2)
+                {
+                    continue;
+                }
+
+                Event restoredEvent = GetEventById(choice.eventId);
+                if (restoredEvent == null)
+                {
+                    Debug.LogWarning($"[Save] 선택 결과 이벤트 '{choice.eventId}'를 찾지 못해 복원을 건너뜁니다.");
+                    continue;
+                }
+
+                choiceRecords[choice.eventId] = new ChoiceRecord
+                {
+                    optionIndex = choice.optionIndex,
+                    succeeded = choice.succeeded
+                };
+
+                appeared.Add(restoredEvent);
+                if (!appearedCnt.ContainsKey(restoredEvent))
+                {
+                    appearedCnt[restoredEvent] = 1;
+                }
+            }
+        }
+
+        if (saveData.plotDamageBonuses != null)
+        {
+            foreach (var plotBonus in saveData.plotDamageBonuses)
+            {
+                if (plotBonus == null || plotBonus.candidateNumber < 1 || plotBonus.candidateNumber > 3 ||
+                    float.IsNaN(plotBonus.bonus) || float.IsInfinity(plotBonus.bonus))
+                {
+                    continue;
+                }
+
+                plotDamageBonuses[plotBonus.candidateNumber] = Mathf.Max(0f, plotBonus.bonus);
+            }
+        }
+
+        guaranteeNextPrayerOrSpeech = saveData.guaranteeNextPrayerOrSpeech;
+        freePlotPietyForCurrentConclave = saveData.freePlotPietyForCurrentConclave;
     }
 
     private Event PickWeightedEvent(List<Event> candidates)
