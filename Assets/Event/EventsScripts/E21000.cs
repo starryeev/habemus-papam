@@ -36,13 +36,13 @@ public class E21000 : Event
             performer.ChangePiety(10f);
             performer.ChangeInfluence(-10f);
 
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -55,13 +55,13 @@ public class E21000 : Event
         {  // 성공했을 때 로직
             performer.ChangeInfluence(10f);
 
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

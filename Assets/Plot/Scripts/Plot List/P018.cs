@@ -49,7 +49,7 @@ public class P018 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         var cm = CardinalManager.Instance;
 
@@ -57,7 +57,7 @@ public class P018 : Plot
 
         for (int i = 0; i < 3; i++)
         {
-            cm.Cardinals[i].ChangeHp(hpDelta);
+            ApplyHpDelta(performer, cm.Cardinals[i], hpDelta);
         }
     }
 

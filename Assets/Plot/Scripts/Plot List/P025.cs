@@ -47,7 +47,7 @@ public class P025 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         var em = ElectionManager.Instance;
 

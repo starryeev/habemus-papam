@@ -1,5 +1,4 @@
 using UnityEngine;
-using System.Linq;
 
 [CreateAssetMenu(fileName = "E21100", menuName = "Events/신앙인가, 과학인가?")]
 public class E21100 : Event
@@ -34,19 +33,17 @@ public class E21100 : Event
         if(Random.value <= option1Chance)
         {  // 성공했을 때 로직
             performer.ChangeInfluence(10f);
-            var aiCardinals = CardinalManager.Instance.GetAICardinlas();
+            Cardinal candidate1 = GetCandidate(1);
+            if(candidate1 != null) candidate1.ChangeInfluence(10f);
+            InGameManager.Instance.EventManager.SetPlotDamageBonus(2, 10f);
 
-            aiCardinals[0].ChangeInfluence(10f);
-
-            // 공작 피해 증폭로직
-
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -58,19 +55,18 @@ public class E21100 : Event
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
             performer.ChangeInfluence(10f);
-            var aiCardinals = CardinalManager.Instance.Cardinals.Where(c => !c.CompareTag("Player")).ToList();
-
-            aiCardinals[1].ChangeInfluence(10f);
+            Cardinal candidate2 = GetCandidate(2);
+            if(candidate2 != null) candidate2.ChangeInfluence(10f);
 
             performer.prayDeltaHpEvent = 5f;
 
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

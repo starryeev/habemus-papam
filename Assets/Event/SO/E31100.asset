@@ -24,7 +24,7 @@ MonoBehaviour:
     \uC788\uB2E4!\n\uAD50\uB2E8\uC758 \uC6B4\uBA85\uC774 \uB2F9\uC2E0\uC758 \uC190\uC5D0
     \uB2EC\uB838\uB2E4! \uB2F9\uC2E0\uC774 \uC6D0\uD558\uB294 \uAC83\uC740 \uBB34\uC5C7\uC77C\uAE4C?\""
   itemImage: {fileID: 0}
-  maxAppear: 1
+  maxAppear: 4
   eventWeightBase: 20
   eventWeightMultiplier: 0
   preEvents: []

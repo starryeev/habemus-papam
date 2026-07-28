@@ -32,16 +32,17 @@ public class E31000 : Event
 
         if(Random.value <= option1Chance)
         {  // 성공했을 때 로직
-            var aiCardinals = CardinalManager.Instance.GetAICardinlas();
-            aiCardinals[2].ChangeInfluence(20f);
+            Cardinal candidate3 = GetCandidate(3);
+            if(candidate3 != null) candidate3.ChangeInfluence(20f);
+            InGameManager.Instance.EventManager.SetPlotDamageBonus(2, 15f);
 
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -52,17 +53,18 @@ public class E31000 : Event
 
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
-            var aiCardinals = CardinalManager.Instance.GetAICardinlas();
-            aiCardinals[1].ChangeInfluence(20f);
+            Cardinal candidate2 = GetCandidate(2);
+            if(candidate2 != null) candidate2.ChangeInfluence(20f);
+            InGameManager.Instance.EventManager.SetPlotDamageBonus(3, 20f);
 
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
             performer.ChangeInfluence(-30f);
             performer.ChangeHp(-20f);
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

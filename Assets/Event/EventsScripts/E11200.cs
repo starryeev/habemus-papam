@@ -36,13 +36,13 @@ public class E11200 : Event
 
         
 
-        return true;
+        return FinishChoice(1, true);
     }
 
 
     public override bool OnChoiceOption2(Cardinal performer)
     {
         if(!CanChoiceOption2(performer)) return false;
-        return true;
+        return FinishChoice(2, true);
     }
 }

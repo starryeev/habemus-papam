@@ -12,6 +12,7 @@ public class P022 : Plot
     [SerializeField] private int duration;
 
     public override int cost => hpCost;
+    public override PlotCostResource CostResource => PlotCostResource.Hp;
 
     void Reset()
     {
@@ -50,7 +51,7 @@ public class P022 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangeHp(-hpCost);
+        PayCost(performer);
 
         performer.StartCoroutine(SpeedBoostRoutine(performer));
     }

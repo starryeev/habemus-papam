@@ -45,13 +45,13 @@ public class E31213 : Event
             var aiCardinals = CardinalManager.Instance.GetAICardinlas();
             aiCardinals[0].ChangeInfluence(30f);
 
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -67,13 +67,13 @@ public class E31213 : Event
             var aiCardinals = CardinalManager.Instance.GetAICardinlas();
             aiCardinals[2].ChangeInfluence(30f);
 
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

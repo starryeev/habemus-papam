@@ -48,7 +48,7 @@ public class P009 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         var cm = CardinalManager.Instance;
 
@@ -69,7 +69,7 @@ public class P009 : Plot
             }
         }
 
-        cm.Cardinals[lowestPietyCardinal].ChangeHp(hpDelta);
+        ApplyHpDelta(performer, cm.Cardinals[lowestPietyCardinal], hpDelta);
     }
 
 }

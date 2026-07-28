@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "E31210", menuName = "Events/태양 만세!")]
@@ -37,16 +36,16 @@ public class E31210 : Event
             performer.ChangeHp(-20f);
             performer.ChangeInfluence(20f);
 
-            var aiCardinals = CardinalManager.Instance.GetAICardinlas();
-            aiCardinals[2].ChangeInfluence(-30f);
+            Cardinal candidate3 = GetCandidate(3);
+            if(candidate3 != null) candidate3.ChangeInfluence(-30f);
 
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -56,8 +55,8 @@ public class E31210 : Event
 
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
-            var aiCardinals = CardinalManager.Instance.GetAICardinlas();
-            aiCardinals[2].ChangeInfluence(-50f);
+            Cardinal candidate3 = GetCandidate(3);
+            if(candidate3 != null) candidate3.ChangeInfluence(-50f);
 
             var cardinals = CardinalManager.Instance.Cardinals;
             foreach(var c in cardinals)
@@ -65,16 +64,19 @@ public class E31210 : Event
                 c.ChangeHp(-20f);
             }
 
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
-            // 후보2 탈락로직필요
-            var aiCardinals = CardinalManager.Instance.GetAICardinlas();
-            aiCardinals[2].ChangeHp(-40f);
-            aiCardinals[2].ChangeInfluence(50f);
+            EliminateCandidate(2);
+            Cardinal candidate3 = GetCandidate(3);
+            if(candidate3 != null)
+            {
+                candidate3.ChangeHp(-40f);
+                candidate3.ChangeInfluence(50f);
+            }
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

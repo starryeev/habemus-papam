@@ -3,6 +3,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "E50100", menuName = "Events/커피 회동")]
 public class E50100 : Event
 {
+    [SerializeField] private float columnProximityDistance = 1.5f;
+
     void Reset()
     {
         eventID = "E50100";
@@ -22,7 +24,6 @@ public class E50100 : Event
         option1FailResult = "체력 - 25";
         option2 = "";
 
-        // 성공 확률: 기본 50%, 기둥과 가까운 거리 안에 있다면 80% 처리 필요
     }
 
     public override bool CanChoiceOption1(Cardinal performer)
@@ -39,7 +40,8 @@ public class E50100 : Event
     {
         if(!CanChoiceOption1(performer)) return false;
 
-        if(Random.value <= option1Chance)
+        float successChance = IsNearColumn(performer) ? 0.8f : option1Chance;
+        if(Random.value <= successChance)
         {
             StateController stateController = performer.GetComponent<StateController>();
             if(stateController != null) stateController.ApplyStun(5f);
@@ -53,5 +55,23 @@ public class E50100 : Event
     public override bool OnChoiceOption2(Cardinal performer)
     {
         return true;
+    }
+
+    private bool IsNearColumn(Cardinal performer)
+    {
+        if (performer == null) return false;
+
+        float maxSqrDistance = columnProximityDistance * columnProximityDistance;
+        SpriteRenderer[] renderers = FindObjectsByType<SpriteRenderer>(
+            FindObjectsInactive.Exclude,
+            FindObjectsSortMode.None);
+
+        foreach (SpriteRenderer renderer in renderers)
+        {
+            if (!renderer.gameObject.name.StartsWith("columns_", System.StringComparison.OrdinalIgnoreCase)) continue;
+            if (renderer.bounds.SqrDistance(performer.transform.position) <= maxSqrDistance) return true;
+        }
+
+        return false;
     }
 }

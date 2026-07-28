@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 [CreateAssetMenu(fileName = "E12100", menuName = "Events/태양의 눈")]
 public class E12100 : Event
@@ -53,7 +55,47 @@ public class E12100 : Event
         else
         {
             performer.ChangeHp(-20f);
+            performer.StartCoroutine(PlayWhiteFlash());
             return false;
         }
+    }
+
+    private static IEnumerator PlayWhiteFlash()
+    {
+        GameObject overlay = new GameObject("E12100_WhiteFlash", typeof(Canvas));
+        Canvas canvas = overlay.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = short.MaxValue;
+
+        GameObject imageObject = new GameObject(
+            "White",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image));
+        imageObject.transform.SetParent(overlay.transform, false);
+
+        RectTransform rectTransform = imageObject.GetComponent<RectTransform>();
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
+
+        Image image = imageObject.GetComponent<Image>();
+        image.color = Color.white;
+        image.raycastTarget = false;
+
+        const float holdDuration = 0.12f;
+        const float fadeDuration = 0.45f;
+        yield return new WaitForSecondsRealtime(holdDuration);
+
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            image.color = new Color(1f, 1f, 1f, 1f - Mathf.Clamp01(elapsed / fadeDuration));
+            yield return null;
+        }
+
+        Destroy(overlay);
     }
 }

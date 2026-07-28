@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "E40500", menuName = "Events/주화입마")]
@@ -60,11 +61,49 @@ public class E40500 : Event
 
         if(Random.value <= option2Chance)
         {
-            // 이번 썬ㅡ클라베에서 기도/연설 이후 남은 시간 5초 추가 감소 처리 필요
+            performer.StartCoroutine(ApplyPrayerSpeechTimePenalty());
             return true;
         }
 
         performer.ChangeInfluence(5f);
         return false;
+    }
+
+    private static IEnumerator ApplyPrayerSpeechTimePenalty()
+    {
+        ActionRecordManager records = ActionRecordManager.Instance;
+        GameContext context = InGameManager.Instance != null ? InGameManager.Instance.Context : null;
+        if (records == null || context == null) yield break;
+
+        int previousActionCount = records.GetCurrentPrayCount() + records.GetCurrentSpeechCount();
+        bool conclaveEnded = false;
+        System.Action<GameContext.GameContextEvent> onContextEvent = eventType =>
+        {
+            if (eventType == GameContext.GameContextEvent.ConclaveEnd)
+            {
+                conclaveEnded = true;
+            }
+        };
+
+        context.OnGameContextEvent += onContextEvent;
+        try
+        {
+            while (!conclaveEnded)
+            {
+                int currentActionCount = records.GetCurrentPrayCount() + records.GetCurrentSpeechCount();
+                int completedActionCount = Mathf.Max(0, currentActionCount - previousActionCount);
+                if (completedActionCount > 0)
+                {
+                    context.ChangeRemainingTime(-5f * completedActionCount);
+                }
+
+                previousActionCount = currentActionCount;
+                yield return null;
+            }
+        }
+        finally
+        {
+            context.OnGameContextEvent -= onContextEvent;
+        }
     }
 }

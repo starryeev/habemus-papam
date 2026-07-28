@@ -49,7 +49,7 @@ public class P033 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         PlotManager.Instance.StartCoroutine(RevengeRoutine(performer));
     }
@@ -104,11 +104,11 @@ public class P033 : Plot
 
         if (totalDamageTaken > 0)
         {
-            ExecuteMassiveDamage(totalDamageTaken);
+            ExecuteMassiveDamage(performer, totalDamageTaken);
         }
     }
 
-    private void ExecuteMassiveDamage(float damage)
+    private void ExecuteMassiveDamage(Cardinal performer, float damage)
     {
         if (damage <= 0) return;
 
@@ -117,7 +117,7 @@ public class P033 : Plot
         for (int i = 0; i < 3; i++)
         {
             var target = cm.Cardinals[i];
-            target.ChangeHp(-damage);
+            ApplyHpDelta(performer, target, -damage);
         }
     }
 }

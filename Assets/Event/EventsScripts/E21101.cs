@@ -30,16 +30,17 @@ public class E21101 : Event
     {
         if(!CanChoiceOption1(performer)) return false;
 
-        var aiCardinals = CardinalManager.Instance.GetAICardinlas();
-        if(aiCardinals[0].Influence > aiCardinals[1].Influence)
+        Cardinal candidate1 = GetCandidate(1);
+        Cardinal candidate2 = GetCandidate(2);
+        if(candidate1 != null && candidate2 != null && candidate1.Influence > candidate2.Influence)
         {
-            return true;
+            return FinishChoiceWithEnding(1, EndingType.Crusade);
         }
         else
         {  // 실패했을 때 로직
-            
-
-            return false;
+            EliminateCandidate(1);
+            EliminateCandidate(2);
+            return FinishChoice(1, false);
         }
     }
 
@@ -52,13 +53,13 @@ public class E21101 : Event
         {  // 성공했을 때 로직
 
 
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

@@ -25,7 +25,8 @@ public class Cardinal : MonoBehaviour
     private List<Item> items;
     private NavMeshAgent agent;
     private bool isKnockedOut = false;
-    private bool hasMinHpOneEffect = false;
+    private readonly HashSet<string> minHpOneEffectSources = new HashSet<string>();
+    private GameContext subscribedGameContext;
     private bool isInitialized = false;
     private Coroutine indicatorRestoreCoroutine;
 
@@ -50,6 +51,7 @@ public class Cardinal : MonoBehaviour
 
     void Start()
     {
+        SubscribeToGameContext();
         if (!isInitialized)
         {
             InitCardinal();
@@ -104,6 +106,7 @@ public class Cardinal : MonoBehaviour
 
     void OnEnable()
     {
+        SubscribeToGameContext();
         if (items != null)
         {
             foreach (var item in items)
@@ -114,6 +117,11 @@ public class Cardinal : MonoBehaviour
                 }
             }
         }
+    }
+
+    void OnDisable()
+    {
+        UnsubscribeFromGameContext();
     }
 
     private void ApplyBalanceDefaults()
@@ -131,6 +139,7 @@ public class Cardinal : MonoBehaviour
         speedMultiplier = 1f;
         prayDeltaHpEvent = 0f;
         isKnockedOut = false;
+        minHpOneEffectSources.Clear();
 
         if (agent != null)
         {
@@ -164,6 +173,8 @@ public class Cardinal : MonoBehaviour
     public CardinalSaveData CaptureSaveData(int index)
     {
         StateController stateController = GetComponent<StateController>();
+        List<string> savedMinHpSources = new List<string>(minHpOneEffectSources);
+        savedMinHpSources.Sort(System.StringComparer.Ordinal);
 
         return new CardinalSaveData
         {
@@ -176,6 +187,7 @@ public class Cardinal : MonoBehaviour
             piety = GetBalanceFallback(piety, balance => balance.InitialPiety),
             hpDrainMultiplier = hpDrainMultiplier,
             prayDeltaHpEvent = prayDeltaHpEvent,
+            minHpOneEffectSources = savedMinHpSources,
             isKnockedOut = isKnockedOut,
             isSchemer = stateController != null && stateController.IsSchemer,
             isConClaving = stateController != null && stateController.ConClaving,
@@ -194,6 +206,14 @@ public class Cardinal : MonoBehaviour
         piety = saveData.piety;
         hpDrainMultiplier = saveData.hpDrainMultiplier;
         prayDeltaHpEvent = saveData.prayDeltaHpEvent;
+        minHpOneEffectSources.Clear();
+        if (saveData.minHpOneEffectSources != null)
+        {
+            foreach (string sourceId in saveData.minHpOneEffectSources)
+            {
+                if (!string.IsNullOrWhiteSpace(sourceId)) minHpOneEffectSources.Add(sourceId);
+            }
+        }
         isKnockedOut = saveData.isKnockedOut;
         isInitialized = true;
 
@@ -268,14 +288,22 @@ public class Cardinal : MonoBehaviour
 
     public void SetMinHpOneEffect(bool active)
     {
-        hasMinHpOneEffect = active;
+        SetMinHpOneEffect("Legacy", active);
+    }
+
+    public void SetMinHpOneEffect(string sourceId, bool active)
+    {
+        if (string.IsNullOrWhiteSpace(sourceId)) return;
+
+        if (active) minHpOneEffectSources.Add(sourceId);
+        else minHpOneEffectSources.Remove(sourceId);
     }
 
     public void ChangeHp(float delta)
     {
         float nextHp = hp + delta;
 
-        if (hasMinHpOneEffect && delta < 0f)
+        if (minHpOneEffectSources.Count > 0 && delta < 0f)
         {
             hp = Mathf.Clamp(nextHp, 1f, 100f);
         }
@@ -293,6 +321,31 @@ public class Cardinal : MonoBehaviour
     public void ChangePiety(float delta)
     {
         piety = Mathf.Clamp(piety + delta, 0f, 100f);
+    }
+
+    private void SubscribeToGameContext()
+    {
+        GameContext context = InGameManager.Instance != null ? InGameManager.Instance.Context : null;
+        if (context == null || subscribedGameContext == context) return;
+
+        UnsubscribeFromGameContext();
+        subscribedGameContext = context;
+        subscribedGameContext.OnGameContextEvent += HandleGameContextEvent;
+    }
+
+    private void UnsubscribeFromGameContext()
+    {
+        if (subscribedGameContext == null) return;
+        subscribedGameContext.OnGameContextEvent -= HandleGameContextEvent;
+        subscribedGameContext = null;
+    }
+
+    private void HandleGameContextEvent(GameContext.GameContextEvent eventType)
+    {
+        if (eventType == GameContext.GameContextEvent.ConclaveEnd)
+        {
+            minHpOneEffectSources.Clear();
+        }
     }
 
     public void AddPassiveItem(Item item)
@@ -329,8 +382,11 @@ public class Cardinal : MonoBehaviour
         }
 
         GameBalance balance = InGameManager.Instance.Balance;
+        bool guaranteedSuccess = InGameManager.Instance.EventManager != null &&
+            InGameManager.Instance.EventManager.TryConsumeGuaranteedPrayerOrSpeech(this);
+        bool rolledSuccess = Random.value < balance.PraySuccessChance;
 
-        if (Random.value < balance.PraySuccessChance)
+        if (guaranteedSuccess || rolledSuccess)
         {
             ChangePiety(balance.PraySuccessDeltaPiety);
             ChangeHp(balance.PraySuccessDeltaHp + prayDeltaHpEvent);
@@ -360,6 +416,9 @@ public class Cardinal : MonoBehaviour
         }
 
         GameBalance balance = InGameManager.Instance.Balance;
+        bool guaranteedSuccess = InGameManager.Instance.EventManager != null &&
+            InGameManager.Instance.EventManager.TryConsumeGuaranteedPrayerOrSpeech(this);
+        bool rolledSuccess = Random.value < balance.SpeechSuccessChance;
 
         Animation_Controller anim = GetComponent<Animation_Controller>();
         if (anim == null)
@@ -367,7 +426,7 @@ public class Cardinal : MonoBehaviour
             anim = GetComponentInChildren<Animation_Controller>();
         }
 
-        if (Random.value < balance.SpeechSuccessChance)
+        if (guaranteedSuccess || rolledSuccess)
         {
             if (anim != null)
             {

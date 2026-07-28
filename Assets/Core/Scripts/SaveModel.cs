@@ -234,6 +234,7 @@ public class CardinalSaveData
     public float piety;
     public float hpDrainMultiplier = 1f;
     public float prayDeltaHpEvent;
+    public List<string> minHpOneEffectSources = new List<string>();
     public bool isKnockedOut;
     public bool isSchemer;
     public bool isConClaving;
@@ -261,6 +262,10 @@ public class ItemSaveData
 public class EventManagerSaveData
 {
     public List<EventRecordSaveData> records = new List<EventRecordSaveData>();
+    public List<EventChoiceSaveData> choices = new List<EventChoiceSaveData>();
+    public List<EventPlotDamageBonusSaveData> plotDamageBonuses = new List<EventPlotDamageBonusSaveData>();
+    public bool guaranteeNextPrayerOrSpeech;
+    public bool freePlotPietyForCurrentConclave;
 }
 
 [Serializable]
@@ -268,6 +273,21 @@ public class EventRecordSaveData
 {
     public string eventId;
     public int appearCount;
+}
+
+[Serializable]
+public class EventChoiceSaveData
+{
+    public string eventId;
+    public int optionIndex;
+    public bool succeeded;
+}
+
+[Serializable]
+public class EventPlotDamageBonusSaveData
+{
+    public int candidateNumber;
+    public float bonus;
 }
 
 [Serializable]

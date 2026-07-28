@@ -49,13 +49,13 @@ public class E32001 : Event
             performer.ChangePiety(20f);
             performer.ChangeInfluence(15f);
 
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -66,15 +66,13 @@ public class E32001 : Event
 
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
-            // 성전 엔딩 처리 필요
-
-            return true;
+            return FinishChoiceWithEnding(2, EndingType.Crusade);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

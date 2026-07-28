@@ -53,13 +53,13 @@ public class P011 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         var cm = CardinalManager.Instance;
 
         if (Random.value < 0.5f)
         {
-            performer.ChangeHp(hpDecrease);
+            ApplyHpDelta(performer, performer, hpDecrease);
             performer.ChangeInfluence(influenceDelta);
         }
         else
@@ -71,7 +71,7 @@ public class P011 : Plot
         {
             if (Random.value < 0.5f)
             {
-                cm.Cardinals[i].ChangeHp(hpDecrease);
+                ApplyHpDelta(performer, cm.Cardinals[i], hpDecrease);
                 cm.Cardinals[i].ChangeInfluence(influenceDelta);
             }
             else

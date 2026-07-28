@@ -34,13 +34,13 @@ public class E31211 : Event
         {  // 성공했을 때 로직
 
 
-            return true;
+            return FinishChoiceWithEnding(1, EndingType.Crusade);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -53,13 +53,13 @@ public class E31211 : Event
         {  // 성공했을 때 로직
 
 
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

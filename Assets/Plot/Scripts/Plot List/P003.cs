@@ -48,7 +48,7 @@ public class P003 : Plot
     {
         if(!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         var cm = CardinalManager.Instance;
 

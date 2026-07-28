@@ -46,16 +46,13 @@ public class E32002 : Event
         {  // 성공했을 때 로직
             performer.ChangePiety(-10f);
 
-            // 연설 시마다 후보 1 정치력 5 증가 처리 필요
-            // 후보 3 탈락 + 후보 1 당선 시 성전 엔딩 처리 필요
-
-            return true;
+            return FinishChoiceWithEnding(1, EndingType.Crusade);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -68,16 +65,13 @@ public class E32002 : Event
         {  // 성공했을 때 로직
             performer.ChangeInfluence(10f);
 
-            // 연설 시마다 후보 3 정치력 5 증가 처리 필요
-            // 외교 승리 엔딩 조건 확인 필요: 설명은 후보 1 탈락 + 후보 3 당선이나, 효과 문구는 후보 3 탈락 + 후보 1 당선으로 적혀 있음
-
-            return true;
+            return FinishChoiceWithEnding(2, EndingType.DiplomaticVictory);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 }

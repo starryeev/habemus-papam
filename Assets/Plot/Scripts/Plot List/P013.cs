@@ -48,7 +48,7 @@ public class P013 : Plot
     {
         if(!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         performer.ChangeInfluence(influenceDelta);
     }

@@ -49,7 +49,7 @@ public class P032 : Plot
     {
         if (!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         for (int i = 0; i < rewardCount; i++)
         {

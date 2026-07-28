@@ -46,7 +46,7 @@ public class P014 : Plot
     {
         if(!CanExecute(performer)) return;
 
-        performer.ChangePiety(-pietyCost);
+        PayCost(performer);
 
         performer.ChangePiety(pietyDelta);
     }

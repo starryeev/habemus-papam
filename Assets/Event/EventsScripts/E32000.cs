@@ -55,20 +55,20 @@ public class E32000 : Event
                 aiCardinals[1].ChangeHp(-100f);
             }
 
-            return true;
+            return FinishChoice(1, true);
         }
         else
         {  // 실패했을 때 로직
             EndCurrentConclave();
 
-            // 후보 2 탈락 처리 필요
+            EliminateCandidate(2);
             foreach(var cardinal in GetPlayerAndMainCandidates(performer))
             {
                 cardinal.ChangeHp(-20f);
                 cardinal.ChangeInfluence(-30f);
             }
 
-            return false;
+            return FinishChoice(1, false);
         }
     }
 
@@ -86,13 +86,13 @@ public class E32000 : Event
                 cardinal.ChangePiety(-40f);
             }
 
-            return true;
+            return FinishChoice(2, true);
         }
         else
         {  // 실패했을 때 로직
             
 
-            return false;
+            return FinishChoice(2, false);
         }
     }
 
