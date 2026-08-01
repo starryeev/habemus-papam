@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
 public enum PopupType
@@ -16,6 +17,8 @@ public enum PopupType
 public class SettingsUI : MonoBehaviour
 {
     private const string GameSceneName = "GameScene";
+    private const float VolumeHoldDelay = 0.2f;
+    private const float VolumeRepeatInterval = 0.05f;
 
     [SerializeField] private GameObject settingsPanel;
     [SerializeField] private ScrollRect settingsScrollRect;
@@ -65,11 +68,18 @@ public class SettingsUI : MonoBehaviour
     private bool hasPendingDuplicateHotKey = false;
     private float previousTimeScale = 1f;
     private bool isSettingsPausingGame = false;
+    private VolumeSet[] _volumeRows;
+    private VolumeNavigationState _volumeNavigationState;
+    private DirectionalRepeatState _volumeRepeatState;
 
     //private UIManager.UIState prevState;
 
     private void Awake()
     {
+        CacheVolumeRows();
+        _volumeNavigationState = new VolumeNavigationState(_volumeRows.Length);
+        _volumeRepeatState = new DirectionalRepeatState(VolumeHoldDelay, VolumeRepeatInterval);
+
         if (settingsPanel != null)
         {
             settingsPanel.SetActive(false);
@@ -96,6 +106,7 @@ public class SettingsUI : MonoBehaviour
     void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        DeactivateVolumeKeyboardNavigation();
         ResumeGameFromSettings();
         //UIManager.Instance.SetUIState(prevState);
     }
@@ -123,7 +134,10 @@ public class SettingsUI : MonoBehaviour
             }
 
             ToggleSettingsPanel();
+            return;
         }
+
+        HandleVolumeKeyboardInput();
 
         /*
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -164,6 +178,7 @@ public class SettingsUI : MonoBehaviour
             CloseHowToPlayPanel();
             CloseConfirmPopup();
             ResetScrollToTop();
+            ActivateVolumeKeyboardNavigation();
         }
     }
 
@@ -181,6 +196,7 @@ public class SettingsUI : MonoBehaviour
         CloseHowToPlayPanel();
         CloseConfirmPopup();
         ResetScrollToTop();
+        ActivateVolumeKeyboardNavigation();
     }
 
     public void CloseSettingsPanel()
@@ -382,6 +398,209 @@ public class SettingsUI : MonoBehaviour
     // 볼륨 설정
     // =========================================================
 
+    private void CacheVolumeRows()
+    {
+        _volumeRows = new[]
+        {
+            masterVolume,
+            bgmVolume,
+            sfxVolume
+        };
+    }
+
+    private void HandleVolumeKeyboardInput()
+    {
+        if (!CanHandleVolumeKeyboardInput())
+        {
+            _volumeRepeatState.Reset();
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null)
+        {
+            _volumeRepeatState.Reset();
+            return;
+        }
+
+        VolumeSet selectedVolume = _volumeRows[_volumeNavigationState.SelectedRow];
+        if (selectedVolume == null)
+        {
+            return;
+        }
+
+        bool isEnterPressed =
+            keyboard.enterKey.wasPressedThisFrame ||
+            keyboard.numpadEnterKey.wasPressedThisFrame;
+
+        if (isEnterPressed)
+        {
+            ClearEventSystemSelection();
+
+            if (_volumeNavigationState.SelectedTarget == VolumeControlTarget.Mute)
+            {
+                selectedVolume.ToggleMute();
+            }
+            else
+            {
+                _volumeNavigationState.ToggleEditing(selectedVolume.CanEditVolume);
+                _volumeRepeatState.Reset();
+            }
+
+            RefreshVolumeKeyboardVisuals();
+            return;
+        }
+
+        if (_volumeNavigationState.IsEditing)
+        {
+            HandleVolumeAdjustment(keyboard, selectedVolume);
+            return;
+        }
+
+        bool hasMoved = false;
+        if (keyboard.upArrowKey.wasPressedThisFrame)
+        {
+            hasMoved = _volumeNavigationState.MoveVertical(-1);
+        }
+        else if (keyboard.downArrowKey.wasPressedThisFrame)
+        {
+            hasMoved = _volumeNavigationState.MoveVertical(1);
+        }
+        else if (keyboard.leftArrowKey.wasPressedThisFrame)
+        {
+            hasMoved = _volumeNavigationState.MoveHorizontal(-1);
+        }
+        else if (keyboard.rightArrowKey.wasPressedThisFrame)
+        {
+            hasMoved = _volumeNavigationState.MoveHorizontal(1);
+        }
+
+        if (hasMoved)
+        {
+            ClearEventSystemSelection();
+            RefreshVolumeKeyboardVisuals();
+        }
+    }
+
+    private bool CanHandleVolumeKeyboardInput()
+    {
+        return settingsPanel != null &&
+               settingsPanel.activeInHierarchy &&
+               _volumeRows != null &&
+               _volumeRows.Length > 0 &&
+               _volumeNavigationState != null &&
+               _volumeRepeatState != null &&
+               !isWaitingHotKeyInput &&
+               !IsHowToPlayPanelOpen() &&
+               (confirmPopup == null || !confirmPopup.activeInHierarchy);
+    }
+
+    private void HandleVolumeAdjustment(Keyboard keyboard, VolumeSet selectedVolume)
+    {
+        int direction =
+            (keyboard.rightArrowKey.isPressed ? 1 : 0) -
+            (keyboard.leftArrowKey.isPressed ? 1 : 0);
+
+        bool wasPressedThisFrame =
+            keyboard.rightArrowKey.wasPressedThisFrame ||
+            keyboard.leftArrowKey.wasPressedThisFrame;
+
+        int adjustment = _volumeRepeatState.Tick(
+            direction,
+            wasPressedThisFrame,
+            Time.unscaledDeltaTime);
+
+        if (adjustment != 0)
+        {
+            ClearEventSystemSelection();
+            selectedVolume.AdjustVolume(adjustment);
+        }
+    }
+
+    private void ActivateVolumeKeyboardNavigation()
+    {
+        if (_volumeNavigationState == null || _volumeRepeatState == null)
+        {
+            return;
+        }
+
+        _volumeNavigationState.Reset();
+        _volumeRepeatState.Reset();
+        ClearEventSystemSelection();
+        RefreshVolumeKeyboardVisuals();
+    }
+
+    private void DeactivateVolumeKeyboardNavigation()
+    {
+        if (_volumeNavigationState != null)
+        {
+            _volumeNavigationState.ExitEditing();
+        }
+
+        _volumeRepeatState?.Reset();
+
+        if (_volumeRows == null)
+        {
+            return;
+        }
+
+        for (int index = 0; index < _volumeRows.Length; index++)
+        {
+            _volumeRows[index]?.SetKeyboardSelection(false, VolumeControlTarget.Slider, false);
+        }
+    }
+
+    private void ExitVolumeEditing()
+    {
+        if (_volumeNavigationState == null || !_volumeNavigationState.IsEditing)
+        {
+            return;
+        }
+
+        _volumeNavigationState.ExitEditing();
+        _volumeRepeatState?.Reset();
+        RefreshVolumeKeyboardVisuals();
+    }
+
+    private void RefreshVolumeKeyboardVisuals()
+    {
+        if (_volumeRows == null || _volumeNavigationState == null)
+        {
+            return;
+        }
+
+        bool isPanelOpen = settingsPanel != null && settingsPanel.activeInHierarchy;
+        VolumeSet selectedVolume = _volumeRows[_volumeNavigationState.SelectedRow];
+        if (_volumeNavigationState.IsEditing &&
+            (selectedVolume == null || !selectedVolume.CanEditVolume))
+        {
+            _volumeNavigationState.ExitEditing();
+            _volumeRepeatState?.Reset();
+        }
+
+        for (int index = 0; index < _volumeRows.Length; index++)
+        {
+            VolumeSet volumeRow = _volumeRows[index];
+            if (volumeRow == null)
+            {
+                continue;
+            }
+
+            volumeRow.SetKeyboardSelection(
+                isPanelOpen && index == _volumeNavigationState.SelectedRow,
+                _volumeNavigationState.SelectedTarget,
+                _volumeNavigationState.IsEditing);
+        }
+    }
+
+    private static void ClearEventSystemSelection()
+    {
+        if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)
+        {
+            EventSystem.current.SetSelectedGameObject(null);
+        }
+    }
+
     private void OnChangeMasterVolume(float value)
     {
         masterVolume.RefreshText();
@@ -432,6 +651,8 @@ public class SettingsUI : MonoBehaviour
         {
             sfxVolume.ApplyMutedVisual(isMasterMuted || sfxVolume.IsMuted());
         }
+
+        RefreshVolumeKeyboardVisuals();
     }
 
     // =========================================================
@@ -475,6 +696,7 @@ public class SettingsUI : MonoBehaviour
 
     private void StartWaitingHotKeyInput(HotKeyAction action)
     {
+        ExitVolumeEditing();
         waitingHotKeyAction = action;
         isWaitingHotKeyInput = true;
         ClearPendingDuplicateHotKey();
@@ -695,6 +917,8 @@ public class SettingsUI : MonoBehaviour
 
     private void OpenHowToPlayPanel()
     {
+        ExitVolumeEditing();
+
         if (howToPlayPanel != null)
         {
             howToPlayPanel.SetActive(true);
@@ -741,6 +965,7 @@ public class SettingsUI : MonoBehaviour
 
         CloseConfirmPopup();
         CloseHowToPlayPanel();
+        DeactivateVolumeKeyboardNavigation();
         settingsPanel.SetActive(false);
         ResumeGameFromSettings();
         return true;
@@ -750,6 +975,7 @@ public class SettingsUI : MonoBehaviour
     {
         CloseConfirmPopup();
         CloseHowToPlayPanel();
+        DeactivateVolumeKeyboardNavigation();
 
         if (settingsPanel != null)
         {
@@ -784,6 +1010,7 @@ public class SettingsUI : MonoBehaviour
 
     private void ShowConfirmPopup(PopupType popupType)
     {
+        ExitVolumeEditing();
         currentPopupType = popupType;
 
         if (popupText != null)
