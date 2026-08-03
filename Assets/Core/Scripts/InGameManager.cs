@@ -7,9 +7,11 @@ using UnityEngine.UI;
 
 public enum NPCBehaviour
 {
-    None,
-    Pray,
-    Speech
+    None = 0,
+    Pray = 1,
+    Speech = 2,
+    ActionBlocked = 3,
+    PlayerExtraAction = 4
 }
 
 public class GameContext
@@ -192,6 +194,8 @@ public class InGameManager : MonoBehaviour
     private readonly NPCBehaviour[,] npcTurnBehaviours = new NPCBehaviour[3, 4];
     private readonly bool[,] npcTurnActionsExecuted = new bool[3, 4];
     private readonly bool[] npcNextTurnActionBlocked = new bool[3];
+    private readonly HashSet<int> prayerBlockedCandidateNumbers = new HashSet<int>();
+    private readonly List<PendingEffectSaveData> pendingEffects = new List<PendingEffectSaveData>();
 
     public GameBalance Balance => balance;
     public GameContext Context => gameContext;
@@ -311,6 +315,8 @@ public class InGameManager : MonoBehaviour
         eventBeforeActions = false;
         queuedImmediateEvent = null;
         endConclaveAfterEvent = false;
+        prayerBlockedCandidateNumbers.Clear();
+        pendingEffects.Clear();
 
         gameContext.InitGameContext();
         ConfigureStartButton(true, true);
@@ -340,10 +346,12 @@ public class InGameManager : MonoBehaviour
                 {
                     CardinalManager.Instance.StartConClave();
                 }
+                ProcessPendingEffects();
                 break;
 
             case GameContext.GameContextEvent.ConclaveEnd:
                 isConclaveExitInProgress = true;
+                prayerBlockedCandidateNumbers.Clear();
                 GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
                 Debug.Log("[InGameManager] 콘클라베 종료 (Turn Complete)");
 
@@ -580,6 +588,17 @@ public class InGameManager : MonoBehaviour
             saveData.npcNextTurnActionBlocked.Add(npcNextTurnActionBlocked[candidate]);
         }
 
+        foreach (PendingEffectSaveData effect in pendingEffects)
+        {
+            if (effect == null) continue;
+            saveData.pendingEffects.Add(ClonePendingEffect(effect));
+        }
+
+        foreach (int candidateNumber in prayerBlockedCandidateNumbers)
+        {
+            saveData.prayerBlockedCandidateNumbers.Add(candidateNumber);
+        }
+
         return saveData;
     }
 
@@ -604,6 +623,8 @@ public class InGameManager : MonoBehaviour
         eventBeforeActions = saveData.eventBeforeActions;
         endConclaveAfterEvent = saveData.endConclaveAfterEvent;
         RestoreNpcTurnPlan(saveData);
+        RestorePrayerBlocks(saveData.prayerBlockedCandidateNumbers);
+        RestorePendingEffects(saveData.pendingEffects);
         if (!string.IsNullOrWhiteSpace(saveData.currentEventId) && eventManager != null)
         {
             Event restoredEvent = eventManager.GetEventById(saveData.currentEventId);
@@ -793,46 +814,71 @@ public class InGameManager : MonoBehaviour
             (isTimeRunning && !awaitingTurnEvent && !gameContext.IsEventPhase && !gameContext.AreActionsComplete());
     }
 
+    public bool CanPerformPrayer(Cardinal performer, out string alertTitle, out string alertMessage)
+    {
+        alertTitle = "기도";
+        alertMessage = string.Empty;
+        return performer == null || !prayerBlockedCandidateNumbers.Contains(GetCandidateNumber(performer));
+    }
+
+    public void BlockPrayerForCurrentConclave(Cardinal performer)
+    {
+        int candidateNumber = GetCandidateNumber(performer);
+        if (candidateNumber >= 0) prayerBlockedCandidateNumbers.Add(candidateNumber);
+    }
+
+    private void RestorePrayerBlocks(List<int> savedCandidateNumbers)
+    {
+        prayerBlockedCandidateNumbers.Clear();
+        if (savedCandidateNumbers == null) return;
+        foreach (int candidateNumber in savedCandidateNumbers)
+        {
+            if (candidateNumber >= 0 && candidateNumber <= 3)
+                prayerBlockedCandidateNumbers.Add(candidateNumber);
+        }
+    }
+
     public NPCBehaviour GetNPCBehaviourThisTurn(int candidateNumber)
     {
         int candidateIndex = Mathf.Clamp(candidateNumber - 1, 0, 2);
-        int turnIndex = Mathf.Clamp(gameContext.CurrentTurn - 1, 0, 3);
-        return npcTurnBehaviours[candidateIndex, turnIndex];
+        int actionIndex = Mathf.Clamp(gameContext.CompletedActions, 0, 3);
+        return npcTurnBehaviours[candidateIndex, actionIndex];
     }
 
-    public NPCBehaviour GetNPCBehaviourThisTurn(int candidateNumber, int turnIndex)
+    public NPCBehaviour GetNPCBehaviourThisTurn(int candidateNumber, int actionIndex)
     {
-        return npcTurnBehaviours[Mathf.Clamp(candidateNumber - 1, 0, 2), Mathf.Clamp(turnIndex, 0, 3)];
+        return npcTurnBehaviours[Mathf.Clamp(candidateNumber - 1, 0, 2), Mathf.Clamp(actionIndex, 0, 3)];
     }
 
     public void ExecuteNpcActionsBeforePlayerAction(Cardinal performer)
     {
         if (performer == null || !performer.CompareTag("Player") || gameContext.IsEventPhase) return;
 
-        int turnIndex = Mathf.Clamp(gameContext.CurrentTurn - 1, 0, 3);
+        int actionIndex = Mathf.Clamp(gameContext.CompletedActions, 0, 3);
         for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
         {
             int candidateIndex = candidateNumber - 1;
-            if (npcTurnActionsExecuted[candidateIndex, turnIndex]) continue;
-            npcTurnActionsExecuted[candidateIndex, turnIndex] = true;
+            if (npcTurnActionsExecuted[candidateIndex, actionIndex]) continue;
+            npcTurnActionsExecuted[candidateIndex, actionIndex] = true;
 
             Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
             if (candidate == null || candidate.Hp <= 0f || candidate.IsKnockedOut) continue;
+            ExecuteNpcBehaviour(candidate, npcTurnBehaviours[candidateIndex, actionIndex]);
+        }
 
-            switch (npcTurnBehaviours[candidateIndex, turnIndex])
+        // 플레이어 행동이 1회뿐인 턴도 NPC의 기본 2행동은 플레이어 효과보다 먼저 끝낸다.
+        if (gameContext.ActionsThisTurn == 1 && actionIndex == 0)
+        {
+            for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
             {
-                case NPCBehaviour.Pray:
-                    candidate.PerformNpcPrayer(balance.PraySuccessChance);
-                    break;
-                case NPCBehaviour.Speech:
-                    candidate.PerformNpcSpeech(GetSpeechSuccessChance(candidate));
-                    break;
-                default:
-                    ApplyNpcIdlePenalty(candidate);
-                    break;
-            }
+                int candidateIndex = candidateNumber - 1;
+                if (npcTurnActionsExecuted[candidateIndex, 1]) continue;
+                npcTurnActionsExecuted[candidateIndex, 1] = true;
 
-            candidate.ResolveHpState();
+                Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
+                if (candidate == null || candidate.Hp <= 0f || candidate.IsKnockedOut) continue;
+                ExecuteNpcBehaviour(candidate, npcTurnBehaviours[candidateIndex, 1]);
+            }
         }
     }
 
@@ -862,15 +908,30 @@ public class InGameManager : MonoBehaviour
     private void SelectNpcBehavioursForTurn()
     {
         PrepareNpcPassives();
-        int turnIndex = Mathf.Clamp(gameContext.CurrentTurn - 1, 0, 3);
         for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
         {
             Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
-            npcTurnActionsExecuted[candidateNumber - 1, turnIndex] = false;
             bool actionBlocked = npcNextTurnActionBlocked[candidateNumber - 1];
             npcNextTurnActionBlocked[candidateNumber - 1] = false;
-            npcTurnBehaviours[candidateNumber - 1, turnIndex] = candidate != null && !actionBlocked
-                ? RollNpcBehaviour(candidateNumber, candidate.Hp) : NPCBehaviour.None;
+
+            for (int actionIndex = 0; actionIndex < 4; actionIndex++)
+            {
+                bool isBaseNpcAction = actionIndex < 2;
+                bool isPlayerExtraAction = actionIndex >= 2 && actionIndex < gameContext.ActionsThisTurn;
+                npcTurnActionsExecuted[candidateNumber - 1, actionIndex] = !isBaseNpcAction && !isPlayerExtraAction;
+
+                if (isBaseNpcAction)
+                {
+                    npcTurnBehaviours[candidateNumber - 1, actionIndex] = actionBlocked && actionIndex == 1
+                        ? NPCBehaviour.ActionBlocked
+                        : candidate != null ? RollNpcBehaviour(candidateNumber, candidate.Hp) : NPCBehaviour.None;
+                }
+                else
+                {
+                    npcTurnBehaviours[candidateNumber - 1, actionIndex] = isPlayerExtraAction
+                        ? NPCBehaviour.PlayerExtraAction : NPCBehaviour.None;
+                }
+            }
         }
     }
 
@@ -900,6 +961,43 @@ public class InGameManager : MonoBehaviour
         if (UnityEngine.Random.value < 0.1f) candidate.ChangePiety(-3f);
     }
 
+    private void ExecuteRemainingNpcBaseActions()
+    {
+        for (int candidateIndex = 0; candidateIndex < 3; candidateIndex++)
+        {
+            for (int actionIndex = 0; actionIndex < 2; actionIndex++)
+            {
+                if (npcTurnActionsExecuted[candidateIndex, actionIndex]) continue;
+
+                npcTurnActionsExecuted[candidateIndex, actionIndex] = true;
+                Cardinal candidate = GetRepresentativeCandidate(candidateIndex + 1);
+                if (candidate == null || candidate.Hp <= 0f || candidate.IsKnockedOut) continue;
+                ExecuteNpcBehaviour(candidate, npcTurnBehaviours[candidateIndex, actionIndex]);
+            }
+        }
+    }
+
+    private void ExecuteNpcBehaviour(Cardinal candidate, NPCBehaviour behaviour)
+    {
+        switch (behaviour)
+        {
+            case NPCBehaviour.Pray:
+                candidate.PerformNpcPrayer(balance.PraySuccessChance);
+                break;
+            case NPCBehaviour.Speech:
+                candidate.PerformNpcSpeech(GetSpeechSuccessChance(candidate));
+                break;
+            case NPCBehaviour.None:
+            case NPCBehaviour.ActionBlocked:
+                ApplyNpcIdlePenalty(candidate);
+                break;
+            case NPCBehaviour.PlayerExtraAction:
+                break;
+        }
+
+        candidate.ResolveHpState();
+    }
+
     private void PrepareNpcPassives()
     {
         Cardinal candidate3 = GetRepresentativeCandidate(3);
@@ -916,6 +1014,165 @@ public class InGameManager : MonoBehaviour
 
         List<Cardinal> aiCandidates = CardinalManager.Instance.GetAICardinlas();
         return aiCandidates.Count >= candidateNumber ? aiCandidates[candidateNumber - 1] : null;
+    }
+
+    public List<Cardinal> GetRepresentativeCandidates()
+    {
+        List<Cardinal> candidates = new List<Cardinal>();
+        Cardinal player = FindPlayerCardinal();
+        if (player != null) candidates.Add(player);
+
+        for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+        {
+            Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
+            if (candidate != null && !candidates.Contains(candidate)) candidates.Add(candidate);
+        }
+
+        return candidates;
+    }
+
+    public void ScheduleNextDayInfluenceRestore(string sourceId, Cardinal owner, float amount)
+    {
+        RegisterPendingEffect(PendingEffectType.P021RestoreInfluence, sourceId, owner,
+            gameContext.CurrentDay + 1, GameContext.Conclave.Dawn, amount);
+    }
+
+    public void ScheduleNextConclaveRevenge(string sourceId, Cardinal owner)
+    {
+        int triggerDay = gameContext.CurrentDay;
+        GameContext.Conclave triggerConclave = gameContext.CurrentConclave;
+        if (triggerConclave == GameContext.Conclave.Evening)
+        {
+            triggerDay++;
+            triggerConclave = GameContext.Conclave.Dawn;
+        }
+        else
+        {
+            triggerConclave++;
+        }
+
+        RegisterPendingEffect(PendingEffectType.P033RevengeDamage, sourceId, owner,
+            triggerDay, triggerConclave, 0f);
+    }
+
+    public void RecordPendingHpLoss(Cardinal owner, float actualLoss)
+    {
+        if (owner == null || actualLoss <= 0f || gameContext == null || pendingEffects.Count == 0) return;
+        int ownerCandidateNumber = GetCandidateNumber(owner);
+
+        foreach (PendingEffectSaveData effect in pendingEffects)
+        {
+            if (effect == null || effect.effectType != (int)PendingEffectType.P033RevengeDamage ||
+                effect.ownerCandidateNumber != ownerCandidateNumber || effect.createdDay != gameContext.CurrentDay ||
+                effect.createdConclave != (int)gameContext.CurrentConclave) continue;
+            effect.accumulatedValue += actualLoss;
+        }
+    }
+
+    private void RegisterPendingEffect(PendingEffectType effectType, string sourceId, Cardinal owner,
+        int triggerDay, GameContext.Conclave triggerConclave, float initialValue)
+    {
+        if (owner == null) return;
+        int ownerCandidateNumber = GetCandidateNumber(owner);
+        if (ownerCandidateNumber < 0) return;
+        pendingEffects.Add(new PendingEffectSaveData
+        {
+            id = Guid.NewGuid().ToString("N"),
+            sourceId = sourceId ?? string.Empty,
+            effectType = (int)effectType,
+            ownerCandidateNumber = ownerCandidateNumber,
+            createdDay = gameContext.CurrentDay,
+            createdConclave = (int)gameContext.CurrentConclave,
+            triggerDay = triggerDay,
+            triggerConclave = (int)triggerConclave,
+            accumulatedValue = initialValue
+        });
+    }
+
+    private void ProcessPendingEffects()
+    {
+        if (pendingEffects.Count == 0 || gameContext == null) return;
+
+        for (int index = pendingEffects.Count - 1; index >= 0; index--)
+        {
+            PendingEffectSaveData effect = pendingEffects[index];
+            if (effect == null)
+            {
+                pendingEffects.RemoveAt(index);
+                continue;
+            }
+
+            bool isDue = gameContext.CurrentDay > effect.triggerDay ||
+                gameContext.CurrentDay == effect.triggerDay && (int)gameContext.CurrentConclave >= effect.triggerConclave;
+            if (!isDue) continue;
+
+            Cardinal owner = GetCandidateByNumber(effect.ownerCandidateNumber);
+            foreach (Cardinal target in GetRepresentativeCandidates())
+            {
+                if (target == null || target == owner) continue;
+                switch ((PendingEffectType)effect.effectType)
+                {
+                    case PendingEffectType.P021RestoreInfluence:
+                        target.ChangeInfluence(effect.accumulatedValue);
+                        break;
+                    case PendingEffectType.P033RevengeDamage:
+                        if (effect.accumulatedValue <= 0f) break;
+                        float hpDelta = eventManager != null
+                            ? eventManager.ModifyPlotHpDelta(owner, target, -effect.accumulatedValue)
+                            : -effect.accumulatedValue;
+                        target.ChangeHp(hpDelta);
+                        target.ResolveHpState();
+                        break;
+                }
+            }
+
+            pendingEffects.RemoveAt(index);
+        }
+    }
+
+    private int GetCandidateNumber(Cardinal candidate)
+    {
+        if (candidate == null) return -1;
+        if (candidate == FindPlayerCardinal()) return 0;
+        int npcCandidateNumber = GetNpcCandidateNumber(candidate);
+        return npcCandidateNumber > 0 ? npcCandidateNumber : -1;
+    }
+
+    private Cardinal GetCandidateByNumber(int candidateNumber)
+    {
+        return candidateNumber == 0 ? FindPlayerCardinal() : GetRepresentativeCandidate(candidateNumber);
+    }
+
+    private static PendingEffectSaveData ClonePendingEffect(PendingEffectSaveData effect)
+    {
+        return new PendingEffectSaveData
+        {
+            id = effect.id,
+            sourceId = effect.sourceId,
+            effectType = effect.effectType,
+            ownerCandidateNumber = effect.ownerCandidateNumber,
+            createdDay = effect.createdDay,
+            createdConclave = effect.createdConclave,
+            triggerDay = effect.triggerDay,
+            triggerConclave = effect.triggerConclave,
+            accumulatedValue = effect.accumulatedValue
+        };
+    }
+
+    private void RestorePendingEffects(List<PendingEffectSaveData> savedEffects)
+    {
+        pendingEffects.Clear();
+        if (savedEffects == null) return;
+        foreach (PendingEffectSaveData effect in savedEffects)
+        {
+            if (effect == null || effect.effectType < (int)PendingEffectType.P021RestoreInfluence ||
+                effect.effectType > (int)PendingEffectType.P033RevengeDamage) continue;
+            PendingEffectSaveData restored = ClonePendingEffect(effect);
+            restored.ownerCandidateNumber = Mathf.Clamp(restored.ownerCandidateNumber, 0, 3);
+            restored.createdConclave = Mathf.Clamp(restored.createdConclave, 0, 3);
+            restored.triggerConclave = Mathf.Clamp(restored.triggerConclave, 0, 3);
+            pendingEffects.Add(restored);
+        }
     }
 
     private Cardinal GetLeadingCandidate()
@@ -958,7 +1215,7 @@ public class InGameManager : MonoBehaviour
             {
                 int index = candidate * 4 + action;
                 npcTurnBehaviours[candidate, action] = saveData.npcTurnBehaviours != null && index < saveData.npcTurnBehaviours.Count
-                    ? (NPCBehaviour)Mathf.Clamp(saveData.npcTurnBehaviours[index], 0, 2)
+                    ? (NPCBehaviour)Mathf.Clamp(saveData.npcTurnBehaviours[index], 0, 4)
                     : NPCBehaviour.None;
                 npcTurnActionsExecuted[candidate, action] = saveData.npcTurnActionsExecuted != null &&
                     index < saveData.npcTurnActionsExecuted.Count && saveData.npcTurnActionsExecuted[index];
@@ -1014,7 +1271,16 @@ public class InGameManager : MonoBehaviour
 
     public void AddCurrentTurnActions(int count)
     {
+        int previousActionCount = gameContext.ActionsThisTurn;
         gameContext.AddCurrentTurnActions(count);
+        for (int actionIndex = Mathf.Max(2, previousActionCount); actionIndex < gameContext.ActionsThisTurn; actionIndex++)
+        {
+            for (int candidateIndex = 0; candidateIndex < 3; candidateIndex++)
+            {
+                npcTurnBehaviours[candidateIndex, actionIndex] = NPCBehaviour.PlayerExtraAction;
+                npcTurnActionsExecuted[candidateIndex, actionIndex] = false;
+            }
+        }
     }
 
     public void BlockPlayerTurnActions()
@@ -1071,6 +1337,7 @@ public class InGameManager : MonoBehaviour
 
     private void ResolveCompletedTurn()
     {
+        ExecuteRemainingNpcBaseActions();
         if (!ApplyTurnEndHealthLoss()) return;
 
         if (gameContext.CurrentTurn >= 4)

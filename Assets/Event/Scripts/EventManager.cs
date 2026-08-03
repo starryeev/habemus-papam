@@ -301,7 +301,9 @@ public class EventManager : MonoBehaviour
         value = 0;
         switch (flagId)
         {
-            // F10000은 기획표의 발생 이벤트(E21000)와 설명(콜버스의 선원)이 서로 달라 보류한다.
+            case "F10000":
+                value = WasChoice("E20000", 1, true) ? 1 : 0;
+                return value != 0;
             case "F10001":
                 value = WasChoice("E21101", 1) || WasChoice("E31100", 2) ||
                     WasChoice("E31211", 1) || WasChoice("E32001", 1) ? 1 : 0;
@@ -579,8 +581,7 @@ public class EventManager : MonoBehaviour
             case "E31000": return 0.7f;
             case "E31212": return 0.3f;
             case "E32000": return 0.3f;
-            // 기존 진행도 기반 식(10 + 0.05P)은 진행도 삭제 후 대체 확률이 명시되지 않았다.
-            case "E31101": return -1f;
+            case "E31101": return 1f;
             default: return 1f;
         }
     }

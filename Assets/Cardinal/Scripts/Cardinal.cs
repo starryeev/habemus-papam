@@ -311,6 +311,7 @@ public class Cardinal : MonoBehaviour
 
     public void ChangeHp(float delta)
     {
+        float previousHp = hp;
         float nextHp = hp + delta;
 
         if (minHpOneEffectSources.Count > 0 && delta < 0f)
@@ -320,6 +321,12 @@ public class Cardinal : MonoBehaviour
         else
         {
             hp = Mathf.Clamp(nextHp, 0f, maxHp);
+        }
+
+        float actualLoss = previousHp - hp;
+        if (actualLoss > 0f && InGameManager.Instance != null)
+        {
+            InGameManager.Instance.RecordPendingHpLoss(this, actualLoss);
         }
     }
 
@@ -393,6 +400,11 @@ public class Cardinal : MonoBehaviour
     public void Pray()
     {
         if (InGameManager.Instance == null || !InGameManager.Instance.CanPerformPlayerAction(this))
+        {
+            return;
+        }
+
+        if (!InGameManager.Instance.CanPerformPrayer(this, out _, out _))
         {
             return;
         }

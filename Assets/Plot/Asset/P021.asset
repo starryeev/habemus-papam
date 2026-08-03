@@ -15,7 +15,7 @@ MonoBehaviour:
   plotID: P021
   plotName: "\uBB34\uB98E \uAFC7\uAE30"
   plotDescription: "\uCD94\uC9C4\uB825\uC744 \uC5BB\uAE30 \uC704\uD568\uC774\uC5C8\uB2E4!"
-  plotEffect: "모든 상대 정치력 2 감소, 다음 날 첫 콘클라베에 지난 콘클라베 수만큼 체력 감소"
+  plotEffect: "모든 상대 정치력 2 감소, 다음 날 첫 콘클라베에 사용 시점에 따라 모든 상대 정치력 2~5 증가"
   plotCondiText: <sprite name=influence>6<sprite name=up>
   plotCostText: <sprite name=piety>  1
   plotImage: {fileID: 0}

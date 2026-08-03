@@ -57,8 +57,7 @@ public class P031 : Plot
         performer.ChangeInfluence(-currentInfluence);
         performer.ChangeInfluence(influenceTarget);
         performer.ChangeHp(hpTarget - performer.Hp);
-
-        // 기도만 제한하는 공통 행동 권한 계약이 생기면 콘클라베 종료까지 해당 권한을 잠근다.
+        InGameManager.Instance?.BlockPrayerForCurrentConclave(performer);
     }
 
 }

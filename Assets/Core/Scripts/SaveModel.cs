@@ -5,7 +5,7 @@ using UnityEngine;
 [Serializable]
 public class SaveModel
 {
-    public int version = 2;
+    public int version = 3;
     public string savedAtUtc;
     public string sceneName = "GameScene";
     public GameContextSaveData gameContext = new GameContextSaveData();
@@ -190,6 +190,26 @@ public enum CandidateSlot
     Npc3 = 4
 }
 
+public enum PendingEffectType
+{
+    P021RestoreInfluence = 0,
+    P033RevengeDamage = 1
+}
+
+[Serializable]
+public class PendingEffectSaveData
+{
+    public string id = string.Empty;
+    public string sourceId = string.Empty;
+    public int effectType;
+    public int ownerCandidateNumber;
+    public int createdDay;
+    public int createdConclave;
+    public int triggerDay;
+    public int triggerConclave;
+    public float accumulatedValue;
+}
+
 [Serializable]
 public class PapalElectionRecordSaveData
 {
@@ -233,6 +253,8 @@ public class GameContextSaveData
     public List<int> npcTurnBehaviours = new List<int>();
     public List<bool> npcTurnActionsExecuted = new List<bool>();
     public List<bool> npcNextTurnActionBlocked = new List<bool>();
+    public List<int> prayerBlockedCandidateNumbers = new List<int>();
+    public List<PendingEffectSaveData> pendingEffects = new List<PendingEffectSaveData>();
 }
 
 [Serializable]

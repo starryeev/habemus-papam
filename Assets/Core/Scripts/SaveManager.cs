@@ -369,9 +369,7 @@ public class SaveManager : MonoBehaviour
 
     private static void MigrateBalanceScale(SaveModel saveModel)
     {
-        if (saveModel.version >= 2) return;
-
-        if (saveModel.cardinals != null)
+        if (saveModel.version < 2 && saveModel.cardinals != null)
         {
             foreach (CardinalSaveData cardinal in saveModel.cardinals)
             {
@@ -383,7 +381,7 @@ public class SaveManager : MonoBehaviour
             }
         }
 
-        if (saveModel.gameContext != null)
+        if (saveModel.version < 2 && saveModel.gameContext != null)
         {
             saveModel.gameContext.currentTurn = 1;
             saveModel.gameContext.completedActions = 0;
@@ -394,7 +392,7 @@ public class SaveManager : MonoBehaviour
             saveModel.gameContext.blockRemainingCurrentTurn = false;
         }
 
-        if (saveModel.events != null && saveModel.events.plotDamageBonuses != null)
+        if (saveModel.version < 2 && saveModel.events != null && saveModel.events.plotDamageBonuses != null)
         {
             foreach (EventPlotDamageBonusSaveData bonus in saveModel.events.plotDamageBonuses)
             {
@@ -402,7 +400,47 @@ public class SaveManager : MonoBehaviour
             }
         }
 
-        saveModel.version = 2;
+        if (saveModel.version < 3)
+        {
+            MigrateNpcActionPlan(saveModel.gameContext);
+        }
+
+        saveModel.version = 3;
+    }
+
+    private static void MigrateNpcActionPlan(GameContextSaveData context)
+    {
+        if (context == null) return;
+
+        List<int> oldBehaviours = context.npcTurnBehaviours ?? new List<int>();
+        List<bool> oldExecuted = context.npcTurnActionsExecuted ?? new List<bool>();
+        List<int> migratedBehaviours = new List<int>(12);
+        List<bool> migratedExecuted = new List<bool>(12);
+        int oldTurnIndex = Mathf.Clamp(context.currentTurn - 1, 0, 3);
+
+        for (int candidate = 0; candidate < 3; candidate++)
+        {
+            int oldIndex = candidate * 4 + oldTurnIndex;
+            int retainedBehaviour = oldIndex < oldBehaviours.Count
+                ? Mathf.Clamp(oldBehaviours[oldIndex], (int)NPCBehaviour.None, (int)NPCBehaviour.Speech)
+                : (int)NPCBehaviour.None;
+            bool retainedActionWasExecuted = oldIndex < oldExecuted.Count && oldExecuted[oldIndex];
+
+            for (int actionIndex = 0; actionIndex < 4; actionIndex++)
+            {
+                bool completed = actionIndex < context.completedActions;
+                bool playerExtraAction = actionIndex >= 2 && actionIndex < context.actionsThisTurn;
+                bool retainCurrentAction = !retainedActionWasExecuted && actionIndex == context.completedActions && actionIndex < 2;
+                migratedBehaviours.Add(playerExtraAction
+                    ? (int)NPCBehaviour.PlayerExtraAction
+                    : retainCurrentAction ? retainedBehaviour : (int)NPCBehaviour.None);
+                migratedExecuted.Add(completed || (!playerExtraAction && actionIndex >= 2));
+            }
+        }
+
+        context.npcTurnBehaviours = migratedBehaviours;
+        context.npcTurnActionsExecuted = migratedExecuted;
+        context.pendingEffects ??= new List<PendingEffectSaveData>();
     }
 
     private static float ScaleLegacyStat(float value)

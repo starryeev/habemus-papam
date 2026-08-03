@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using static GameContext;
-using static UnityEngine.GraphicsBuffer;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "P033", menuName = "Plot/나는 용서하마", order = 033)]
 
@@ -50,74 +46,6 @@ public class P033 : Plot
         if (!CanExecute(performer)) return;
 
         PayCost(performer);
-
-        PlotManager.Instance.StartCoroutine(RevengeRoutine(performer));
-    }
-
-    private IEnumerator RevengeRoutine(Cardinal performer)
-    {
-        float totalDamageTaken = 0f;
-        float lastCheckHp = performer.Hp;
-
-        // 상태 제어를 위한 변수들
-        bool isConclaveEnded = false;
-        bool isNextConclaveStarted = false;
-
-        System.Action<GameContextEvent> eventHandler = (evt) => {
-            if (evt == GameContextEvent.ConclaveEnd)
-            {
-                isConclaveEnded = true;
-            }
-
-            if (evt == GameContextEvent.ConclaveStart)
-            {
-                isNextConclaveStarted = true;
-            }
-        };
-
-        InGameManager.Instance.Context.OnGameContextEvent += eventHandler;
-
-        while (!isConclaveEnded)
-        {
-            if (performer == null)
-            {
-                InGameManager.Instance.Context.OnGameContextEvent -= eventHandler;
-                yield break;
-            }
-
-            if (performer.Hp < lastCheckHp)
-            {
-                totalDamageTaken += (lastCheckHp - performer.Hp);
-                lastCheckHp = performer.Hp;
-            }
-            else if (performer.Hp > lastCheckHp)
-            {
-                lastCheckHp = performer.Hp;
-            }
-
-            yield return null;
-        }
-
-        yield return new WaitUntil(() => isNextConclaveStarted);
-
-        InGameManager.Instance.Context.OnGameContextEvent -= eventHandler;
-
-        if (totalDamageTaken > 0)
-        {
-            ExecuteMassiveDamage(performer, totalDamageTaken);
-        }
-    }
-
-    private void ExecuteMassiveDamage(Cardinal performer, float damage)
-    {
-        if (damage <= 0) return;
-
-        var cm = CardinalManager.Instance;
-
-        for (int i = 0; i < 3; i++)
-        {
-            var target = cm.Cardinals[i];
-            ApplyHpDelta(performer, target, -damage);
-        }
+        InGameManager.Instance?.ScheduleNextConclaveRevenge(plotID, performer);
     }
 }

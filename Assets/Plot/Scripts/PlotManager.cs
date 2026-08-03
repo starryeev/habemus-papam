@@ -117,11 +117,8 @@ public class PlotManager : MonoBehaviour
 
     private static bool IsSupportedByTurnSystem(Plot plot)
     {
-        // P019는 2회 행동 억제의 턴간 예약, P021/P033은 저장 가능한 차회 예약 효과,
-        // P031은 콘클라베 단위 기도 제한 계약이 필요하다.
-        // 부분 효과로 소비되지 않게 제외한다.
-        return plot.plotID != "P019" &&
-            plot.plotID != "P021" && plot.plotID != "P031" && plot.plotID != "P033";
+        // P019는 기획 결정만으로 대상과 적용 시점을 확정할 수 없어 부분 소비를 막는다.
+        return plot.plotID != "P019";
     }
 
     public bool MeetsEffectiveInfluenceCondition(Plot plot, Cardinal candidate)
