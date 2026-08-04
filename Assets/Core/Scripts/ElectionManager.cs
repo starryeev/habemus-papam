@@ -27,6 +27,7 @@ public class ElectionManager : MonoBehaviour
     private Cardinal currentWinnerCandidate;
     public Cardinal CurrentWinnerCandidate => currentWinnerCandidate;
     private bool isElected = false;
+    public bool IsElected => isElected;
 
     public void DebugElectPlayer()
     {
