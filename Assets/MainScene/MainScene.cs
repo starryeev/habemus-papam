@@ -80,6 +80,15 @@ public class MainScene : MonoBehaviour
         { "Dict", new Vector2Int(2, 0) },
         { "PopeList", new Vector2Int(2, 1) },
     };
+    private static readonly Dictionary<string, string> navigationSfxByButtonName = new()
+    {
+        { "GameStartBtn", "NewGame" },
+        { "LoadBtn", "Book" },
+        { "Setting", "Book" },
+        { "ResetData", "Bottle" },
+        { "Dict", "Compass" },
+        { "PopeList", "Frame" },
+    };
     private readonly Dictionary<Selectable, bool> popeListSelectableInteractableStates = new();
     private readonly List<Sprite> resolvedPopeListCreditSprites = new();
     private int currentPopeCreditIndex;
@@ -145,6 +154,7 @@ public class MainScene : MonoBehaviour
 
     public void OnClickStartGame()
     {
+        SoundManager.Instance.PlaySFX("NewGame");
         SetStartGameWarningPopup(true);
     }
 
@@ -174,6 +184,7 @@ public class MainScene : MonoBehaviour
 
     public void OnClickOpenDictPopup()
     {
+        SoundManager.Instance.PlaySFX("Compass");
         SetDictPopup(true);
     }
 
@@ -190,6 +201,7 @@ public class MainScene : MonoBehaviour
 
     public void OnClickOpenResetDataPopup()
     {
+        SoundManager.Instance.PlaySFX("Bottle");
         SetResetDataPopup(true);
     }
 
@@ -226,6 +238,8 @@ public class MainScene : MonoBehaviour
 
     public void OnClickLoad()
     {
+        SoundManager.Instance.PlaySFX("Book");
+
         if (SaveManager.Instance == null)
         {
             return;
@@ -272,6 +286,7 @@ public class MainScene : MonoBehaviour
 
     public void OnClickOpenPopeListPopup()
     {
+        SoundManager.Instance.PlaySFX("Frame");
         SetPopeListPopup(true);
     }
 
@@ -282,22 +297,21 @@ public class MainScene : MonoBehaviour
 
     public void OnClickPopeListLeftArrow()
     {
-        // 사운드 매니저 아직 메인 씬에 없어서 오류 발생해서 ? 문으로 임시 대체
-        SoundManager.Instance?.PlaySFX("ButtonLight");
+        SoundManager.Instance.PlaySFX("ButtonLight");
         popeListHistoryPresenter?.MoveLeft();
         SyncPopeListNavigationSprite();
     }
 
     public void OnClickPopeListRightArrow()
     {
-        SoundManager.Instance?.PlaySFX("ButtonLight");
+        SoundManager.Instance.PlaySFX("ButtonLight");
         popeListHistoryPresenter?.MoveRight();
         SyncPopeListNavigationSprite();
     }
 
     public void OnClickPopeListFrame()
     {
-        SoundManager.Instance?.PlaySFX("Frame");
+        SoundManager.Instance.PlaySFX("Frame");
         InitializePopeListRuntimeBindings();
         popeListHistoryPresenter?.EnterBrowseMode();
         if (popeListHistoryPresenter == null || !popeListHistoryPresenter.IsBrowsing)
@@ -556,6 +570,16 @@ public class MainScene : MonoBehaviour
         {
             currentNavigationIndex = bestIndex;
             UpdateSelectionVisual();
+            PlayNavigationSelectionSFX(GetCurrentNavigationButton());
+        }
+    }
+
+    private static void PlayNavigationSelectionSFX(Button button)
+    {
+        if (button != null &&
+            navigationSfxByButtonName.TryGetValue(button.name, out string sfxName))
+        {
+            SoundManager.Instance.PlaySFX(sfxName);
         }
     }
 

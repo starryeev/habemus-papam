@@ -9,7 +9,7 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private float initSFXVolume = 0.7f;
     [SerializeField] private EventInstance BGM;
     [SerializeField] private EventInstance SFX;
-    private VCA masterVCA;
+    private Bus masterBus;
     private VCA BGMVCA;
     private VCA SFXVCA;
     private string currentBGM = "";
@@ -121,7 +121,7 @@ public class SoundManager : MonoBehaviour
     }
     public void SetMasterVolume(float volume)
     {
-        masterVCA.setVolume(volume);
+        masterBus.setVolume(volume);
     }
     public void SetBGMVolume(float volume)
     {
@@ -145,7 +145,7 @@ public class SoundManager : MonoBehaviour
     }
     public void InitVolume()
     {
-        masterVCA = RuntimeManager.GetVCA("vca:/Master");
+        masterBus = RuntimeManager.GetBus("bus:/");
         BGMVCA = RuntimeManager.GetVCA("vca:/BGM");
         SFXVCA = RuntimeManager.GetVCA("vca:/SFX");
 
