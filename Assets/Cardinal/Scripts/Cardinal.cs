@@ -426,11 +426,12 @@ public class Cardinal : MonoBehaviour
         bool guaranteedSuccess = completePlayerAction && InGameManager.Instance.EventManager != null &&
             InGameManager.Instance.EventManager.TryConsumeGuaranteedPrayerOrSpeech(this);
         bool rolledSuccess = Random.value < successChance;
+        bool success = guaranteedSuccess || rolledSuccess;
 
         float hpBeforePrayer = Hp;
         bool blocksPrayerHealing = items.Exists(item => item is I001);
 
-        if (guaranteedSuccess || rolledSuccess)
+        if (success)
         {
             ChangePiety(balance.PraySuccessDeltaPiety);
             ChangeHp(balance.PraySuccessDeltaHp + prayDeltaHpEvent);
@@ -439,6 +440,11 @@ public class Cardinal : MonoBehaviour
         {
             ChangePiety(balance.PrayFailDeltaPiety);
             ChangeHp(balance.PrayFailDeltaHp);
+        }
+
+        if (completePlayerAction)
+        {
+            SoundManager.Instance.PlaySFX(success ? "20 인게임- 기도성공" : "21 인게임- 기도실패");
         }
 
         foreach (var item in items)
@@ -482,6 +488,7 @@ public class Cardinal : MonoBehaviour
         bool guaranteedSuccess = completePlayerAction && InGameManager.Instance.EventManager != null &&
             InGameManager.Instance.EventManager.TryConsumeGuaranteedPrayerOrSpeech(this);
         bool rolledSuccess = Random.value < successChance;
+        bool success = guaranteedSuccess || rolledSuccess;
 
         Animation_Controller anim = GetComponent<Animation_Controller>();
         if (anim == null)
@@ -489,7 +496,7 @@ public class Cardinal : MonoBehaviour
             anim = GetComponentInChildren<Animation_Controller>();
         }
 
-        if (guaranteedSuccess || rolledSuccess)
+        if (success)
         {
             if (anim != null)
             {
@@ -534,6 +541,11 @@ public class Cardinal : MonoBehaviour
 
             ChangeInfluence(speechFailDeltaInfluence);
             ChangeHp(balance.SpeechFailDeltaHp);
+        }
+
+        if (completePlayerAction)
+        {
+            SoundManager.Instance.PlaySFX(success ? "22 인게임- 연설성공" : "23 인게임- 연설실패");
         }
 
         foreach (var item in items)

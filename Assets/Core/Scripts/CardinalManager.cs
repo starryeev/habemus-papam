@@ -14,6 +14,8 @@ public class ConclavePathData
 
 public class CardinalManager : MonoBehaviour
 {
+    private const string CardinalEnterExitSfxName = "13 인게임- NPC등장 및 퇴장";
+
     [Header("프리팹 및 기본 설정")]
     [Tooltip("플레이어가 조종하는 추기경 프리팹")]
     [SerializeField] private GameObject cardinalPrefabPlayer;
@@ -155,6 +157,7 @@ public class CardinalManager : MonoBehaviour
             {
                 Cardinal aiRight = aiCardinals[i + 1];
                 ResetCardinalState(aiRight, rightPath.spawnPoint.position);
+                SoundManager.Instance.PlaySFX(CardinalEnterExitSfxName);
 
                 StateController scRight = aiRight.GetComponent<StateController>();
                 if (scRight != null && rightPath.waypoints != null)
@@ -176,6 +179,7 @@ public class CardinalManager : MonoBehaviour
         if (player != null && playerPath != null)
         {
             ResetCardinalState(player, playerPath.spawnPoint.position);
+            SoundManager.Instance.PlaySFX(CardinalEnterExitSfxName);
             playerSC = player.GetComponent<StateController>();
 
             if (playerSC != null && playerPath.waypoints != null)
@@ -376,7 +380,28 @@ public class CardinalManager : MonoBehaviour
 
     private IEnumerator DeactivateAfterExit(Cardinal c, StateController sc)
     {
-        yield return new WaitUntil(() => !sc.IsMoving);
+        Camera mainCamera = Camera.main;
+        SpriteRenderer spriteRenderer = c.GetComponentInChildren<SpriteRenderer>();
+        bool wasVisible = IsVisibleInCamera(mainCamera, spriteRenderer);
+        bool exitSoundPlayed = false;
+
+        while (sc.IsMoving)
+        {
+            bool isVisible = IsVisibleInCamera(mainCamera, spriteRenderer);
+            if (!exitSoundPlayed && wasVisible && !isVisible)
+            {
+                SoundManager.Instance.PlaySFX(CardinalEnterExitSfxName);
+                exitSoundPlayed = true;
+            }
+
+            wasVisible |= isVisible;
+            yield return null;
+        }
+
+        if (!exitSoundPlayed)
+        {
+            SoundManager.Instance.PlaySFX(CardinalEnterExitSfxName);
+        }
 
         c.gameObject.SetActive(false);
 
@@ -387,6 +412,22 @@ public class CardinalManager : MonoBehaviour
                 InGameManager.Instance.OnExitSequenceFinished();
             }
         }
+    }
+
+    private static bool IsVisibleInCamera(Camera camera, SpriteRenderer spriteRenderer)
+    {
+        if (camera == null || spriteRenderer == null)
+        {
+            return false;
+        }
+
+        Bounds bounds = spriteRenderer.bounds;
+        Vector3 min = camera.WorldToViewportPoint(bounds.min);
+        Vector3 max = camera.WorldToViewportPoint(bounds.max);
+
+        return max.z > 0f &&
+            max.x >= 0f && min.x <= 1f &&
+            max.y >= 0f && min.y <= 1f;
     }
 
     private void MoveCardinalToPoint(Cardinal c, Vector3 pos, Transform parent = null)

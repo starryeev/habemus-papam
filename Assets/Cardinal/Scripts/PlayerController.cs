@@ -4,6 +4,10 @@ using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour, ICardinalController
 {
+    private const string PushSfxName = "14 인게임- NPC밀기";
+    private const string ChatInterruptSfxName = "16 인게임- NPC대화방해";
+    private const string SchemeSfxName = "17 인게임- NPC공작";
+
     [Header("Action Queue References")]
     [SerializeField] private Gamsil gamsilManager;
     [SerializeField] private Lecture lectureManager;
@@ -123,6 +127,29 @@ public class PlayerController : MonoBehaviour, ICardinalController
     private static bool IsKeyPressed(Keyboard keyboard, Key key)
     {
         return key != Key.None && keyboard[key].isPressed;
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!other.CompareTag("NPC"))
+        {
+            return;
+        }
+
+        StateController npcState = other.GetComponent<StateController>();
+        if (npcState == null)
+        {
+            return;
+        }
+
+        string sfxName = npcState.CurrentState == CardinalState.ChatMaster ||
+            npcState.CurrentState == CardinalState.Chatting
+            ? ChatInterruptSfxName
+            : npcState.CurrentState == CardinalState.Scheme || npcState.IsSchemer
+                ? SchemeSfxName
+                : PushSfxName;
+
+        SoundManager.Instance.PlaySFX(sfxName);
     }
 
 }
