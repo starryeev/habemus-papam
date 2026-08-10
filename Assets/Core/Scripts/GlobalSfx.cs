@@ -48,6 +48,13 @@ public sealed class GlobalSfx : MonoBehaviour
             return;
         }
 
+        if (sceneName == GameSceneName && CardinalManager.Instance != null &&
+            CardinalManager.Instance.IsConclaveTransitionInProgress)
+        {
+            hoveredButton = null;
+            return;
+        }
+
         bool clicked = Input.GetMouseButtonDown(0);
         UpdateButtonHover(!clicked, sceneName == MainSceneName);
 

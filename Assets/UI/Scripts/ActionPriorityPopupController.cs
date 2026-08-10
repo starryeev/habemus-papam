@@ -87,7 +87,8 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
 
     private void Update()
     {
-        if (isConfirming || IsAnyPopupOpen())
+        if (isConfirming || IsAnyPopupOpen() ||
+            CardinalManager.Instance != null && CardinalManager.Instance.IsConclaveTransitionInProgress)
         {
             return;
         }

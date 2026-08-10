@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour, ICardinalController
 {
     private const string PushSfxName = "14 인게임- NPC밀기";
     private const string ChatInterruptSfxName = "16 인게임- NPC대화방해";
-    private const string SchemeSfxName = "17 인게임- NPC공작";
+    private const string SchemeContactSfxName = "24 인게임- 공작";
 
     [Header("Action Queue References")]
     [SerializeField] private Gamsil gamsilManager;
@@ -35,6 +35,11 @@ public class PlayerController : MonoBehaviour, ICardinalController
 
     private void Update()
     {
+        if (CardinalManager.Instance != null && CardinalManager.Instance.IsConclaveTransitionInProgress)
+        {
+            return;
+        }
+
         var keyboard = Keyboard.current;
         var mouse = Mouse.current;
         if (keyboard == null || mouse == null || myStateController == null) return;
@@ -131,6 +136,11 @@ public class PlayerController : MonoBehaviour, ICardinalController
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (CardinalManager.Instance != null && CardinalManager.Instance.IsConclaveTransitionInProgress)
+        {
+            return;
+        }
+
         if (!other.CompareTag("NPC"))
         {
             return;
@@ -142,12 +152,21 @@ public class PlayerController : MonoBehaviour, ICardinalController
             return;
         }
 
-        string sfxName = npcState.CurrentState == CardinalState.ChatMaster ||
-            npcState.CurrentState == CardinalState.Chatting
-            ? ChatInterruptSfxName
-            : npcState.CurrentState == CardinalState.Scheme || npcState.IsSchemer
-                ? SchemeSfxName
-                : PushSfxName;
+        if (npcState.CurrentState == CardinalState.ChatMaster ||
+            npcState.CurrentState == CardinalState.Chatting)
+        {
+            if (!npcState.TryInterruptChatSfx())
+            {
+                return;
+            }
+
+            SoundManager.Instance.PlaySFX(ChatInterruptSfxName);
+            return;
+        }
+
+        string sfxName = npcState.CurrentState == CardinalState.Scheme || npcState.IsSchemer
+            ? SchemeContactSfxName
+            : PushSfxName;
 
         SoundManager.Instance.PlaySFX(sfxName);
     }

@@ -3,6 +3,9 @@ using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 
 [System.Serializable]
 public class ConclavePathData
@@ -39,11 +42,16 @@ public class CardinalManager : MonoBehaviour
     private List<Cardinal> cardinals = new List<Cardinal>();
     public List<Cardinal> Cardinals => cardinals;
     public Transform PlayerTransform { get; private set; }
+    public bool IsConclaveTransitionInProgress { get; private set; }
 
     private List<Cardinal> leftGroupList = new List<Cardinal>();
     private List<Cardinal> rightGroupList = new List<Cardinal>();
     private List<Vector3> leftLinePositions = new List<Vector3>();
     private List<Vector3> rightLinePositions = new List<Vector3>();
+    private int exitingCardinalCount;
+    private EventSystem blockedEventSystem;
+    private InputSystemUIInputModule blockedInputModule;
+    private Coroutine enableInputCoroutine;
 
     [SerializeField] private StatsUI statsUI;
     public StatsUI StatsUI => statsUI;
@@ -60,6 +68,11 @@ public class CardinalManager : MonoBehaviour
         Instance = this;
 
         InitializeCardinals();
+    }
+
+    private void Start()
+    {
+        SetConclaveTransition(true);
     }
 
     public List<Cardinal> GetAICardinlas()
@@ -117,6 +130,7 @@ public class CardinalManager : MonoBehaviour
     public void StartConClave()
     {
         StopAllCoroutines();
+        SetConclaveTransition(true);
         if (statsUI != null)
         {
             statsUI.HideForConclaveEntrance();
@@ -229,6 +243,8 @@ public class CardinalManager : MonoBehaviour
         {
             SaveManager.Instance.AutoSave();
         }
+
+        SetConclaveTransition(false);
     }
     private void ResetCardinalState(Cardinal c, Vector3 startPos)
     {
@@ -262,10 +278,17 @@ public class CardinalManager : MonoBehaviour
     // =========================================================
     public void StopConClave()
     {
+        SetConclaveTransition(true);
         SoundManager.Instance.PlayBGM("DummyBGM", 1);
 
         Time.timeScale = 5f;
-        if (cardinals == null || cardinals.Count == 0) return;
+        if (cardinals == null || cardinals.Count == 0)
+        {
+            SetConclaveTransition(false);
+            return;
+        }
+
+        exitingCardinalCount = 0;
 
         // 리스트 초기화
         leftGroupList.Clear();
@@ -354,6 +377,8 @@ public class CardinalManager : MonoBehaviour
             yield return new WaitForSeconds(2.0f);
         }
 
+        yield return new WaitUntil(() => exitingCardinalCount == 0);
+
         Debug.Log("All cardinals have exited.");
         if (InGameManager.Instance != null)
         {
@@ -362,6 +387,7 @@ public class CardinalManager : MonoBehaviour
         Time.timeScale = 1f;
 
         SoundManager.Instance.PlayBGM("DummyBGM");
+        SetConclaveTransition(false);
     }
     private void MoveCardinalToExit(Cardinal c, Vector3 exitPos)
     {
@@ -375,6 +401,7 @@ public class CardinalManager : MonoBehaviour
         sc.ConClaving = true;
         sc.MoveToWaypoints(new Transform[] { tempObj.transform });
 
+        exitingCardinalCount++;
         StartCoroutine(DeactivateAfterExit(c, sc));
     }
 
@@ -404,6 +431,7 @@ public class CardinalManager : MonoBehaviour
         }
 
         c.gameObject.SetActive(false);
+        exitingCardinalCount--;
 
         if (c.CompareTag("Player"))
         {
@@ -412,6 +440,61 @@ public class CardinalManager : MonoBehaviour
                 InGameManager.Instance.OnExitSequenceFinished();
             }
         }
+    }
+
+    private void SetConclaveTransition(bool active)
+    {
+        if (active)
+        {
+            IsConclaveTransitionInProgress = true;
+
+            if (enableInputCoroutine != null)
+            {
+                StopCoroutine(enableInputCoroutine);
+                enableInputCoroutine = null;
+            }
+
+            if (blockedEventSystem == null)
+            {
+                blockedEventSystem = EventSystem.current;
+            }
+
+            if (blockedEventSystem != null)
+            {
+                blockedInputModule = blockedEventSystem.GetComponent<InputSystemUIInputModule>();
+                if (blockedInputModule != null)
+                {
+                    blockedInputModule.enabled = false;
+                }
+
+                blockedEventSystem.enabled = false;
+            }
+        }
+        else if (enableInputCoroutine == null)
+        {
+            enableInputCoroutine = StartCoroutine(EnableInputAfterMouseRelease());
+        }
+    }
+
+    private IEnumerator EnableInputAfterMouseRelease()
+    {
+        yield return new WaitUntil(() => Mouse.current == null || !Mouse.current.leftButton.isPressed);
+        yield return null;
+
+        if (blockedInputModule != null)
+        {
+            blockedInputModule.enabled = true;
+            blockedInputModule = null;
+        }
+
+        if (blockedEventSystem != null)
+        {
+            blockedEventSystem.enabled = true;
+            blockedEventSystem = null;
+        }
+
+        IsConclaveTransitionInProgress = false;
+        enableInputCoroutine = null;
     }
 
     private static bool IsVisibleInCamera(Camera camera, SpriteRenderer spriteRenderer)
@@ -596,6 +679,8 @@ public class CardinalManager : MonoBehaviour
 
             RestoreCardinal(cardinal, saveData);
         }
+
+        SetConclaveTransition(false);
     }
 
     private void RestoreCardinal(Cardinal cardinal, CardinalSaveData saveData)

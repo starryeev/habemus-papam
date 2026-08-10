@@ -31,6 +31,8 @@ public class PlotUI : MonoBehaviour
     public GameObject testItem;
 
     private Cardinal performer;
+    private StateController performerState;
+    private StateController schemerState;
 
     void Start()
     {
@@ -52,6 +54,8 @@ public class PlotUI : MonoBehaviour
 
     void OnDestroy()
     {
+        SetPlotMovementLocked(false);
+
         if (InGameManager.Instance != null && InGameManager.Instance.Context != null)
         {
             InGameManager.Instance.Context.OnGameContextEvent -= OnGameContextChanged;
@@ -83,13 +87,16 @@ public class PlotUI : MonoBehaviour
     }
 
 
-    public void ShowPlotUI(Cardinal performer)
+    public void ShowPlotUI(Cardinal performer, StateController schemerState)
     {
         this.performer = performer;
+        performerState = performer != null ? performer.GetComponent<StateController>() : null;
+        this.schemerState = schemerState;
 
         SetPlotUI();
 
         plotSelectUI.SetActive(true);
+        SetPlotMovementLocked(true);
 
         /* 다른 상호작용 버튼 비활성화
         foreach (var item in actionButtons)
@@ -101,12 +108,25 @@ public class PlotUI : MonoBehaviour
     public void OnClickClose()
     {
         plotSelectUI.SetActive(false);
+        SetPlotMovementLocked(false);
 
         /* 다른 상호작용 버튼 활성화
         foreach (var item in actionButtons)
         {
             item.interactable = true;
         }*/
+    }
+
+    private void SetPlotMovementLocked(bool locked)
+    {
+        performerState?.SetPlotMovementLocked(locked);
+        schemerState?.SetPlotMovementLocked(locked);
+
+        if (!locked)
+        {
+            performerState = null;
+            schemerState = null;
+        }
     }
 
     public void SetPlotUI()

@@ -20,6 +20,11 @@ public enum CardinalState
 
 public class StateController : MonoBehaviour
 {
+    private sealed class ChatSfxSession
+    {
+        public bool IsInterrupted;
+    }
+
     [Header("상태 정보")]
     [Tooltip("현재 캐릭터가 수행 중인 상태")]
     [SerializeField] private CardinalState currentState = CardinalState.CutScene;
@@ -126,6 +131,8 @@ public class StateController : MonoBehaviour
     private Coroutine speechSequenceCoroutine;  //Speeching
     private Coroutine stunCoroutine;            //Stun
     private bool skipInitialCutScene = false;
+    private bool isPlotMovementLocked;
+    private ChatSfxSession chatSfxSession;
     private ObstacleAvoidanceType defaultObstacleAvoidanceType;
 
     // 프로퍼티
@@ -133,6 +140,7 @@ public class StateController : MonoBehaviour
     public CardinalState CurrentState => currentState;
     public bool ConClaving { get; set; } = false;
     public bool IsActionMovementInProgress => IsHeadingToQueue || IsHeadingToSpeech;
+    public bool IsChatSfxInterrupted => chatSfxSession != null && chatSfxSession.IsInterrupted;
     public bool CanAcceptManualInteraction()
     {
         return currentState == CardinalState.Idle &&
@@ -269,6 +277,8 @@ public class StateController : MonoBehaviour
                 break;
 
             case CardinalState.ChatMaster:
+                chatSfxSession = new ChatSfxSession();
+
                 if (cardinal != null)
                 {
                     cardinal.SetAgentSize(0.1f, 0.1f);
@@ -341,6 +351,7 @@ public class StateController : MonoBehaviour
                 break;
             case CardinalState.ReadyInSpeech:
                 if (cardinal != null) cardinal.SetAgentSize(0.1f, 0.1f); // 크기 조절
+                if (animController != null) animController.SetSpeechAnimation(0);
 
                 if (agent != null && agent.isOnNavMesh)
                 {
@@ -411,6 +422,7 @@ public class StateController : MonoBehaviour
                 }
 
                 HideBubble();
+                chatSfxSession = null;
                 break;
 
 
@@ -426,6 +438,7 @@ public class StateController : MonoBehaviour
                 }
 
                 HideBubble();
+                chatSfxSession = null;
                 break;
             case CardinalState.CutScene:
                 if (cardinal != null)
@@ -497,6 +510,8 @@ public class StateController : MonoBehaviour
     // 배회상태일때
     void HandleIdleState()
     {
+        if (isPlotMovementLocked) return;
+
         // Player 태그일 때: 직접 조작 
         if (CompareTag("Player"))
         {
@@ -515,6 +530,7 @@ public class StateController : MonoBehaviour
     //공작 상태일때 
     void HandleSchemeState()
     {
+        if (isPlotMovementLocked) return;
 
         if (aiWanderCoroutine == null)
         {
@@ -860,7 +876,11 @@ public class StateController : MonoBehaviour
         allParticipants.Add(this);
         allParticipants.AddRange(listeners);
 
-        foreach (var l in listeners) l.EnterChatListener();
+        foreach (var listener in listeners)
+        {
+            listener.chatSfxSession = chatSfxSession;
+            listener.EnterChatListener();
+        }
 
         if (listeners.Count > 0)
         {
@@ -1410,12 +1430,49 @@ public class StateController : MonoBehaviour
         }
     }
 
+    public bool TryInterruptChatSfx()
+    {
+        if (chatSfxSession == null || chatSfxSession.IsInterrupted)
+        {
+            return false;
+        }
+
+        chatSfxSession.IsInterrupted = true;
+        return true;
+    }
+
+    public void SetPlotMovementLocked(bool locked)
+    {
+        isPlotMovementLocked = locked;
+
+        if (locked && aiWanderCoroutine != null)
+        {
+            StopCoroutine(aiWanderCoroutine);
+            aiWanderCoroutine = null;
+        }
+
+        if (agent == null || !agent.isOnNavMesh)
+        {
+            return;
+        }
+
+        agent.ResetPath();
+        agent.velocity = Vector3.zero;
+        agent.isStopped = locked;
+    }
+
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         // 플레이어와 충돌
         if (currentState == CardinalState.Scheme && other.CompareTag("Player"))
         {
+            BoxCollider2D bodyCollider = GetComponent<BoxCollider2D>();
+            if (bodyCollider == null || !bodyCollider.Distance(other).isOverlapped)
+            {
+                return;
+            }
+
             Debug.Log($"[Scheme] 모략가 {name}가 플레이어를 감지했습니다!");
 
             // 2. 나(NPC)와 상대방(Player)의 Cardinal 컴포넌트를 각각 가져옵니다.
@@ -1426,7 +1483,7 @@ public class StateController : MonoBehaviour
             // 3. 둘 다 정상적으로 존재할 때만 실행
             if (player != null && npc != null && playerState != null && playerState.CanAcceptManualInteraction())
             {
-                player.Plot();
+                player.Plot(this);
             }
         }
     }

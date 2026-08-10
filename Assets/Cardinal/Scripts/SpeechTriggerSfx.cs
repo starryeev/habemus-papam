@@ -5,13 +5,17 @@ using UnityEngine;
 public sealed class SpeechTriggerSfx : MonoBehaviour
 {
     private const string ConversationSfxName = "15 인게임- NPC대화";
+    private const string SchemeProximitySfxName = "17 인게임- NPC공작";
     private const float MinVolume = 0.2f;
     private const float MaxVolume = 1f;
 
     private CircleCollider2D speechCollider;
     private StateController ownerState;
     private Transform playerTransform;
-    private EventInstance conversationInstance;
+    private StateController playerState;
+    private EventInstance proximityInstance;
+    private string activeSfxName;
+    private bool hasPlayedSchemeThisVisit;
 
     private void Awake()
     {
@@ -21,36 +25,57 @@ public sealed class SpeechTriggerSfx : MonoBehaviour
 
     private void Update()
     {
-        if (playerTransform == null || ownerState == null || !IsConversationState())
+        string sfxName = GetProximitySfxName();
+        if (playerTransform == null || playerState == null || ownerState == null ||
+            IsConclaveTransitionInProgress() || sfxName == null ||
+            sfxName == ConversationSfxName && (IsPlayerPerformingAction() ||
+                ownerState.IsChatSfxInterrupted))
         {
-            StopConversationSfx();
+            StopProximitySfx();
             return;
         }
 
         float volume = GetCurrentVolume();
-        if (!conversationInstance.isValid())
+        if (!proximityInstance.isValid() || activeSfxName != sfxName)
         {
-            StartConversationSfx(volume);
+            StopProximitySfx();
+            if (sfxName == SchemeProximitySfxName && hasPlayedSchemeThisVisit)
+            {
+                return;
+            }
+
+            StartProximitySfx(sfxName, volume);
             return;
         }
 
-        conversationInstance.getPlaybackState(out PLAYBACK_STATE playbackState);
+        proximityInstance.getPlaybackState(out PLAYBACK_STATE playbackState);
         if (playbackState == PLAYBACK_STATE.STOPPED)
         {
-            conversationInstance.release();
-            conversationInstance.clearHandle();
-            StartConversationSfx(volume);
+            proximityInstance.release();
+            proximityInstance.clearHandle();
+            if (sfxName == SchemeProximitySfxName)
+            {
+                return;
+            }
+
+            StartProximitySfx(sfxName, volume);
             return;
         }
 
-        conversationInstance.setVolume(volume);
+        proximityInstance.setVolume(volume);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
+            if (playerTransform == null)
+            {
+                hasPlayedSchemeThisVisit = false;
+            }
+
             playerTransform = other.transform;
+            playerState = other.GetComponent<StateController>();
         }
     }
 
@@ -59,14 +84,38 @@ public sealed class SpeechTriggerSfx : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerTransform = null;
-            StopConversationSfx();
+            playerState = null;
+            hasPlayedSchemeThisVisit = false;
+            StopProximitySfx();
         }
     }
 
-    private bool IsConversationState()
+    private static bool IsConclaveTransitionInProgress()
     {
-        return ownerState.CurrentState == CardinalState.ChatMaster ||
-            ownerState.CurrentState == CardinalState.Chatting;
+        return CardinalManager.Instance != null && CardinalManager.Instance.IsConclaveTransitionInProgress;
+    }
+
+    private bool IsPlayerPerformingAction()
+    {
+        return playerState.IsPerformingPrayerAction || playerState.IsPerformingSpeechAction;
+    }
+
+    private string GetProximitySfxName()
+    {
+        if (ownerState == null)
+        {
+            return null;
+        }
+
+        if (ownerState.CurrentState == CardinalState.ChatMaster ||
+            ownerState.CurrentState == CardinalState.Chatting)
+        {
+            return ConversationSfxName;
+        }
+
+        return ownerState.CurrentState == CardinalState.Scheme || ownerState.IsSchemer
+            ? SchemeProximitySfxName
+            : null;
     }
 
     private float GetCurrentVolume()
@@ -86,28 +135,37 @@ public sealed class SpeechTriggerSfx : MonoBehaviour
         return Mathf.Lerp(MaxVolume, MinVolume, Mathf.Clamp01(normalizedDistance));
     }
 
-    private void StartConversationSfx(float volume)
+    private void StartProximitySfx(string sfxName, float volume)
     {
-        conversationInstance = RuntimeManager.CreateInstance("event:/SFX/" + ConversationSfxName);
-        conversationInstance.setVolume(volume);
-        conversationInstance.start();
+        activeSfxName = sfxName;
+        if (sfxName == SchemeProximitySfxName)
+        {
+            hasPlayedSchemeThisVisit = true;
+        }
+
+        proximityInstance = RuntimeManager.CreateInstance("event:/SFX/" + sfxName);
+        proximityInstance.setVolume(volume);
+        proximityInstance.start();
     }
 
-    private void StopConversationSfx()
+    private void StopProximitySfx()
     {
-        if (!conversationInstance.isValid())
+        activeSfxName = null;
+        if (!proximityInstance.isValid())
         {
             return;
         }
 
-        conversationInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
-        conversationInstance.release();
-        conversationInstance.clearHandle();
+        proximityInstance.stop(FMOD.Studio.STOP_MODE.IMMEDIATE);
+        proximityInstance.release();
+        proximityInstance.clearHandle();
     }
 
     private void OnDisable()
     {
         playerTransform = null;
-        StopConversationSfx();
+        playerState = null;
+        hasPlayedSchemeThisVisit = false;
+        StopProximitySfx();
     }
 }

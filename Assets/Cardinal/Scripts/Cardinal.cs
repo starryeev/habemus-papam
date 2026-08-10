@@ -489,6 +489,9 @@ public class Cardinal : MonoBehaviour
             InGameManager.Instance.EventManager.TryConsumeGuaranteedPrayerOrSpeech(this);
         bool rolledSuccess = Random.value < successChance;
         bool success = guaranteedSuccess || rolledSuccess;
+        StateController stateController = GetComponent<StateController>();
+        bool playSpeechAnimation = completePlayerAction ||
+            stateController != null && stateController.CurrentState == CardinalState.InSpeech;
 
         Animation_Controller anim = GetComponent<Animation_Controller>();
         if (anim == null)
@@ -498,7 +501,7 @@ public class Cardinal : MonoBehaviour
 
         if (success)
         {
-            if (anim != null)
+            if (playSpeechAnimation && anim != null)
             {
                 anim.SetSpeechAnimation(2);
             }
@@ -524,7 +527,7 @@ public class Cardinal : MonoBehaviour
         }
         else
         {
-            if (anim != null)
+            if (playSpeechAnimation && anim != null)
             {
                 anim.SetSpeechAnimation(3);
             }
@@ -568,8 +571,8 @@ public class Cardinal : MonoBehaviour
         }
     }
 
-    public void Plot()
+    public void Plot(StateController schemerState)
     {
-        PlotManager.Instance.InitializePlotSession(this);
+        PlotManager.Instance.InitializePlotSession(this, schemerState);
     }
 }

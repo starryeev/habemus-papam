@@ -160,12 +160,12 @@ public class PlotManager : MonoBehaviour
         }
     }
 
-    public void InitializePlotSession(Cardinal performer)
+    public void InitializePlotSession(Cardinal performer, StateController schemerState)
     {
         if (InGameManager.Instance != null && !InGameManager.Instance.CanPerformPlayerAction(performer)) return;
         this.performer = performer;
 
-        plotUI.ShowPlotUI(performer);
+        plotUI.ShowPlotUI(performer, schemerState);
     }
 
     public void UsePlot(int plotSet, int index)
