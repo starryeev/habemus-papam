@@ -319,6 +319,7 @@ public class MainScene : MonoBehaviour
             return;
         }
 
+        //조명 소리
         TransitionToSubCamera();
     }
 

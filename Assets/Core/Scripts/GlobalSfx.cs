@@ -8,6 +8,9 @@ public sealed class GlobalSfx : MonoBehaviour
 {
     private const string MainSceneName = "MainScene";
     private const string GameSceneName = "GameScene";
+    private const string OnMouseSfxName = "OnMouse";
+    private const string ButtonLightSfxName = "ButtonLight";
+    private const string ButtonHeavySfxName = "ButtonHeavy";
     private static readonly HashSet<string> selectionEffectButtonNames = new()
     {
         "GameStartBtn",
@@ -50,7 +53,7 @@ public sealed class GlobalSfx : MonoBehaviour
 
         if (clicked)
         {
-            PlayOnMouse();
+            PlayClickSound(sceneName);
         }
     }
 
@@ -116,7 +119,78 @@ public sealed class GlobalSfx : MonoBehaviour
 
     private static void PlayOnMouse()
     {
-        SoundManager.Instance.PlaySFX("OnMouse");
+        SoundManager.Instance.PlaySFX(OnMouseSfxName);
+    }
+
+    private void PlayClickSound(string sceneName)
+    {
+        SoundManager.Instance.PlaySFX(GetClickSfxName(hoveredButton, sceneName));
+    }
+
+    private static string GetClickSfxName(Button button, string sceneName)
+    {
+        if (button == null)
+        {
+            return OnMouseSfxName;
+        }
+
+        string buttonName = button.name;
+        if (sceneName == MainSceneName)
+        {
+            if (buttonName == "Start" &&
+                HasAncestor(button.transform, "WarningPopUp"))
+            {
+                return ButtonHeavySfxName;
+            }
+
+            if ((buttonName == "Start" || buttonName == "Back") &&
+                HasAncestor(button.transform, "ResetPopUP") ||
+                buttonName == "Back" &&
+                HasAncestor(button.transform, "WarningPopUp"))
+            {
+                return ButtonLightSfxName;
+            }
+
+            if ((buttonName == "Yes" || buttonName == "Yes (1)") &&
+                HasAncestor(button.transform, "DictPopUP"))
+            {
+                return ButtonLightSfxName;
+            }
+
+            if (buttonName == "Back" &&
+                HasAncestor(button.transform, "loadWarningPopup"))
+            {
+                return ButtonLightSfxName;
+            }
+
+            if (buttonName == "LoadBtn" &&
+                HasAncestor(button.transform, "loadPopup"))
+            {
+                return ButtonHeavySfxName;
+            }
+        }
+
+        if (sceneName == GameSceneName &&
+            (buttonName == "ChoiceButton1" || buttonName == "ChoiceButton2") &&
+            HasAncestor(button.transform, "EventWindow"))
+        {
+            return ButtonHeavySfxName;
+        }
+
+        return OnMouseSfxName;
+    }
+
+    private static bool HasAncestor(Transform transform, string ancestorName)
+    {
+        for (Transform current = transform.parent; current != null; current = current.parent)
+        {
+            if (current.name == ancestorName)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void OnDestroy()
