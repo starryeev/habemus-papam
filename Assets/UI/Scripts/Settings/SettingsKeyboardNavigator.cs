@@ -9,6 +9,8 @@ public sealed class SettingsKeyboardNavigationBindings
 {
     public GameObject SettingsPanel;
     public GameObject ConfirmPopup;
+    public Button PopupConfirmButton;
+    public Button PopupCancelButton;
     public GameObject HowToPlayPanel;
     public ScrollRect SettingsScrollRect;
     public Sprite SelectionArrowSprite;
@@ -33,9 +35,9 @@ public sealed class SettingsKeyboardNavigator
 {
     private const float VolumeHoldDelay = 0.2f;
     private const float VolumeRepeatInterval = 0.025f;
-    private const float PulseDarkDuration = 0.5f;
+    private const float PulseDarkDuration = 1f;
     private const float PulseCycleDuration = 2f;
-    private const float PulseDarkenAmount = 0.55f;
+    private const float PulseDarkenAmount = 0.35f;
     private const float RebindBlinkCycle = 1f;
 
     private static readonly SettingsNavigationTarget[] VerticalTargets =
@@ -155,12 +157,16 @@ public sealed class SettingsKeyboardNavigator
             return;
         }
 
-        if (_bindings.ConfirmPopup != null && _bindings.ConfirmPopup.activeInHierarchy)
+        if (IsConfirmPopupOpen())
         {
-            _selectionIndicator.Hide();
-            SetPulseGraphic(null);
-            SetAllVolumeEditingVisuals(null);
+            HandleConfirmPopup();
             return;
+        }
+
+        if (_state.IsPopupNavigating)
+        {
+            _state.ReturnToNavigation();
+            SetPulseGraphic(null);
         }
 
         if (_bindings.HowToPlayPanel != null && _bindings.HowToPlayPanel.activeInHierarchy)
@@ -309,6 +315,113 @@ public sealed class SettingsKeyboardNavigator
         {
             UpdateSelectionVisual();
         }
+    }
+
+    private void HandleConfirmPopup()
+    {
+        if (!_state.IsPopupNavigating)
+        {
+            CancelInteraction();
+            if (!_state.IsActive)
+            {
+                _state.Activate(FindFirstAvailableTarget());
+            }
+
+            SettingsPopupTarget initialTarget = IsPopupButtonAvailable(_bindings.PopupCancelButton)
+                ? SettingsPopupTarget.Cancel
+                : SettingsPopupTarget.Confirm;
+            _state.BeginPopupNavigation(initialTarget);
+            ClearEventSystemSelection();
+        }
+
+        EnsurePopupTargetIsAvailable();
+        _selectionIndicator.Hide();
+        SetAllVolumeEditingVisuals(null);
+
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard != null)
+        {
+            if (keyboard.escapeKey.wasPressedThisFrame)
+            {
+                DidConsumeEscapeThisFrame = true;
+                InvokePopupButton(SettingsPopupTarget.Cancel);
+                return;
+            }
+
+            if (keyboard.leftArrowKey.wasPressedThisFrame &&
+                IsPopupButtonAvailable(_bindings.PopupConfirmButton))
+            {
+                _state.SelectPopupTarget(SettingsPopupTarget.Confirm);
+            }
+            else if (keyboard.rightArrowKey.wasPressedThisFrame &&
+                     IsPopupButtonAvailable(_bindings.PopupCancelButton))
+            {
+                _state.SelectPopupTarget(SettingsPopupTarget.Cancel);
+            }
+            else if (IsEnterPressed(keyboard))
+            {
+                InvokePopupButton(_state.PopupTarget);
+                return;
+            }
+        }
+
+        UpdatePopupSelectionVisual();
+    }
+
+    private void InvokePopupButton(SettingsPopupTarget target)
+    {
+        Button button = GetPopupButton(target);
+        if (!IsPopupButtonAvailable(button))
+        {
+            return;
+        }
+
+        SetPulseGraphic(null);
+        ClearEventSystemSelection();
+        button.onClick.Invoke();
+
+        if (!IsConfirmPopupOpen())
+        {
+            _state.ReturnToNavigation();
+            UpdateSelectionVisual();
+        }
+    }
+
+    private void EnsurePopupTargetIsAvailable()
+    {
+        if (IsPopupButtonAvailable(GetPopupButton(_state.PopupTarget)))
+        {
+            return;
+        }
+
+        SettingsPopupTarget fallback = IsPopupButtonAvailable(_bindings.PopupCancelButton)
+            ? SettingsPopupTarget.Cancel
+            : SettingsPopupTarget.Confirm;
+        _state.SelectPopupTarget(fallback);
+    }
+
+    private void UpdatePopupSelectionVisual()
+    {
+        Button selectedButton = GetPopupButton(_state.PopupTarget);
+        SetPulseGraphic(selectedButton != null ? selectedButton.targetGraphic : null);
+        UpdatePulseColor();
+    }
+
+    private Button GetPopupButton(SettingsPopupTarget target)
+    {
+        return target == SettingsPopupTarget.Confirm
+            ? _bindings.PopupConfirmButton
+            : _bindings.PopupCancelButton;
+    }
+
+    private bool IsConfirmPopupOpen()
+    {
+        return _bindings.ConfirmPopup != null && _bindings.ConfirmPopup.activeInHierarchy;
+    }
+
+    private static bool IsPopupButtonAvailable(Button button)
+    {
+        return button != null && button.gameObject.activeInHierarchy && button.interactable;
     }
 
     private void HandleNavigation(Keyboard keyboard)
@@ -488,6 +601,12 @@ public sealed class SettingsKeyboardNavigator
         if (_state.Mode == SettingsNavigationMode.VolumeEditing)
         {
             _state.ReturnToNavigation();
+        }
+
+        if (_state.IsPopupNavigating)
+        {
+            _state.ReturnToNavigation();
+            SetPulseGraphic(null);
         }
 
         _volumeRepeatState.Reset();
@@ -679,6 +798,14 @@ public sealed class SettingsKeyboardNavigator
             return;
         }
 
+        if (IsConfirmPopupOpen() || _state.IsPopupNavigating)
+        {
+            _selectionIndicator.Hide();
+            SetPulseGraphic(null);
+            SetAllVolumeEditingVisuals(null);
+            return;
+        }
+
         NavigationItem item = GetItem(_state.SelectedTarget);
         if (item == null || !item.IsAvailable || _state.IsRebinding)
         {
@@ -747,10 +874,12 @@ public sealed class SettingsKeyboardNavigator
             return;
         }
 
-        bool isDark = Mathf.Repeat(Time.unscaledTime - _pulseStartedAt, PulseCycleDuration) < PulseDarkDuration;
-        _pulseGraphic.color = isDark
-            ? Color.Lerp(_pulseBaseColor, Color.black, PulseDarkenAmount)
-            : _pulseBaseColor;
+        _pulseGraphic.color = SettingsPulseColorEvaluator.Evaluate(
+            _pulseBaseColor,
+            Time.unscaledTime - _pulseStartedAt,
+            PulseDarkDuration,
+            PulseCycleDuration - PulseDarkDuration,
+            PulseDarkenAmount);
     }
 
     private void EnsureVisible(NavigationItem item)
@@ -801,8 +930,19 @@ public sealed class SettingsKeyboardNavigator
 
     private static bool TryGetSupportedPressedKey(Keyboard keyboard, out Key pressedKey)
     {
+        if (keyboard == null)
+        {
+            pressedKey = Key.None;
+            return false;
+        }
+
         foreach (KeyControl keyControl in keyboard.allKeys)
         {
+            if (keyControl == null)
+            {
+                continue;
+            }
+
             if (keyControl.wasPressedThisFrame &&
                 keyControl.keyCode >= Key.A &&
                 keyControl.keyCode <= Key.Z)

@@ -54,6 +54,8 @@ public class SettingsUI : MonoBehaviour
 
     [Header("팝업창 설정")]
     [SerializeField] private GameObject confirmPopup;
+    [SerializeField] private Button popupConfirmButton;
+    [SerializeField] private Button popupCancelButton;
     [SerializeField] private TMP_Text popupText;
     [SerializeField] private TMP_Text confirmButtonText;
     [SerializeField] private string hotKeyWarningMessage = "비어 있는 단축키가 있습니다.\n 설정창을 닫으시겠습니까?";
@@ -402,6 +404,8 @@ public class SettingsUI : MonoBehaviour
         {
             SettingsPanel = settingsPanel,
             ConfirmPopup = confirmPopup,
+            PopupConfirmButton = popupConfirmButton,
+            PopupCancelButton = popupCancelButton,
             HowToPlayPanel = howToPlayPanel,
             SettingsScrollRect = settingsScrollRect,
             SelectionArrowSprite = selectionArrowSprite,
