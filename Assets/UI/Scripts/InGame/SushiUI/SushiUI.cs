@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 public class SushiUI : MonoBehaviour
 {
+    private const string ClockSfxName = "33 인게임- 시계소리";
+    private const float ClockSfxStartTime = 10f;
+
     public static SushiUI Instance { get; private set; }
 
     [Header("등급별 스프라이트 설정")]
@@ -23,6 +26,7 @@ public class SushiUI : MonoBehaviour
     [SerializeField] private StatsUI statsUI;
 
     private Coroutine timerCoroutine;
+    private bool isClockSfxPlaying;
 
     void Awake()
     {
@@ -63,6 +67,7 @@ public class SushiUI : MonoBehaviour
 
         float duration = (playerRank == 4) ? 5f : 30f;
         if (timerCoroutine != null) StopCoroutine(timerCoroutine);
+        StopClockSfx();
         timerCoroutine = StartCoroutine(TimerRoutine(duration));
     }
 
@@ -111,7 +116,15 @@ public class SushiUI : MonoBehaviour
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            timerSlider.value = duration - elapsed;
+            float remainingTime = duration - elapsed;
+            timerSlider.value = remainingTime;
+
+            if (!isClockSfxPlaying && remainingTime > 0f && remainingTime <= ClockSfxStartTime)
+            {
+                SoundManager.Instance.LoopSFX(ClockSfxName);
+                isClockSfxPlaying = true;
+            }
+
             yield return null;
         }
 
@@ -122,7 +135,26 @@ public class SushiUI : MonoBehaviour
 
     public void Close()
     {
-        if (timerCoroutine != null) StopCoroutine(timerCoroutine);
+        if (timerCoroutine != null)
+        {
+            StopCoroutine(timerCoroutine);
+            timerCoroutine = null;
+        }
+
+        StopClockSfx();
         sushiPanel.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        StopClockSfx();
+    }
+
+    private void StopClockSfx()
+    {
+        if (!isClockSfxPlaying) return;
+
+        SoundManager.Instance.StopLoop(ClockSfxName);
+        isClockSfxPlaying = false;
     }
 }

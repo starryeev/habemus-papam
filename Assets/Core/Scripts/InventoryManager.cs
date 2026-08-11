@@ -3,6 +3,10 @@ using UnityEngine;
 
 public class InventoryManager : MonoBehaviour
 {
+    private const string ItemAcquireSfxName = "29 인게임- 아이템 획득";
+    private const string ItemUseSfxName = "30 인게임- 아이템 사용";
+    private const string ItemDropSfxName = "31 인게임- 아이템 버리기";
+
     public static InventoryManager Instance { get; private set; }
 
     [SerializeField] private int maxSlots = 3;
@@ -155,6 +159,7 @@ public class InventoryManager : MonoBehaviour
         }
 
         RefreshUI();
+        SoundManager.Instance.PlaySFX(ItemAcquireSfxName);
         return true;
     }
 
@@ -166,6 +171,7 @@ public class InventoryManager : MonoBehaviour
         }
 
         item.OnUse();
+        SoundManager.Instance.PlaySFX(ItemUseSfxName);
 
         if (item.IsDurationBuff)
         {
@@ -194,6 +200,7 @@ public class InventoryManager : MonoBehaviour
         }
 
         RemoveItem(item);
+        SoundManager.Instance.PlaySFX(ItemDropSfxName);
         Debug.Log($"[Inventory] Removed item: {item.itemName}");
     }
 

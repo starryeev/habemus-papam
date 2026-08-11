@@ -959,10 +959,10 @@ public class StateController : MonoBehaviour
 
         foreach (var listener in listeners)
         {
-            if (listener.CurrentState == CardinalState.Chatting) listener.ChangeState(CardinalState.Idle);
+            if (listener.CurrentState == CardinalState.Chatting) listener.RestoreStateAfterAction();
         }
         if (triggerObj != null) Destroy(triggerObj);
-        ChangeState(CardinalState.Idle);
+        RestoreStateAfterAction();
     }
 
     // ---------------------------------------------------------
