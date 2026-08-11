@@ -73,7 +73,6 @@ public class EndingCutscenePlayer : MonoBehaviour
     private void Start()
     {
         HideGoToMainSceneButton();
-        EndingResultPanelRenderer.PopulateCurrentRunStats();
 
         if (playOnStart)
         {
