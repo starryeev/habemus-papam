@@ -33,8 +33,18 @@ public class CheckUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI miscText;
     [SerializeField] private TextMeshProUGUI probabilityText;
     [SerializeField] private float jackpotDuration = 3f;
+    [SerializeField] private GameObject judgementVideoObject;
     [SerializeField] private VideoPlayer vp;
+    [Header("Judgement Videos")]
+    [Tooltip("당선 판정일 때 순서대로 재생할 영상입니다.")]
+    [SerializeField] private VideoClip[] SuccessVideoQueue;
+    [Tooltip("낙선 판정일 때 순서대로 재생할 영상입니다.")]
+    [SerializeField] private VideoClip[] FailVideoQueue;
     private Coroutine jackpotCoroutine;
+    private VideoClip[] activeVideoQueue;
+    private int currentVideoIndex;
+    private bool isPlayingJudgementVideos;
+    private bool isWaitingForJudgementVideoClick;
     private float winProbability = 0; //ElectionManager에서 정해진 승리 확률.
     private int winner = -1;
     public void SetWinner(int i) {winner = i;}
@@ -54,6 +64,16 @@ public class CheckUI : MonoBehaviour
         subText.text = "";
         probabilityText.text = "";
         miscText.text = "";
+        SetJudgementVideoObjectActive(false);
+    }
+    private void OnDestroy()
+    {
+        if (vp != null)
+        {
+            vp.loopPointReached -= OnJudgementVideoFinished;
+            vp.prepareCompleted -= OnJudgementVideoPrepared;
+            vp.errorReceived -= OnJudgementVideoError;
+        }
     }
     public void SetSprite(int i)
     {
@@ -88,7 +108,7 @@ public class CheckUI : MonoBehaviour
         }
         if(animState==AnimState.ElectEnd)
         {
-            ElectionManager.Instance.GetNextScenes();
+            PlayJudgementVideos();
         }
     }
     private void OnEnable()
@@ -99,6 +119,7 @@ public class CheckUI : MonoBehaviour
         probabilityText.text = "";
         anim.Play("Enter", 0, 0f);
         Vote.gameObject.SetActive(false);
+        SetJudgementVideoObjectActive(false);
     }
     public void OnEnterAnimFinished()
     {
@@ -144,6 +165,129 @@ public class CheckUI : MonoBehaviour
 
         jackpotCoroutine = null;
     }
+    private void PlayJudgementVideos()
+    {
+        if (isPlayingJudgementVideos) return;
+        if (isWaitingForJudgementVideoClick) return;
+
+        bool isElected = ElectionManager.Instance != null && ElectionManager.Instance.IsElected;
+        activeVideoQueue = isElected ? SuccessVideoQueue : FailVideoQueue;
+        currentVideoIndex = 0;
+
+        if (vp == null || activeVideoQueue == null || activeVideoQueue.Length == 0)
+        {
+            ElectionManager.Instance.GetNextScenes();
+            return;
+        }
+
+        isPlayingJudgementVideos = true;
+        isWaitingForJudgementVideoClick = false;
+        SetJudgementVideoObjectActive(true);
+        vp.loopPointReached -= OnJudgementVideoFinished;
+        vp.prepareCompleted -= OnJudgementVideoPrepared;
+        vp.errorReceived -= OnJudgementVideoError;
+        vp.loopPointReached += OnJudgementVideoFinished;
+        vp.prepareCompleted += OnJudgementVideoPrepared;
+        vp.errorReceived += OnJudgementVideoError;
+        PlayNextJudgementVideo();
+    }
+
+    private void PlayNextJudgementVideo()
+    {
+        while (currentVideoIndex < activeVideoQueue.Length && activeVideoQueue[currentVideoIndex] == null)
+        {
+            currentVideoIndex++;
+        }
+
+        if (currentVideoIndex >= activeVideoQueue.Length)
+        {
+            WaitForJudgementVideoClick();
+            return;
+        }
+
+        vp.Stop();
+        ClearJudgementVideoTexture();
+        vp.clip = activeVideoQueue[currentVideoIndex++];
+        vp.time = 0;
+        vp.frame = 0;
+        vp.Prepare();
+    }
+
+    private void OnJudgementVideoPrepared(VideoPlayer source)
+    {
+        if (!isPlayingJudgementVideos) return;
+
+        source.time = 0;
+        source.frame = 0;
+        source.Play();
+    }
+
+    private void OnJudgementVideoFinished(VideoPlayer source)
+    {
+        PlayNextJudgementVideo();
+    }
+
+    private void OnJudgementVideoError(VideoPlayer source, string message)
+    {
+        Debug.LogWarning($"Judgement video playback failed: {message}");
+        FinishJudgementVideos();
+    }
+
+    public void OnJudgementVideoClicked()
+    {
+        if (!isWaitingForJudgementVideoClick) return;
+
+        FinishJudgementVideos();
+    }
+
+    private void WaitForJudgementVideoClick()
+    {
+        isPlayingJudgementVideos = false;
+        isWaitingForJudgementVideoClick = true;
+
+        if (vp != null)
+        {
+            vp.Pause();
+            vp.loopPointReached -= OnJudgementVideoFinished;
+            vp.prepareCompleted -= OnJudgementVideoPrepared;
+            vp.errorReceived -= OnJudgementVideoError;
+        }
+    }
+
+    private void FinishJudgementVideos()
+    {
+        isPlayingJudgementVideos = false;
+        isWaitingForJudgementVideoClick = false;
+        if (vp != null)
+        {
+            vp.Stop();
+            vp.clip = null;
+            vp.loopPointReached -= OnJudgementVideoFinished;
+            vp.prepareCompleted -= OnJudgementVideoPrepared;
+            vp.errorReceived -= OnJudgementVideoError;
+        }
+        ClearJudgementVideoTexture();
+        SetJudgementVideoObjectActive(false);
+        ElectionManager.Instance.GetNextScenes();
+    }
+
+    private void SetJudgementVideoObjectActive(bool active)
+    {
+        if (judgementVideoObject != null)
+        {
+            judgementVideoObject.SetActive(active);
+        }
+    }
+
+    private void ClearJudgementVideoTexture()
+    {
+        if (vp == null || vp.targetTexture == null) return;
+
+        RenderTexture previous = RenderTexture.active;
+        RenderTexture.active = vp.targetTexture;
+        RenderTexture.active = previous;
+    }
+
     public void DoNothing()
     {
     }//애니메이션을 위한 더미함수.
