@@ -2,8 +2,6 @@
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
 public enum PopupType
@@ -17,14 +15,19 @@ public enum PopupType
 public class SettingsUI : MonoBehaviour
 {
     private const string GameSceneName = "GameScene";
-    private const float VolumeHoldDelay = 0.2f;
-    private const float VolumeRepeatInterval = 0.05f;
 
     [SerializeField] private GameObject settingsPanel;
     [SerializeField] private ScrollRect settingsScrollRect;
 
+    [Header("키보드 내비게이션")]
+    [SerializeField] private Button closeSettingsButton;
+    [SerializeField] private Sprite selectionArrowSprite;
+    [SerializeField] private Image selectionLeftArrow;
+    [SerializeField] private Image selectionRightArrow;
+
     [Header("씬별 표시 설정")]
     [SerializeField] private GameObject inGameOnlyGroup;
+    [SerializeField] private Button newGameButton;
 
     [Header("음향 설정")]
     [SerializeField] private VolumeSet masterVolume;
@@ -61,25 +64,21 @@ public class SettingsUI : MonoBehaviour
 
     private readonly System.Collections.Generic.Dictionary<HotKeyAction, Button> hotKeyButtons =
         new System.Collections.Generic.Dictionary<HotKeyAction, Button>();
-    private HotKeyAction waitingHotKeyAction;
-    private bool isWaitingHotKeyInput = false;
     private HotKeyAction pendingDuplicateAction;
     private Key pendingDuplicateKey = Key.None;
     private bool hasPendingDuplicateHotKey = false;
     private float previousTimeScale = 1f;
     private bool isSettingsPausingGame = false;
-    private VolumeSet[] _volumeRows;
-    private VolumeNavigationState _volumeNavigationState;
-    private DirectionalRepeatState _volumeRepeatState;
+    private SettingsKeyboardNavigator _keyboardNavigator;
+    private int _lastClosedFrame = -1;
+
+    public bool IsOpen => settingsPanel != null && settingsPanel.activeInHierarchy;
+    public bool IsInputCaptured => IsOpen || Time.frameCount == _lastClosedFrame;
 
     //private UIManager.UIState prevState;
 
     private void Awake()
     {
-        CacheVolumeRows();
-        _volumeNavigationState = new VolumeNavigationState(_volumeRows.Length);
-        _volumeRepeatState = new DirectionalRepeatState(VolumeHoldDelay, VolumeRepeatInterval);
-
         if (settingsPanel != null)
         {
             settingsPanel.SetActive(false);
@@ -89,6 +88,7 @@ public class SettingsUI : MonoBehaviour
         CacheHotKeyButtons();
         HideRemovedActionHotKeyButtons();
         RegisterEvents();
+        InitializeKeyboardNavigation();
         SyncHotKeyButtonsFromManager();
         CloseConfirmPopup();
     }
@@ -106,7 +106,7 @@ public class SettingsUI : MonoBehaviour
     void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
-        DeactivateVolumeKeyboardNavigation();
+        _keyboardNavigator?.Deactivate();
         ResumeGameFromSettings();
         //UIManager.Instance.SetUIState(prevState);
     }
@@ -118,9 +118,9 @@ public class SettingsUI : MonoBehaviour
 
     private void Update()
     {
-        if (isWaitingHotKeyInput)
+        _keyboardNavigator?.Tick();
+        if (_keyboardNavigator != null && _keyboardNavigator.DidConsumeEscapeThisFrame)
         {
-            CaptureHotKeyInput();
             return;
         }
 
@@ -136,8 +136,6 @@ public class SettingsUI : MonoBehaviour
             ToggleSettingsPanel();
             return;
         }
-
-        HandleVolumeKeyboardInput();
 
         /*
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -178,7 +176,7 @@ public class SettingsUI : MonoBehaviour
             CloseHowToPlayPanel();
             CloseConfirmPopup();
             ResetScrollToTop();
-            ActivateVolumeKeyboardNavigation();
+            _keyboardNavigator?.Activate();
         }
     }
 
@@ -196,7 +194,7 @@ public class SettingsUI : MonoBehaviour
         CloseHowToPlayPanel();
         CloseConfirmPopup();
         ResetScrollToTop();
-        ActivateVolumeKeyboardNavigation();
+        _keyboardNavigator?.Activate();
     }
 
     public void CloseSettingsPanel()
@@ -398,207 +396,33 @@ public class SettingsUI : MonoBehaviour
     // 볼륨 설정
     // =========================================================
 
-    private void CacheVolumeRows()
+    private void InitializeKeyboardNavigation()
     {
-        _volumeRows = new[]
+        SettingsKeyboardNavigationBindings bindings = new SettingsKeyboardNavigationBindings
         {
-            masterVolume,
-            bgmVolume,
-            sfxVolume
+            SettingsPanel = settingsPanel,
+            ConfirmPopup = confirmPopup,
+            HowToPlayPanel = howToPlayPanel,
+            SettingsScrollRect = settingsScrollRect,
+            SelectionArrowSprite = selectionArrowSprite,
+            SelectionLeftArrow = selectionLeftArrow,
+            SelectionRightArrow = selectionRightArrow,
+            CloseSettingsButton = closeSettingsButton,
+            MasterVolume = masterVolume,
+            BgmVolume = bgmVolume,
+            SfxVolume = sfxVolume,
+            UpKey = upKey,
+            LeftKey = leftKey,
+            DownKey = downKey,
+            RightKey = rightKey,
+            ResetHotKeysButton = resetHotKeysButton,
+            NewGameButton = newGameButton,
+            QuitGameButton = quitGameButton,
+            HowToPlayButton = howToPlayButton,
+            CloseHowToPlayButton = closeHowToPlayButton
         };
-    }
 
-    private void HandleVolumeKeyboardInput()
-    {
-        if (!CanHandleVolumeKeyboardInput())
-        {
-            _volumeRepeatState.Reset();
-            return;
-        }
-
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null)
-        {
-            _volumeRepeatState.Reset();
-            return;
-        }
-
-        VolumeSet selectedVolume = _volumeRows[_volumeNavigationState.SelectedRow];
-        if (selectedVolume == null)
-        {
-            return;
-        }
-
-        bool isEnterPressed =
-            keyboard.enterKey.wasPressedThisFrame ||
-            keyboard.numpadEnterKey.wasPressedThisFrame;
-
-        if (isEnterPressed)
-        {
-            ClearEventSystemSelection();
-
-            if (_volumeNavigationState.SelectedTarget == VolumeControlTarget.Mute)
-            {
-                selectedVolume.ToggleMute();
-            }
-            else
-            {
-                _volumeNavigationState.ToggleEditing(selectedVolume.CanEditVolume);
-                _volumeRepeatState.Reset();
-            }
-
-            RefreshVolumeKeyboardVisuals();
-            return;
-        }
-
-        if (_volumeNavigationState.IsEditing)
-        {
-            HandleVolumeAdjustment(keyboard, selectedVolume);
-            return;
-        }
-
-        bool hasMoved = false;
-        if (keyboard.upArrowKey.wasPressedThisFrame)
-        {
-            hasMoved = _volumeNavigationState.MoveVertical(-1);
-        }
-        else if (keyboard.downArrowKey.wasPressedThisFrame)
-        {
-            hasMoved = _volumeNavigationState.MoveVertical(1);
-        }
-        else if (keyboard.leftArrowKey.wasPressedThisFrame)
-        {
-            hasMoved = _volumeNavigationState.MoveHorizontal(-1);
-        }
-        else if (keyboard.rightArrowKey.wasPressedThisFrame)
-        {
-            hasMoved = _volumeNavigationState.MoveHorizontal(1);
-        }
-
-        if (hasMoved)
-        {
-            ClearEventSystemSelection();
-            RefreshVolumeKeyboardVisuals();
-        }
-    }
-
-    private bool CanHandleVolumeKeyboardInput()
-    {
-        return settingsPanel != null &&
-               settingsPanel.activeInHierarchy &&
-               _volumeRows != null &&
-               _volumeRows.Length > 0 &&
-               _volumeNavigationState != null &&
-               _volumeRepeatState != null &&
-               !isWaitingHotKeyInput &&
-               !IsHowToPlayPanelOpen() &&
-               (confirmPopup == null || !confirmPopup.activeInHierarchy);
-    }
-
-    private void HandleVolumeAdjustment(Keyboard keyboard, VolumeSet selectedVolume)
-    {
-        int direction =
-            (keyboard.rightArrowKey.isPressed ? 1 : 0) -
-            (keyboard.leftArrowKey.isPressed ? 1 : 0);
-
-        bool wasPressedThisFrame =
-            keyboard.rightArrowKey.wasPressedThisFrame ||
-            keyboard.leftArrowKey.wasPressedThisFrame;
-
-        int adjustment = _volumeRepeatState.Tick(
-            direction,
-            wasPressedThisFrame,
-            Time.unscaledDeltaTime);
-
-        if (adjustment != 0)
-        {
-            ClearEventSystemSelection();
-            selectedVolume.AdjustVolume(adjustment);
-        }
-    }
-
-    private void ActivateVolumeKeyboardNavigation()
-    {
-        if (_volumeNavigationState == null || _volumeRepeatState == null)
-        {
-            return;
-        }
-
-        _volumeNavigationState.Reset();
-        _volumeRepeatState.Reset();
-        ClearEventSystemSelection();
-        RefreshVolumeKeyboardVisuals();
-    }
-
-    private void DeactivateVolumeKeyboardNavigation()
-    {
-        if (_volumeNavigationState != null)
-        {
-            _volumeNavigationState.ExitEditing();
-        }
-
-        _volumeRepeatState?.Reset();
-
-        if (_volumeRows == null)
-        {
-            return;
-        }
-
-        for (int index = 0; index < _volumeRows.Length; index++)
-        {
-            _volumeRows[index]?.SetKeyboardSelection(false, VolumeControlTarget.Slider, false);
-        }
-    }
-
-    private void ExitVolumeEditing()
-    {
-        if (_volumeNavigationState == null || !_volumeNavigationState.IsEditing)
-        {
-            return;
-        }
-
-        _volumeNavigationState.ExitEditing();
-        _volumeRepeatState?.Reset();
-        RefreshVolumeKeyboardVisuals();
-    }
-
-    private void RefreshVolumeKeyboardVisuals()
-    {
-        if (_volumeRows == null || _volumeNavigationState == null)
-        {
-            return;
-        }
-
-        bool isPanelOpen = settingsPanel != null && settingsPanel.activeInHierarchy;
-        VolumeSet selectedVolume = _volumeRows[_volumeNavigationState.SelectedRow];
-        if (_volumeNavigationState.IsEditing &&
-            (selectedVolume == null || !selectedVolume.CanEditVolume))
-        {
-            _volumeNavigationState.ExitEditing();
-            _volumeRepeatState?.Reset();
-        }
-
-        for (int index = 0; index < _volumeRows.Length; index++)
-        {
-            VolumeSet volumeRow = _volumeRows[index];
-            if (volumeRow == null)
-            {
-                continue;
-            }
-
-            volumeRow.SetKeyboardSelection(
-                isPanelOpen && index == _volumeNavigationState.SelectedRow,
-                _volumeNavigationState.SelectedTarget,
-                _volumeNavigationState.IsEditing);
-        }
-    }
-
-    private static void ClearEventSystemSelection()
-    {
-        if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject != null)
-        {
-            EventSystem.current.SetSelectedGameObject(null);
-        }
+        _keyboardNavigator = new SettingsKeyboardNavigator(this, bindings);
     }
 
     private void OnChangeMasterVolume(float value)
@@ -652,7 +476,6 @@ public class SettingsUI : MonoBehaviour
             sfxVolume.ApplyMutedVisual(isMasterMuted || sfxVolume.IsMuted());
         }
 
-        RefreshVolumeKeyboardVisuals();
     }
 
     // =========================================================
@@ -681,7 +504,7 @@ public class SettingsUI : MonoBehaviour
 
     public void OnClickResetHotKeys()
     {
-        isWaitingHotKeyInput = false;
+        _keyboardNavigator?.CancelCurrentInteraction();
         ClearPendingDuplicateHotKey();
 
         if (SettingsManager.Instance == null)
@@ -696,69 +519,18 @@ public class SettingsUI : MonoBehaviour
 
     private void StartWaitingHotKeyInput(HotKeyAction action)
     {
-        ExitVolumeEditing();
-        waitingHotKeyAction = action;
-        isWaitingHotKeyInput = true;
+        _keyboardNavigator?.BeginHotKeyRebind(action);
+    }
+
+    internal void PrepareHotKeyRebind()
+    {
         ClearPendingDuplicateHotKey();
         CloseConfirmPopup();
-
-        if (hotKeyButtons.TryGetValue(action, out Button targetButton))
-        {
-            SetWaitingText(targetButton);
-        }
     }
 
-    private void SetWaitingText(Button targetButton)
+    internal void CommitHotKeyChange(HotKeyAction action, Key pressedKey)
     {
-        TMP_Text targetText = GetButtonText(targetButton);
-
-        if (targetText != null)
-        {
-            targetText.text = "...";
-        }
-    }
-
-    private void CaptureHotKeyInput()
-    {
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null || !keyboard.anyKey.wasPressedThisFrame)
-        {
-            return;
-        }
-
-        if (TryGetPressedKey(out Key pressedKey))
-        {
-            ApplyHotKey(pressedKey);
-        }
-    }
-
-    private bool TryGetPressedKey(out Key pressedKey)
-    {
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard == null)
-        {
-            pressedKey = Key.None;
-            return false;
-        }
-
-        foreach (KeyControl keyControl in keyboard.allKeys)
-        {
-            if (keyControl.wasPressedThisFrame)
-            {
-                pressedKey = keyControl.keyCode;
-                return true;
-            }
-        }
-
-        pressedKey = Key.None;
-        return false;
-    }
-
-    private void ApplyHotKey(Key pressedKey)
-    {
-        isWaitingHotKeyInput = false;
-
-        if (!IsAlphabetKey(pressedKey))
+        if (pressedKey < Key.A || pressedKey > Key.Z)
         {
             SyncHotKeyButtonsFromManager();
             return;
@@ -771,9 +543,9 @@ public class SettingsUI : MonoBehaviour
             return;
         }
 
-        if (sm.TryGetActionUsingHotKey(pressedKey, waitingHotKeyAction, out _))
+        if (sm.TryGetActionUsingHotKey(pressedKey, action, out _))
         {
-            pendingDuplicateAction = waitingHotKeyAction;
+            pendingDuplicateAction = action;
             pendingDuplicateKey = pressedKey;
             hasPendingDuplicateHotKey = true;
             SyncHotKeyButtonsFromManager();
@@ -781,18 +553,13 @@ public class SettingsUI : MonoBehaviour
             return;
         }
 
-        UpdateManagerHotKey(waitingHotKeyAction, pressedKey);
+        UpdateManagerHotKey(action, pressedKey);
         SyncHotKeyButtonsFromManager();
 
         if (!HasEmptyHotKeys())
         {
             CloseConfirmPopup();
         }
-    }
-
-    private bool IsAlphabetKey(Key keyCode)
-    {
-        return keyCode >= Key.A && keyCode <= Key.Z;
     }
 
     private void CacheHotKeyButtons()
@@ -817,7 +584,7 @@ public class SettingsUI : MonoBehaviour
         }
     }
 
-    private void SyncHotKeyButtonsFromManager()
+    internal void SyncHotKeyButtonsFromManager()
     {
         SettingsManager sm = SettingsManager.Instance;
         if (sm == null)
@@ -827,7 +594,58 @@ public class SettingsUI : MonoBehaviour
 
         foreach (System.Collections.Generic.KeyValuePair<HotKeyAction, Button> pair in hotKeyButtons)
         {
-            SetButtonText(pair.Value, sm.GetHotKeyLabel(pair.Key));
+            SetHotKeyButtonText(pair.Key, sm.GetHotKey(pair.Key), null);
+        }
+    }
+
+    internal void SetHotKeyButtonPreview(HotKeyAction action, Key key, float candidateAlpha)
+    {
+        string colorTag = null;
+        if (candidateAlpha > 0f)
+        {
+            Color candidateColor = new Color(1f, 0.82f, 0f, Mathf.Clamp01(candidateAlpha));
+            colorTag = ColorUtility.ToHtmlStringRGBA(candidateColor);
+        }
+
+        SetHotKeyButtonText(action, key, colorTag);
+    }
+
+    private void SetHotKeyButtonText(HotKeyAction action, Key key, string colorTag)
+    {
+        if (!hotKeyButtons.TryGetValue(action, out Button button))
+        {
+            return;
+        }
+
+        string keyLabel = SettingsManager.FormatHotKeyLabel(key);
+        if (!string.IsNullOrEmpty(colorTag))
+        {
+            keyLabel = $"<color=#{colorTag}>{keyLabel}</color>";
+        }
+
+        TMP_Text targetText = GetButtonText(button);
+        if (targetText == null)
+        {
+            return;
+        }
+
+        targetText.richText = true;
+        targetText.color = Color.white;
+        targetText.text = $"{GetHotKeyActionLabel(action)}    [   {keyLabel}   ]";
+    }
+
+    private static string GetHotKeyActionLabel(HotKeyAction action)
+    {
+        switch (action)
+        {
+            case HotKeyAction.MoveUp:
+                return "위쪽 이동";
+            case HotKeyAction.MoveLeft:
+                return "좌측 이동";
+            case HotKeyAction.MoveDown:
+                return "아래 이동";
+            default:
+                return "우측 이동";
         }
     }
 
@@ -917,7 +735,7 @@ public class SettingsUI : MonoBehaviour
 
     private void OpenHowToPlayPanel()
     {
-        ExitVolumeEditing();
+        _keyboardNavigator?.CancelCurrentInteraction();
 
         if (howToPlayPanel != null)
         {
@@ -965,8 +783,8 @@ public class SettingsUI : MonoBehaviour
 
         CloseConfirmPopup();
         CloseHowToPlayPanel();
-        DeactivateVolumeKeyboardNavigation();
-        settingsPanel.SetActive(false);
+        _keyboardNavigator?.Deactivate();
+        HideSettingsPanel();
         ResumeGameFromSettings();
         return true;
     }
@@ -975,14 +793,29 @@ public class SettingsUI : MonoBehaviour
     {
         CloseConfirmPopup();
         CloseHowToPlayPanel();
-        DeactivateVolumeKeyboardNavigation();
+        _keyboardNavigator?.Deactivate();
 
         if (settingsPanel != null)
         {
-            settingsPanel.SetActive(false);
+            HideSettingsPanel();
         }
 
         ResumeGameFromSettings();
+    }
+
+    private void HideSettingsPanel()
+    {
+        if (settingsPanel == null)
+        {
+            return;
+        }
+
+        bool wasOpen = settingsPanel.activeInHierarchy;
+        settingsPanel.SetActive(false);
+        if (wasOpen)
+        {
+            _lastClosedFrame = Time.frameCount;
+        }
     }
 
     private void PauseGameForSettings()
@@ -1010,7 +843,7 @@ public class SettingsUI : MonoBehaviour
 
     private void ShowConfirmPopup(PopupType popupType)
     {
-        ExitVolumeEditing();
+        _keyboardNavigator?.CancelCurrentInteraction();
         currentPopupType = popupType;
 
         if (popupText != null)
