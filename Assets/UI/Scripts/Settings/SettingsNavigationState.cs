@@ -31,7 +31,14 @@ public enum SettingsNavigationMode
     Inactive,
     Navigation,
     VolumeEditing,
-    HotKeyRebinding
+    HotKeyRebinding,
+    PopupNavigation
+}
+
+public enum SettingsPopupTarget
+{
+    Confirm,
+    Cancel
 }
 
 public sealed class SettingsNavigationState
@@ -40,9 +47,11 @@ public sealed class SettingsNavigationState
     public SettingsNavigationMode Mode { get; private set; } = SettingsNavigationMode.Inactive;
     public HotKeyAction RebindingAction { get; private set; }
     public Key CandidateKey { get; private set; } = Key.None;
+    public SettingsPopupTarget PopupTarget { get; private set; } = SettingsPopupTarget.Cancel;
 
     public bool IsActive => Mode != SettingsNavigationMode.Inactive;
     public bool IsRebinding => Mode == SettingsNavigationMode.HotKeyRebinding;
+    public bool IsPopupNavigating => Mode == SettingsNavigationMode.PopupNavigation;
 
     public void Activate(SettingsNavigationTarget initialTarget)
     {
@@ -93,6 +102,29 @@ public sealed class SettingsNavigationState
         {
             CandidateKey = key;
         }
+    }
+
+    public void BeginPopupNavigation(SettingsPopupTarget initialTarget)
+    {
+        if (Mode == SettingsNavigationMode.Inactive)
+        {
+            return;
+        }
+
+        PopupTarget = initialTarget;
+        CandidateKey = Key.None;
+        Mode = SettingsNavigationMode.PopupNavigation;
+    }
+
+    public bool SelectPopupTarget(SettingsPopupTarget target)
+    {
+        if (Mode != SettingsNavigationMode.PopupNavigation || PopupTarget == target)
+        {
+            return false;
+        }
+
+        PopupTarget = target;
+        return true;
     }
 
     public void ReturnToNavigation()

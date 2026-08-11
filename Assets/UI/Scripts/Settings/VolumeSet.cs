@@ -7,9 +7,9 @@ public class VolumeSet : MonoBehaviour
 {
     private const float DisabledAlpha = 0.8f;
     private const float EnabledAlpha = 1f;
-    private const float HandleDarkDuration = 0.5f;
-    private const float HandleBrightDuration = 1.5f;
-    private const float HandleDarkenAmount = 0.55f;
+    private const float HandleDarkDuration = 1f;
+    private const float HandleBrightDuration = 1f;
+    private const float HandleDarkenAmount = 0.35f;
     private const string GrayscaleShaderName = "UI/Grayscale";
     private const string GrayscaleShaderResourcePath = "UI/Shaders/UIGrayscale";
 
@@ -24,8 +24,6 @@ public class VolumeSet : MonoBehaviour
     private Graphic _sliderHandleGraphic;
     private Color _sliderHandleBaseColor;
     private Coroutine _handleBlinkCoroutine;
-    private WaitForSecondsRealtime _handleDarkWait;
-    private WaitForSecondsRealtime _handleBrightWait;
 
     public Slider VolumeSlider => volumeSlider;
     public TMP_Text ValueText => valueText;
@@ -215,8 +213,6 @@ public class VolumeSet : MonoBehaviour
             Debug.LogWarning($"Grayscale shader not found: {GrayscaleShaderName}", this);
         }
 
-        _handleDarkWait = new WaitForSecondsRealtime(HandleDarkDuration);
-        _handleBrightWait = new WaitForSecondsRealtime(HandleBrightDuration);
     }
 
     private void ApplyGrayscaleMaterial(bool isMuted)
@@ -317,13 +313,24 @@ public class VolumeSet : MonoBehaviour
 
     private IEnumerator BlinkHandle()
     {
+        float elapsedTime = 0f;
         while (true)
         {
-            _sliderHandleGraphic.color = Color.Lerp(_sliderHandleBaseColor, Color.black, HandleDarkenAmount);
-            yield return _handleDarkWait;
+            if (_sliderHandleGraphic == null)
+            {
+                _handleBlinkCoroutine = null;
+                yield break;
+            }
 
-            _sliderHandleGraphic.color = _sliderHandleBaseColor;
-            yield return _handleBrightWait;
+            _sliderHandleGraphic.color = SettingsPulseColorEvaluator.Evaluate(
+                _sliderHandleBaseColor,
+                elapsedTime,
+                HandleDarkDuration,
+                HandleBrightDuration,
+                HandleDarkenAmount);
+
+            yield return null;
+            elapsedTime += Time.unscaledDeltaTime;
         }
     }
 
