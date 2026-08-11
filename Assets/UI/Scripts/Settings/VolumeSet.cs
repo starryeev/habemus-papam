@@ -10,7 +10,6 @@ public class VolumeSet : MonoBehaviour
     private const float HandleDarkDuration = 0.5f;
     private const float HandleBrightDuration = 1.5f;
     private const float HandleDarkenAmount = 0.55f;
-    private const float ArrowHorizontalOffset = 18f;
     private const string GrayscaleShaderName = "UI/Grayscale";
     private const string GrayscaleShaderResourcePath = "UI/Shaders/UIGrayscale";
 
@@ -18,15 +17,12 @@ public class VolumeSet : MonoBehaviour
     [SerializeField] private Slider volumeSlider;
     [SerializeField] private Toggle muteToggle;
 
+    private readonly Vector3[] _worldCorners = new Vector3[4];
     private Graphic[] _sliderGraphics;
     private Material[] _sliderOriginalMaterials;
     private Material _grayscaleMaterial;
     private Graphic _sliderHandleGraphic;
     private Color _sliderHandleBaseColor;
-    private GameObject _sliderLeftArrow;
-    private GameObject _sliderRightArrow;
-    private GameObject _muteLeftArrow;
-    private GameObject _muteRightArrow;
     private Coroutine _handleBlinkCoroutine;
     private WaitForSecondsRealtime _handleDarkWait;
     private WaitForSecondsRealtime _handleBrightWait;
@@ -39,14 +35,11 @@ public class VolumeSet : MonoBehaviour
     private void Awake()
     {
         CacheVisuals();
-        CreateSelectionArrows();
-        SetSelectionArrows(false, false);
     }
 
     private void OnDisable()
     {
         StopHandleBlink();
-        SetSelectionArrows(false, false);
     }
 
     private void OnDestroy()
@@ -118,13 +111,29 @@ public class VolumeSet : MonoBehaviour
         }
     }
 
-    public void SetKeyboardSelection(bool isSelected, VolumeControlTarget target, bool isEditing)
+    public void SetEditingVisual(bool isEditing)
     {
-        bool isSliderSelected = isSelected && target == VolumeControlTarget.Slider;
-        bool isMuteSelected = isSelected && target == VolumeControlTarget.Mute;
+        SetHandleBlink(isEditing && CanEditVolume);
+    }
 
-        SetSelectionArrows(isSliderSelected, isMuteSelected);
-        SetHandleBlink(isSliderSelected && isEditing && CanEditVolume);
+    public bool TryGetSelectionBounds(
+        VolumeControlTarget target,
+        RectTransform relativeTo,
+        out Bounds bounds)
+    {
+        if (relativeTo == null)
+        {
+            bounds = default;
+            return false;
+        }
+
+        if (target == VolumeControlTarget.Mute)
+        {
+            RectTransform muteRect = muteToggle != null ? muteToggle.transform as RectTransform : null;
+            return TryGetRectBounds(muteRect, relativeTo, out bounds);
+        }
+
+        return TryGetSliderSelectionBounds(relativeTo, out bounds);
     }
 
     public void RefreshText()
@@ -155,15 +164,7 @@ public class VolumeSet : MonoBehaviour
         }
     }
 
-    private void SetCanvasGroupState(GameObject target, bool isMuted)
-    {
-        CanvasGroup canvasGroup = GetOrAddCanvasGroup(target);
-        canvasGroup.alpha = isMuted ? DisabledAlpha : EnabledAlpha;
-        canvasGroup.interactable = !isMuted;
-        canvasGroup.blocksRaycasts = !isMuted;
-    }
-
-    private CanvasGroup GetOrAddCanvasGroup(GameObject target)
+    private static void SetCanvasGroupState(GameObject target, bool isMuted)
     {
         CanvasGroup canvasGroup = target.GetComponent<CanvasGroup>();
         if (canvasGroup == null)
@@ -171,7 +172,9 @@ public class VolumeSet : MonoBehaviour
             canvasGroup = target.AddComponent<CanvasGroup>();
         }
 
-        return canvasGroup;
+        canvasGroup.alpha = isMuted ? DisabledAlpha : EnabledAlpha;
+        canvasGroup.interactable = !isMuted;
+        canvasGroup.blocksRaycasts = !isMuted;
     }
 
     private void CacheVisuals()
@@ -199,6 +202,7 @@ public class VolumeSet : MonoBehaviour
         {
             grayscaleShader = Shader.Find(GrayscaleShaderName);
         }
+
         if (grayscaleShader != null)
         {
             _grayscaleMaterial = new Material(grayscaleShader)
@@ -230,37 +234,15 @@ public class VolumeSet : MonoBehaviour
         }
     }
 
-    private void CreateSelectionArrows()
+    private bool TryGetSliderSelectionBounds(RectTransform relativeTo, out Bounds bounds)
     {
         RectTransform rowRect = transform as RectTransform;
-        if (rowRect != null && TryGetSliderSelectionBounds(rowRect, out Bounds sliderBounds))
+        if (rowRect == null)
         {
-            _sliderLeftArrow = CreateArrowAtLocalPosition(
-                rowRect,
-                new Vector2(sliderBounds.min.x - ArrowHorizontalOffset, sliderBounds.center.y),
-                sliderBounds.size.y,
-                true,
-                "SliderLeftSelectionArrow");
-
-            _sliderRightArrow = CreateArrowAtLocalPosition(
-                rowRect,
-                new Vector2(sliderBounds.max.x + ArrowHorizontalOffset, sliderBounds.center.y),
-                sliderBounds.size.y,
-                false,
-                "SliderRightSelectionArrow");
+            bounds = default;
+            return false;
         }
 
-        if (muteToggle != null)
-        {
-            RectTransform muteRect = muteToggle.transform as RectTransform;
-            _muteLeftArrow = CreateArrow(muteRect, true, "MuteLeftSelectionArrow");
-            _muteRightArrow = CreateArrow(muteRect, false, "MuteRightSelectionArrow");
-        }
-    }
-
-    private bool TryGetSliderSelectionBounds(RectTransform rowRect, out Bounds bounds)
-    {
-        Vector3[] worldCorners = new Vector3[4];
         bool hasBounds = false;
         Vector3 minimum = Vector3.zero;
         Vector3 maximum = Vector3.zero;
@@ -273,10 +255,10 @@ public class VolumeSet : MonoBehaviour
                 continue;
             }
 
-            childRect.GetWorldCorners(worldCorners);
-            for (int cornerIndex = 0; cornerIndex < worldCorners.Length; cornerIndex++)
+            childRect.GetWorldCorners(_worldCorners);
+            for (int cornerIndex = 0; cornerIndex < _worldCorners.Length; cornerIndex++)
             {
-                Vector3 localCorner = rowRect.InverseTransformPoint(worldCorners[cornerIndex]);
+                Vector3 localCorner = relativeTo.InverseTransformPoint(_worldCorners[cornerIndex]);
                 if (!hasBounds)
                 {
                     minimum = localCorner;
@@ -296,93 +278,26 @@ public class VolumeSet : MonoBehaviour
         return hasBounds;
     }
 
-    private GameObject CreateArrowAtLocalPosition(
-        RectTransform parent,
-        Vector2 localPosition,
-        float referenceHeight,
-        bool isLeftSide,
-        string objectName)
+    private bool TryGetRectBounds(RectTransform target, RectTransform relativeTo, out Bounds bounds)
     {
-        GameObject arrowObject = CreateArrowObject(objectName, isLeftSide, referenceHeight);
-        RectTransform arrowRect = arrowObject.GetComponent<RectTransform>();
-        arrowRect.SetParent(parent, false);
-        arrowRect.anchorMin = new Vector2(0.5f, 0.5f);
-        arrowRect.anchorMax = arrowRect.anchorMin;
-        arrowRect.pivot = new Vector2(0.5f, 0.5f);
-        arrowRect.localPosition = new Vector3(localPosition.x, localPosition.y, 0f);
-        return arrowObject;
-    }
-
-    private GameObject CreateArrow(RectTransform parent, bool isLeftSide, string objectName)
-    {
-        if (parent == null)
+        if (target == null)
         {
-            return null;
+            bounds = default;
+            return false;
         }
 
-        GameObject arrowObject = CreateArrowObject(objectName, isLeftSide, parent.rect.height);
-        RectTransform arrowRect = arrowObject.GetComponent<RectTransform>();
-        arrowRect.SetParent(parent, false);
-        arrowRect.anchorMin = new Vector2(isLeftSide ? 0f : 1f, 0.5f);
-        arrowRect.anchorMax = arrowRect.anchorMin;
-        arrowRect.pivot = new Vector2(0.5f, 0.5f);
-        arrowRect.anchoredPosition = new Vector2(isLeftSide ? -ArrowHorizontalOffset : ArrowHorizontalOffset, 0f);
-        return arrowObject;
-    }
-
-    private GameObject CreateArrowObject(string objectName, bool isLeftSide, float referenceHeight)
-    {
-        GameObject arrowObject = new GameObject(
-            objectName,
-            typeof(RectTransform),
-            typeof(CanvasRenderer),
-            typeof(TextMeshProUGUI));
-
-        RectTransform arrowRect = arrowObject.GetComponent<RectTransform>();
-        arrowRect.sizeDelta = new Vector2(32f, Mathf.Max(24f, referenceHeight));
-
-        TextMeshProUGUI arrowText = arrowObject.GetComponent<TextMeshProUGUI>();
-        arrowText.raycastTarget = false;
-        arrowText.alignment = TextAlignmentOptions.Center;
-        arrowText.textWrappingMode = TextWrappingModes.NoWrap;
-        arrowText.fontSize = Mathf.Clamp(referenceHeight * 0.7f, 18f, 36f);
-
-        if (valueText != null)
+        target.GetWorldCorners(_worldCorners);
+        Vector3 minimum = relativeTo.InverseTransformPoint(_worldCorners[0]);
+        Vector3 maximum = minimum;
+        for (int index = 1; index < _worldCorners.Length; index++)
         {
-            arrowText.font = valueText.font;
-            arrowText.color = valueText.color;
-            arrowText.fontStyle = valueText.fontStyle;
+            Vector3 corner = relativeTo.InverseTransformPoint(_worldCorners[index]);
+            minimum = Vector3.Min(minimum, corner);
+            maximum = Vector3.Max(maximum, corner);
         }
 
-        arrowText.text = GetArrowText(arrowText.font, isLeftSide);
-        return arrowObject;
-    }
-
-    private static string GetArrowText(TMP_FontAsset font, bool isLeftSide)
-    {
-        char arrowCharacter = isLeftSide ? '\u2192' : '\u2190';
-        if (font != null && font.HasCharacter(arrowCharacter))
-        {
-            return arrowCharacter.ToString();
-        }
-
-        return isLeftSide ? ">" : "<";
-    }
-
-    private void SetSelectionArrows(bool isSliderSelected, bool isMuteSelected)
-    {
-        SetActive(_sliderLeftArrow, isSliderSelected);
-        SetActive(_sliderRightArrow, isSliderSelected);
-        SetActive(_muteLeftArrow, isMuteSelected);
-        SetActive(_muteRightArrow, isMuteSelected);
-    }
-
-    private static void SetActive(GameObject target, bool isActive)
-    {
-        if (target != null && target.activeSelf != isActive)
-        {
-            target.SetActive(isActive);
-        }
+        bounds = new Bounds((minimum + maximum) * 0.5f, maximum - minimum);
+        return true;
     }
 
     private void SetHandleBlink(bool shouldBlink)

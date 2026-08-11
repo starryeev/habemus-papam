@@ -197,7 +197,7 @@ public class SettingsManager : MonoBehaviour
         return Key.None;
     }
 
-    private static string FormatHotKeyLabel(Key key)
+    public static string FormatHotKeyLabel(Key key)
     {
         return key == Key.None ? string.Empty : key.ToString().ToUpper();
     }
