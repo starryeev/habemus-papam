@@ -17,8 +17,6 @@ public class ActionRecordManager : MonoBehaviour
     private ActionStatsSaveData currentRunStats = new ActionStatsSaveData();
     private ActionStatsSaveData persistentStats = new ActionStatsSaveData();
     private float persistentSaveTimer;
-    private float currentRunSaveTimer;
-    private bool currentRunDirty;
 
     public ActionStatsSaveData CurrentRunStats => currentRunStats;
     public ActionStatsSaveData PersistentStats => persistentStats;
@@ -56,13 +54,11 @@ public class ActionRecordManager : MonoBehaviour
     {
         TrackPlayerStatThresholdTimes();
         SavePersistentStatsPeriodically();
-        SaveCurrentRunStatsPeriodically();
     }
 
     public void RestoreCurrentRunStats(ActionStatsSaveData saveData)
     {
         currentRunStats = saveData != null ? saveData.Clone() : new ActionStatsSaveData();
-        currentRunDirty = false;
     }
 
     public ActionStatsSaveData CaptureCurrentRunStats()
@@ -73,15 +69,12 @@ public class ActionRecordManager : MonoBehaviour
     public void ClearCurrentRunStats()
     {
         currentRunStats = new ActionStatsSaveData();
-        currentRunDirty = false;
     }
 
     public void ResetPersistentData()
     {
         currentRunStats = new ActionStatsSaveData();
         persistentStats = new ActionStatsSaveData();
-        currentRunDirty = false;
-        currentRunSaveTimer = 0f;
         persistentSaveTimer = 0f;
 
         try
@@ -106,7 +99,6 @@ public class ActionRecordManager : MonoBehaviour
 
         currentRunStats.prayCount++;
         persistentStats.prayCount++;
-        currentRunDirty = true;
         SavePersistentStats();
     }
 
@@ -119,7 +111,6 @@ public class ActionRecordManager : MonoBehaviour
 
         currentRunStats.speechCount++;
         persistentStats.speechCount++;
-        currentRunDirty = true;
         SavePersistentStats();
     }
 
@@ -132,7 +123,6 @@ public class ActionRecordManager : MonoBehaviour
 
         currentRunStats.plotCount++;
         persistentStats.plotCount++;
-        currentRunDirty = true;
         SavePersistentStats();
     }
 
@@ -145,7 +135,6 @@ public class ActionRecordManager : MonoBehaviour
 
         currentRunStats.RecordItemAcquired(item.itemID, item.itemName);
         persistentStats.RecordItemAcquired(item.itemID, item.itemName);
-        currentRunDirty = true;
         SavePersistentStats();
     }
 
@@ -158,7 +147,6 @@ public class ActionRecordManager : MonoBehaviour
 
         currentRunStats.stunCount++;
         persistentStats.stunCount++;
-        currentRunDirty = true;
         SavePersistentStats();
     }
 
@@ -166,7 +154,6 @@ public class ActionRecordManager : MonoBehaviour
     {
         currentRunStats.healthGameOverCount++;
         persistentStats.healthGameOverCount++;
-        currentRunDirty = true;
         SavePersistentStats();
     }
 
@@ -224,7 +211,6 @@ public class ActionRecordManager : MonoBehaviour
                 break;
         }
 
-        currentRunDirty = true;
         SavePersistentStats();
     }
 
@@ -232,7 +218,6 @@ public class ActionRecordManager : MonoBehaviour
     {
         currentRunStats.papalElectionFailedCount++;
         persistentStats.papalElectionFailedCount++;
-        currentRunDirty = true;
         SavePersistentStats();
     }
 
@@ -240,7 +225,6 @@ public class ActionRecordManager : MonoBehaviour
     {
         currentRunStats.conclaveCount++;
         persistentStats.conclaveCount++;
-        currentRunDirty = true;
         SavePersistentStats();
     }
 
@@ -316,28 +300,24 @@ public class ActionRecordManager : MonoBehaviour
         {
             currentRunStats.highPietyTime += deltaTime;
             persistentStats.highPietyTime += deltaTime;
-            currentRunDirty = true;
         }
 
         if (player.Influence >= 80f)
         {
             currentRunStats.highInfluenceTime += deltaTime;
             persistentStats.highInfluenceTime += deltaTime;
-            currentRunDirty = true;
         }
 
         if (player.Piety <= 2f)
         {
             currentRunStats.lowPietyTime += deltaTime;
             persistentStats.lowPietyTime += deltaTime;
-            currentRunDirty = true;
         }
 
         if (player.Influence <= 2f)
         {
             currentRunStats.lowInfluenceTime += deltaTime;
             persistentStats.lowInfluenceTime += deltaTime;
-            currentRunDirty = true;
         }
     }
 
@@ -379,29 +359,6 @@ public class ActionRecordManager : MonoBehaviour
 
         persistentSaveTimer = 0f;
         SavePersistentStats();
-    }
-
-    private void SaveCurrentRunStatsPeriodically()
-    {
-        if (!currentRunDirty)
-        {
-            return;
-        }
-
-        currentRunSaveTimer += Time.unscaledDeltaTime;
-
-        if (currentRunSaveTimer < PersistentSaveInterval)
-        {
-            return;
-        }
-
-        currentRunSaveTimer = 0f;
-        currentRunDirty = false;
-
-        if (SaveManager.Instance != null)
-        {
-            SaveManager.Instance.AutoSave();
-        }
     }
 
     private void LoadPersistentStats()

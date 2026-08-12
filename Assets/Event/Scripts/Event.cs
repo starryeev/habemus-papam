@@ -65,6 +65,7 @@ public abstract class Event : ScriptableObject
         EndingContext.CaptureFromCurrentGame();
         EndingContext.SetEventTrigger(eventID, optionIndex);
         EndingResult.Set(endingType);
+        SaveManager.Instance?.ClearContinueSaveForEnding();
         Time.timeScale = 1f;
         SceneManager.LoadScene("EndingScene");
         return true;

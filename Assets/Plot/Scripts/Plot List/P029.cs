@@ -63,6 +63,7 @@ public class P029 : Plot
             EndingContext.CaptureFromCurrentGame();
             EndingContext.SetEventTrigger(plotID, 1);
             EndingResult.Set(EndingType.Ascension);
+            SaveManager.Instance?.ClearContinueSaveForEnding();
             Time.timeScale = 1f;
             SceneManager.LoadScene("EndingScene");
         }

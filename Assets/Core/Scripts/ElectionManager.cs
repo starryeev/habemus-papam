@@ -179,10 +179,24 @@ public class ElectionManager : MonoBehaviour
 
         if (InGameManager.Instance.IsSushiOn && SushiUI.Instance != null)
         {
-            SushiUI.Instance.Show();
+            SushiUI.Instance.Show(() =>
+            {
+                if (SaveManager.Instance != null)
+                {
+                    SaveManager.Instance.SaveCheckpoint(
+                        SaveCheckpointType.JudgementResolved,
+                        SaveResumeStep.OpenSushiSelection);
+                }
+            });
         }
         else
         {
+            if (SaveManager.Instance != null)
+            {
+                SaveManager.Instance.SaveCheckpoint(
+                    SaveCheckpointType.JudgementResolved,
+                    SaveResumeStep.StartNextConclave);
+            }
             InGameManager.Instance.StartConclaveCycle();
         }
     }

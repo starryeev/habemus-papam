@@ -93,7 +93,7 @@ public class PlotUI : MonoBehaviour
         performerState = performer != null ? performer.GetComponent<StateController>() : null;
         this.schemerState = schemerState;
 
-        SetPlotUI();
+        if (!SetPlotUI()) return;
 
         plotSelectUI.SetActive(true);
         SetPlotMovementLocked(true);
@@ -129,11 +129,17 @@ public class PlotUI : MonoBehaviour
         }
     }
 
-    public void SetPlotUI()
+    private bool SetPlotUI()
     {
         ResetPlotUI();
 
         var pm = PlotManager.Instance;
+        if (pm == null || pm.AvailPlotSets == null || pm.AvailPlotSets.Length == 0 ||
+            pm.AvailPlotSets[0] == null)
+        {
+            Debug.LogWarning("[PlotUI] 표시할 공작 세트가 없습니다.");
+            return false;
+        }
 
         for (int i = 0; i < 3; i++)
         {
@@ -192,6 +198,8 @@ public class PlotUI : MonoBehaviour
                 UpdatePlotButtonState(i);
             }
         }
+
+        return true;
     }
 
     private void UpdatePlotButtonState(int index)

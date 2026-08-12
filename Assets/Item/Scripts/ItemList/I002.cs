@@ -32,10 +32,7 @@ public class I002 : Item
 
     public override void OnReapply(Cardinal owner)
     {
-        if (owner != null && InGameManager.Instance != null)
-        {
-            InGameManager.Instance.QueueNextTurnActionDelta(1);
-        }
+        // 획득 시의 일회성 행동 보너스는 GameContext 저장값에서 복원한다.
     }
 
     public override void OnRemove()

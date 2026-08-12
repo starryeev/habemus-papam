@@ -27,6 +27,7 @@ public class SushiUI : MonoBehaviour
 
     private Coroutine timerCoroutine;
     private bool isClockSfxPlaying;
+    private float currentSelectionDuration;
 
     void Awake()
     {
@@ -34,7 +35,7 @@ public class SushiUI : MonoBehaviour
         if (sushiPanel != null) sushiPanel.SetActive(false);
     }
 
-    public void Show()
+    public void Show(System.Action onReady = null)
     {
         if (allItems.Count < 3) return;
 
@@ -48,13 +49,14 @@ public class SushiUI : MonoBehaviour
             Sprite targetSprite = (selectedItem.itemGrade == ItemGrade.Rare) ? rareSprite : commonSprite;
 
             slots[i].Setup(selectedItem, targetSprite);
+            slots[i].SetSelectable(false);
             tempItems.RemoveAt(randomIndex); 
         }
 
-        StartCoroutine(SequenceRoutine());
+        StartCoroutine(SequenceRoutine(onReady));
     }
 
-    private IEnumerator SequenceRoutine()
+    private IEnumerator SequenceRoutine(System.Action onReady)
     {
         int playerRank = CalculatePlayerRank();
         Debug.Log($"[SushiUI] 플레이어 순위: {playerRank}등");
@@ -65,10 +67,59 @@ public class SushiUI : MonoBehaviour
 
         ApplyRankPenalty(playerRank);
 
-        float duration = (playerRank == 4) ? 5f : 30f;
+        currentSelectionDuration = (playerRank == 4) ? 5f : 30f;
+        onReady?.Invoke();
         if (timerCoroutine != null) StopCoroutine(timerCoroutine);
         StopClockSfx();
-        timerCoroutine = StartCoroutine(TimerRoutine(duration));
+        timerCoroutine = StartCoroutine(TimerRoutine(currentSelectionDuration));
+    }
+
+    public SushiSaveData CaptureSaveData()
+    {
+        SushiSaveData saveData = new SushiSaveData
+        {
+            selectionDuration = currentSelectionDuration
+        };
+
+        foreach (SushiSlot slot in slots)
+        {
+            saveData.offeredItemIds.Add(slot != null ? slot.CurrentItemId : string.Empty);
+            saveData.selectableSlots.Add(slot != null && slot.IsSelectable);
+        }
+
+        return saveData;
+    }
+
+    public void RestoreFromSave(SushiSaveData saveData)
+    {
+        if (saveData == null || saveData.offeredItemIds == null || saveData.offeredItemIds.Count < slots.Length)
+        {
+            Show();
+            return;
+        }
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            Item item = allItems.FirstOrDefault(candidate => candidate != null && candidate.itemID == saveData.offeredItemIds[i]);
+            if (item == null)
+            {
+                Show();
+                return;
+            }
+
+            Sprite gradeSprite = item.itemGrade == ItemGrade.Rare ? rareSprite : commonSprite;
+            slots[i].Setup(item, gradeSprite);
+            bool selectable = saveData.selectableSlots != null && i < saveData.selectableSlots.Count &&
+                saveData.selectableSlots[i];
+            slots[i].SetSelectable(selectable);
+        }
+
+        sushiPanel.SetActive(true);
+        totalPanelGroup.alpha = 1f;
+        currentSelectionDuration = saveData.selectionDuration > 0f ? saveData.selectionDuration : 30f;
+        StopClockSfx();
+        if (timerCoroutine != null) StopCoroutine(timerCoroutine);
+        timerCoroutine = StartCoroutine(TimerRoutine(currentSelectionDuration));
     }
 
     private int CalculatePlayerRank()

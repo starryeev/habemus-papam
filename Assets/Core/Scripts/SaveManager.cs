@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 
 public class SaveManager : MonoBehaviour
 {
+    private const int CurrentSaveVersion = 5;
     private const string MainSceneName = "MainScene";
     private const string GameSceneName = "GameScene";
     private const string SaveFolderName = "Json";
@@ -63,7 +64,29 @@ public class SaveManager : MonoBehaviour
 
     public bool HasSave()
     {
-        return File.Exists(SaveFilePath);
+        if (!File.Exists(SaveFilePath))
+        {
+            return false;
+        }
+
+        try
+        {
+            SaveModel saveModel = JsonUtility.FromJson<SaveModel>(File.ReadAllText(SaveFilePath));
+            if (saveModel != null && saveModel.version == CurrentSaveVersion)
+            {
+                return true;
+            }
+
+            Debug.Log("[Save] 기존 자동저장 파일을 폐기합니다.");
+            DeleteSave();
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError($"[Save] 저장 파일 검사 실패: {exception}");
+            DeleteSave();
+        }
+
+        return false;
     }
 
     public bool TryGetSavePreview(out SavePreviewData preview)
@@ -224,14 +247,14 @@ public class SaveManager : MonoBehaviour
         };
     }
 
-    public void AutoSave()
+    public void SaveCheckpoint(SaveCheckpointType checkpointType, SaveResumeStep resumeStep)
     {
         if (isApplyingLoad || SceneManager.GetActiveScene().name != GameSceneName)
         {
             return;
         }
 
-        SaveModel saveModel = CaptureCurrentGame();
+        SaveModel saveModel = CaptureCurrentGame(checkpointType, resumeStep);
         if (saveModel == null)
         {
             return;
@@ -270,6 +293,7 @@ public class SaveManager : MonoBehaviour
                 isApplyingLoad = true;
                 ApplySaveToScene(saveModel, itemCatalog);
                 isApplyingLoad = false;
+                ResumeFromCheckpoint(saveModel);
             }
 
             pendingLoad = false;
@@ -280,7 +304,6 @@ public class SaveManager : MonoBehaviour
         {
             EnsureCurrentPlayerName();
             EnsureNpcNames();
-            AutoSave();
             pendingNewGame = false;
         }
     }
@@ -293,7 +316,7 @@ public class SaveManager : MonoBehaviour
                PlotManager.Instance != null;
     }
 
-    private SaveModel CaptureCurrentGame()
+    private SaveModel CaptureCurrentGame(SaveCheckpointType checkpointType, SaveResumeStep resumeStep)
     {
         if (InGameManager.Instance == null)
         {
@@ -302,8 +325,11 @@ public class SaveManager : MonoBehaviour
 
         SaveModel saveModel = new SaveModel
         {
+            version = CurrentSaveVersion,
             savedAtUtc = DateTime.UtcNow.ToString("o"),
             sceneName = SceneManager.GetActiveScene().name,
+            checkpointType = checkpointType,
+            resumeStep = resumeStep,
             gameContext = InGameManager.Instance.CaptureSaveData(),
             cardinals = CardinalManager.Instance != null ? CardinalManager.Instance.CaptureSaveData() : new List<CardinalSaveData>(),
             inventory = InventoryManager.Instance != null ? InventoryManager.Instance.CaptureSaveData() : new InventorySaveData(),
@@ -311,7 +337,8 @@ public class SaveManager : MonoBehaviour
             plots = PlotManager.Instance != null ? PlotManager.Instance.CaptureSaveData() : new PlotManagerSaveData(),
             fieldItems = InGameManager.Instance.CaptureFieldItemSaveData(),
             names = CloneNames(currentGameNames),
-            actionStats = ActionRecordManager.Instance != null ? ActionRecordManager.Instance.CaptureCurrentRunStats() : new ActionStatsSaveData()
+            actionStats = ActionRecordManager.Instance != null ? ActionRecordManager.Instance.CaptureCurrentRunStats() : new ActionStatsSaveData(),
+            sushi = SushiUI.Instance != null ? SushiUI.Instance.CaptureSaveData() : new SushiSaveData()
         };
 
         return saveModel;
@@ -323,8 +350,6 @@ public class SaveManager : MonoBehaviour
         {
             return;
         }
-
-        MigrateBalanceScale(saveModel);
 
         Time.timeScale = 1f;
         currentGameNames = CloneNames(saveModel.names);
@@ -350,8 +375,6 @@ public class SaveManager : MonoBehaviour
             InGameManager.Instance.EventManager.RestoreFromSave(saveModel.events);
         }
 
-        InGameManager.Instance.RestorePendingTurnEventUI();
-
         if (PlotManager.Instance != null)
         {
             PlotManager.Instance.RestoreFromSave(saveModel.plots);
@@ -367,85 +390,29 @@ public class SaveManager : MonoBehaviour
         RefreshSceneUi(saveModel);
     }
 
-    private static void MigrateBalanceScale(SaveModel saveModel)
+    private void ResumeFromCheckpoint(SaveModel saveModel)
     {
-        if (saveModel.version < 2 && saveModel.cardinals != null)
+        switch (saveModel.resumeStep)
         {
-            foreach (CardinalSaveData cardinal in saveModel.cardinals)
-            {
-                if (cardinal == null) continue;
-                cardinal.hp = ScaleLegacyStat(cardinal.hp);
-                cardinal.influence = ScaleLegacyStat(cardinal.influence);
-                cardinal.piety = ScaleLegacyStat(cardinal.piety);
-                cardinal.prayDeltaHpEvent = ScaleLegacyStat(cardinal.prayDeltaHpEvent);
-            }
+            case SaveResumeStep.ReopenPendingEvent:
+                InGameManager.Instance.RestorePendingTurnEventUI();
+                break;
+
+            case SaveResumeStep.OpenSushiSelection:
+                if (SushiUI.Instance != null)
+                {
+                    SushiUI.Instance.RestoreFromSave(saveModel.sushi);
+                }
+                break;
+
+            case SaveResumeStep.StartNextConclave:
+                InGameManager.Instance.StartConclaveCycle();
+                break;
+
+            case SaveResumeStep.ContinueAfterResolvedEvent:
+                InGameManager.Instance.ResumeAfterResolvedEvent();
+                break;
         }
-
-        if (saveModel.version < 2 && saveModel.gameContext != null)
-        {
-            saveModel.gameContext.currentTurn = 1;
-            saveModel.gameContext.completedActions = 0;
-            saveModel.gameContext.actionsThisTurn = 2;
-            saveModel.gameContext.isEventPhase = false;
-            saveModel.gameContext.awaitingTurnEvent = false;
-            saveModel.gameContext.endConclaveAfterEvent = false;
-            saveModel.gameContext.blockRemainingCurrentTurn = false;
-        }
-
-        if (saveModel.version < 2 && saveModel.events != null && saveModel.events.plotDamageBonuses != null)
-        {
-            foreach (EventPlotDamageBonusSaveData bonus in saveModel.events.plotDamageBonuses)
-            {
-                if (bonus != null) bonus.bonus = ScaleLegacyStat(bonus.bonus);
-            }
-        }
-
-        if (saveModel.version < 3)
-        {
-            MigrateNpcActionPlan(saveModel.gameContext);
-        }
-
-        saveModel.version = 3;
-    }
-
-    private static void MigrateNpcActionPlan(GameContextSaveData context)
-    {
-        if (context == null) return;
-
-        List<int> oldBehaviours = context.npcTurnBehaviours ?? new List<int>();
-        List<bool> oldExecuted = context.npcTurnActionsExecuted ?? new List<bool>();
-        List<int> migratedBehaviours = new List<int>(12);
-        List<bool> migratedExecuted = new List<bool>(12);
-        int oldTurnIndex = Mathf.Clamp(context.currentTurn - 1, 0, 3);
-
-        for (int candidate = 0; candidate < 3; candidate++)
-        {
-            int oldIndex = candidate * 4 + oldTurnIndex;
-            int retainedBehaviour = oldIndex < oldBehaviours.Count
-                ? Mathf.Clamp(oldBehaviours[oldIndex], (int)NPCBehaviour.None, (int)NPCBehaviour.Speech)
-                : (int)NPCBehaviour.None;
-            bool retainedActionWasExecuted = oldIndex < oldExecuted.Count && oldExecuted[oldIndex];
-
-            for (int actionIndex = 0; actionIndex < 4; actionIndex++)
-            {
-                bool completed = actionIndex < context.completedActions;
-                bool playerExtraAction = actionIndex >= 2 && actionIndex < context.actionsThisTurn;
-                bool retainCurrentAction = !retainedActionWasExecuted && actionIndex == context.completedActions && actionIndex < 2;
-                migratedBehaviours.Add(playerExtraAction
-                    ? (int)NPCBehaviour.PlayerExtraAction
-                    : retainCurrentAction ? retainedBehaviour : (int)NPCBehaviour.None);
-                migratedExecuted.Add(completed || (!playerExtraAction && actionIndex >= 2));
-            }
-        }
-
-        context.npcTurnBehaviours = migratedBehaviours;
-        context.npcTurnActionsExecuted = migratedExecuted;
-        context.pendingEffects ??= new List<PendingEffectSaveData>();
-    }
-
-    private static float ScaleLegacyStat(float value)
-    {
-        return Mathf.Sign(value) * Mathf.Ceil(Mathf.Abs(value) / 10f);
     }
 
     private void RefreshSceneUi(SaveModel saveModel)
@@ -472,6 +439,7 @@ public class SaveManager : MonoBehaviour
         if (hasActiveCardinals && CardinalManager.Instance != null && CardinalManager.Instance.StatsUI != null)
         {
             CardinalManager.Instance.StatsUI.Initialize(CardinalManager.Instance.Cardinals);
+            CardinalManager.Instance.StatsUI.FadeInAfterConclaveEntrance(1f);
         }
     }
 
@@ -618,17 +586,39 @@ public class SaveManager : MonoBehaviour
 
     private void WriteSave(SaveModel saveModel)
     {
+        string temporaryPath = SaveFilePath + ".tmp";
+
         try
         {
             Directory.CreateDirectory(SaveDirectoryPath);
             string json = JsonUtility.ToJson(saveModel, true);
-            File.WriteAllText(SaveFilePath, json);
+            File.WriteAllText(temporaryPath, json);
 
-            Debug.Log($"[Save] 저장 완료: {SaveFilePath}");
+            if (File.Exists(SaveFilePath))
+            {
+                File.Replace(temporaryPath, SaveFilePath, null);
+            }
+            else
+            {
+                File.Move(temporaryPath, SaveFilePath);
+            }
+
+            int phase = saveModel.gameContext.isEventPhase
+                ? 3
+                : Mathf.Clamp(saveModel.gameContext.completedActions + 1, 1, 2);
+            Debug.Log($"[Save] {saveModel.checkpointType} 완료: Turn " +
+                $"{saveModel.gameContext.currentTurn}-{phase} / {SaveFilePath}");
         }
         catch (Exception exception)
         {
             Debug.LogError($"[Save] 저장 실패: {exception}");
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+            {
+                File.Delete(temporaryPath);
+            }
         }
     }
 

@@ -5,9 +5,11 @@ using UnityEngine;
 [Serializable]
 public class SaveModel
 {
-    public int version = 3;
+    public int version = 5;
     public string savedAtUtc;
     public string sceneName = "GameScene";
+    public SaveCheckpointType checkpointType;
+    public SaveResumeStep resumeStep;
     public GameContextSaveData gameContext = new GameContextSaveData();
     public List<CardinalSaveData> cardinals = new List<CardinalSaveData>();
     public InventorySaveData inventory = new InventorySaveData();
@@ -16,6 +18,25 @@ public class SaveModel
     public List<FieldItemSaveData> fieldItems = new List<FieldItemSaveData>();
     public GameNameSaveData names = new GameNameSaveData();
     public ActionStatsSaveData actionStats = new ActionStatsSaveData();
+    public SushiSaveData sushi = new SushiSaveData();
+}
+
+public enum SaveCheckpointType
+{
+    ConclaveEntryCompleted = 0,
+    TurnPhaseAdvanced = 1,
+    JudgementResolved = 2,
+    SushiRewardAcquired = 3,
+    EventResolved = 4
+}
+
+public enum SaveResumeStep
+{
+    Gameplay = 0,
+    ReopenPendingEvent = 1,
+    OpenSushiSelection = 2,
+    StartNextConclave = 3,
+    ContinueAfterResolvedEvent = 4
 }
 
 [Serializable]
@@ -250,11 +271,21 @@ public class GameContextSaveData
     public bool showStartButton = true;
     public bool startButtonInteractable = true;
     public bool showInventoryPanel;
+    public bool hasHandledFirstPlayerHpZero;
+    public bool shouldRevivePlayerOnNextConclave;
     public List<int> npcTurnBehaviours = new List<int>();
     public List<bool> npcTurnActionsExecuted = new List<bool>();
     public List<bool> npcNextTurnActionBlocked = new List<bool>();
     public List<int> prayerBlockedCandidateNumbers = new List<int>();
     public List<PendingEffectSaveData> pendingEffects = new List<PendingEffectSaveData>();
+}
+
+[Serializable]
+public class SushiSaveData
+{
+    public List<string> offeredItemIds = new List<string>();
+    public List<bool> selectableSlots = new List<bool>();
+    public float selectionDuration;
 }
 
 [Serializable]
@@ -331,6 +362,7 @@ public class EventPlotDamageBonusSaveData
 [Serializable]
 public class PlotManagerSaveData
 {
+    public int activeDay;
     public List<PlotSetSaveData> plotSets = new List<PlotSetSaveData>();
 }
 

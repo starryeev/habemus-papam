@@ -186,6 +186,7 @@ public class Cardinal : MonoBehaviour
     public CardinalSaveData CaptureSaveData(int index)
     {
         StateController stateController = GetComponent<StateController>();
+        CardinalState savedState = GetCheckpointState(stateController);
         List<string> savedMinHpSources = new List<string>(minHpOneEffectSources);
         savedMinHpSources.Sort(System.StringComparer.Ordinal);
 
@@ -205,10 +206,29 @@ public class Cardinal : MonoBehaviour
             isKnockedOut = isKnockedOut,
             isSchemer = stateController != null && stateController.IsSchemer,
             isConClaving = stateController != null && stateController.ConClaving,
-            state = stateController != null ? (int)stateController.CurrentState : (int)CardinalState.CutScene,
+            state = (int)savedState,
             position = SerializableVector3.FromVector3(transform.position),
             rotationZ = transform.eulerAngles.z
         };
+    }
+
+    private static CardinalState GetCheckpointState(StateController stateController)
+    {
+        if (stateController == null)
+        {
+            return CardinalState.CutScene;
+        }
+
+        switch (stateController.CurrentState)
+        {
+            case CardinalState.Idle:
+            case CardinalState.Scheme:
+            case CardinalState.Stun:
+            case CardinalState.CutScene:
+                return stateController.CurrentState;
+            default:
+                return stateController.IsSchemer ? CardinalState.Scheme : CardinalState.Idle;
+        }
     }
 
     public void ApplySaveData(CardinalSaveData saveData)

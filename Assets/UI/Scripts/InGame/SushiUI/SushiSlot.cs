@@ -17,6 +17,9 @@ public class SushiSlot : MonoBehaviour
     private Item currentItem;
     private bool isSelectable = true;
 
+    public string CurrentItemId => currentItem != null ? currentItem.itemID : string.Empty;
+    public bool IsSelectable => isSelectable;
+
     public void Setup(Item item, Sprite gradeSprite)
     {
         currentItem = item;
@@ -58,8 +61,15 @@ public class SushiSlot : MonoBehaviour
     {
         if (currentItem == null || !isSelectable) return;
 
-        InventoryManager.Instance.AddItem(currentItem);
+        if (!InventoryManager.Instance.AddItem(currentItem)) return;
+
         SushiUI.Instance.Close();
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.SaveCheckpoint(
+                SaveCheckpointType.SushiRewardAcquired,
+                SaveResumeStep.StartNextConclave);
+        }
         InGameManager.Instance.StartConclaveCycle();
     }
 }

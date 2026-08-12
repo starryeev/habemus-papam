@@ -38,6 +38,7 @@ public class PlotManager : MonoBehaviour
     [SerializeField] private List<Plot> plots;
 
     private PlotSet[] availPlotSets = new PlotSet[2];
+    private int activePlotDay;
 
     private List<Plot> usedPlots;
 
@@ -155,6 +156,10 @@ public class PlotManager : MonoBehaviour
     {
         if (eventType == GameContext.GameContextEvent.ConclaveStart)
         {
+            int currentDay = InGameManager.Instance.Context.CurrentDay;
+            if (activePlotDay == currentDay && availPlotSets.All(plotSet => plotSet != null)) return;
+
+            activePlotDay = currentDay;
             availPlotSets[0] = GeneratePlotSet();
             availPlotSets[1] = GeneratePlotSet();
         }
@@ -188,20 +193,14 @@ public class PlotManager : MonoBehaviour
             ActionRecordManager.Instance.RecordPlot(performer);
         }
         if (InGameManager.Instance != null) InGameManager.Instance.CompletePlayerAction(performer);
-
-        CheckIsAllUsed(plotSet);
-    }
-
-    public void CheckIsAllUsed(int plotSet = 0)
-    {
-        if (AvailPlotSets[plotSet].isAllUsed())
-        {
-            RerollPlotSet(plotSet);
-        }
     }
 
     public void RerollPlotSet(int plotSet = 0)
     {
+        if (InGameManager.Instance != null)
+        {
+            activePlotDay = InGameManager.Instance.Context.CurrentDay;
+        }
         availPlotSets[plotSet] = GeneratePlotSet();
     }
 
@@ -217,7 +216,10 @@ public class PlotManager : MonoBehaviour
 
     public PlotManagerSaveData CaptureSaveData()
     {
-        PlotManagerSaveData saveData = new PlotManagerSaveData();
+        PlotManagerSaveData saveData = new PlotManagerSaveData
+        {
+            activeDay = activePlotDay
+        };
 
         for (int i = 0; i < availPlotSets.Length; i++)
         {
@@ -250,6 +252,9 @@ public class PlotManager : MonoBehaviour
     {
         usedPlots.Clear();
         availPlotSets = new PlotSet[2];
+        activePlotDay = saveData != null && saveData.activeDay > 0
+            ? saveData.activeDay
+            : InGameManager.Instance.Context.CurrentDay;
 
         if (saveData == null || saveData.plotSets == null)
         {
@@ -265,22 +270,15 @@ public class PlotManager : MonoBehaviour
             }
 
             Plot[] restoredPlots = new Plot[3];
-            bool canRestore = true;
 
             for (int slot = 0; slot < 3; slot++)
             {
-                restoredPlots[slot] = GetPlotById(setSave.plotIds[slot]);
-                if (restoredPlots[slot] == null)
+                string plotId = setSave.plotIds[slot];
+                restoredPlots[slot] = GetPlotById(plotId);
+                if (!string.IsNullOrWhiteSpace(plotId) && restoredPlots[slot] == null)
                 {
-                    canRestore = false;
-                    break;
+                    Debug.LogWarning($"[Save] 공작 '{plotId}'를 찾지 못해 빈 슬롯으로 복원합니다.");
                 }
-            }
-
-            if (!canRestore)
-            {
-                Debug.LogWarning($"[Save] {i}번 공작 세트를 완전히 복원하지 못했습니다.");
-                continue;
             }
 
             availPlotSets[i] = new PlotSet(restoredPlots);
@@ -294,6 +292,14 @@ public class PlotManager : MonoBehaviour
                         availPlotSets[i].use(slot);
                     }
                 }
+            }
+        }
+
+        for (int i = 0; i < availPlotSets.Length; i++)
+        {
+            if (availPlotSets[i] == null)
+            {
+                availPlotSets[i] = GeneratePlotSet();
             }
         }
     }

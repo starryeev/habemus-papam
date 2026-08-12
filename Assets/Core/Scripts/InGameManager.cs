@@ -575,7 +575,9 @@ public class InGameManager : MonoBehaviour
             isSushiOn = isSushiOn,
             showStartButton = startButton != null && startButton.gameObject.activeSelf,
             startButtonInteractable = startButton == null || startButton.interactable,
-            showInventoryPanel = inventoryUIPanel != null && inventoryUIPanel.activeSelf
+            showInventoryPanel = inventoryUIPanel != null && inventoryUIPanel.activeSelf,
+            hasHandledFirstPlayerHpZero = hasHandledFirstPlayerHpZero,
+            shouldRevivePlayerOnNextConclave = shouldRevivePlayerOnNextConclave
         };
 
         for (int candidate = 0; candidate < 3; candidate++)
@@ -622,6 +624,11 @@ public class InGameManager : MonoBehaviour
         awaitingTurnEvent = saveData.awaitingTurnEvent;
         eventBeforeActions = saveData.eventBeforeActions;
         endConclaveAfterEvent = saveData.endConclaveAfterEvent;
+        hasHandledFirstPlayerHpZero = saveData.hasHandledFirstPlayerHpZero;
+        shouldRevivePlayerOnNextConclave = saveData.shouldRevivePlayerOnNextConclave;
+        isHandlingFinalPlayerHpZero = false;
+        isEndingConclaveAfterPlayerHpZero = false;
+        isConclaveExitInProgress = false;
         RestoreNpcTurnPlan(saveData);
         RestorePrayerBlocks(saveData.prayerBlockedCandidateNumbers);
         RestorePendingEffects(saveData.pendingEffects);
@@ -1247,9 +1254,16 @@ public class InGameManager : MonoBehaviour
             Event immediateEvent = queuedImmediateEvent;
             queuedImmediateEvent = null;
             OpenEventBeforeActions(immediateEvent);
+            SaveTurnPhaseCheckpoint(SaveResumeStep.ReopenPendingEvent);
             return;
         }
-        if (gameContext.AreActionsComplete()) ResolveCompletedTurn();
+        if (gameContext.AreActionsComplete())
+        {
+            ResolveCompletedTurn();
+            return;
+        }
+
+        SaveTurnPhaseCheckpoint(SaveResumeStep.Gameplay);
     }
 
     public void QueueImmediateEventAfterPlayerAction(Event evt)
@@ -1299,7 +1313,14 @@ public class InGameManager : MonoBehaviour
         if (eventBeforeActions)
         {
             eventBeforeActions = false;
-            if (gameContext.AreActionsComplete()) ResolveCompletedTurn();
+            if (gameContext.AreActionsComplete())
+            {
+                ResolveCompletedTurn();
+            }
+            else
+            {
+                SaveTurnPhaseCheckpoint(SaveResumeStep.Gameplay);
+            }
             return;
         }
         if (endConclaveAfterEvent)
@@ -1338,6 +1359,11 @@ public class InGameManager : MonoBehaviour
         UIManager.Instance.Ingame.Event.UISetEvent();
     }
 
+    public void ResumeAfterResolvedEvent()
+    {
+        OnTurnEventClosed();
+    }
+
     private void ResolveCompletedTurn()
     {
         ExecuteRemainingNpcBaseActions();
@@ -1356,6 +1382,7 @@ public class InGameManager : MonoBehaviour
         if (gameContext.CurrentEvent != null && UIManager.Instance != null && UIManager.Instance.Ingame != null)
         {
             UIManager.Instance.Ingame.Event.UISetEvent();
+            SaveTurnPhaseCheckpoint(SaveResumeStep.ReopenPendingEvent);
         }
         else
         {
@@ -1402,6 +1429,21 @@ public class InGameManager : MonoBehaviour
 
         gameContext.BeginTurn(ConsumeNextTurnActionModifier(), ConsumeNextTurnBlock());
         TryResolveTurnWithoutActions();
+
+        if (isTimeRunning && SaveManager.Instance != null)
+        {
+            SaveManager.Instance.SaveCheckpoint(
+                SaveCheckpointType.TurnPhaseAdvanced,
+                awaitingTurnEvent ? SaveResumeStep.ReopenPendingEvent : SaveResumeStep.Gameplay);
+        }
+    }
+
+    private void SaveTurnPhaseCheckpoint(SaveResumeStep resumeStep)
+    {
+        if (isTimeRunning && SaveManager.Instance != null)
+        {
+            SaveManager.Instance.SaveCheckpoint(SaveCheckpointType.TurnPhaseAdvanced, resumeStep);
+        }
     }
 
     private void TryResolveTurnWithoutActions()

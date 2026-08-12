@@ -241,7 +241,11 @@ public class CardinalManager : MonoBehaviour
 
         if (SaveManager.Instance != null)
         {
-            SaveManager.Instance.AutoSave();
+            SaveManager.Instance.SaveCheckpoint(
+                SaveCheckpointType.ConclaveEntryCompleted,
+                InGameManager.Instance.IsAwaitingTurnEvent
+                    ? SaveResumeStep.ReopenPendingEvent
+                    : SaveResumeStep.Gameplay);
         }
 
         SetConclaveTransition(false);
