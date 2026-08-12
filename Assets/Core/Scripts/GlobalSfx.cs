@@ -131,7 +131,11 @@ public sealed class GlobalSfx : MonoBehaviour
 
     private void PlayClickSound(string sceneName)
     {
-        SoundManager.Instance.PlaySFX(GetClickSfxName(hoveredButton, sceneName));
+        string sfxName = GetClickSfxName(hoveredButton, sceneName);
+        if (!string.IsNullOrEmpty(sfxName))
+        {
+            SoundManager.Instance.PlaySFX(sfxName);
+        }
     }
 
     private static string GetClickSfxName(Button button, string sceneName)
@@ -142,6 +146,11 @@ public sealed class GlobalSfx : MonoBehaviour
         }
 
         string buttonName = button.name;
+        if (sceneName == GameSceneName && button.GetComponent<VoteButton>() != null)
+        {
+            return null;
+        }
+
         if (sceneName == MainSceneName)
         {
             if (buttonName == "Start" &&
@@ -178,7 +187,9 @@ public sealed class GlobalSfx : MonoBehaviour
         }
 
         if (sceneName == GameSceneName &&
-            (buttonName == "ChoiceButton1" || buttonName == "ChoiceButton2") &&
+            (buttonName == "ChoiceButton1" || buttonName == "ChoiceButton2" ||
+             HasAncestor(button.transform, "ChoiceButton1") ||
+             HasAncestor(button.transform, "ChoiceButton2")) &&
             HasAncestor(button.transform, "EventWindow"))
         {
             return ButtonHeavySfxName;

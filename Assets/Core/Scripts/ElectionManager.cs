@@ -73,8 +73,10 @@ public class ElectionManager : MonoBehaviour
         if (statsUI == null) return;
         checkUI.gameObject.SetActive(true);
 
-        currentWinnerCandidate = CardinalManager.Instance.Cardinals[GetWinner()];
-        checkUI.SetWinner(GetWinner());
+        Cardinal[] candidates = statsUI.LinkedCardinals;
+        int winner = GetWinner(candidates);
+        currentWinnerCandidate = candidates[winner];
+        checkUI.SetWinner(winner);
 
         if (currentWinnerCandidate != null)
         {
@@ -83,24 +85,23 @@ public class ElectionManager : MonoBehaviour
             ExecuteJudgment();
         }
     }
-        private int GetWinner()
+    private int GetWinner(Cardinal[] candidates)
     {
         float[,] stats = new float[4,2];
         int winner = 0;
 
         for(int i = 0; i<4; i++)
         {
-            float influence = CardinalManager.Instance.Cardinals[i].Influence;
-            float piety = CardinalManager.Instance.Cardinals[i].Piety;
+            float influence = candidates[i].Influence;
+            float piety = candidates[i].Piety;
             stats[i,0] = Mathf.Max(influence, piety);
             stats[i,1] = Mathf.Min(influence, piety);
         }
         
-        float maxStat = -999f;
-        for(int i = 0; i<4; i++)
+        for(int i = 1; i<4; i++)
         {
-            if(stats[i,0] > maxStat) winner = i;
-            else if (stats[i,0] == maxStat)
+            if(stats[i,0] > stats[winner,0]) winner = i;
+            else if (stats[i,0] == stats[winner,0])
             {
                 if(stats[i,1]>stats[winner,1]) winner = i;
                 //스탯 다 같으면 번호 낮은 놈이 승자. StatsUI와 동일한 방법으로 적용해야 함.

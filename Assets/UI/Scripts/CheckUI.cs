@@ -6,6 +6,9 @@ using UnityEngine.Video;
 //여기에 교황 판정 화면을 구현
 public class CheckUI : MonoBehaviour
 {
+    private const string VoteOpenSfxName = "28 인게임- 투표함 개봉";
+    private const string ButtonSpecialSfxName = "ButtonSpecial";
+
     private Image img;
     [SerializeField] private Button SkipButton;
     [SerializeField] private Button Vote;
@@ -96,6 +99,7 @@ public class CheckUI : MonoBehaviour
         Debug.Log("투표함 클릭됨");
         if(animState == AnimState.ElectWait)
         {
+            SoundManager.Instance.PlaySFX(VoteOpenSfxName);
             text.text = ElectionMessage;
             anim.Play("Elect", 0, 0f);
             animState = AnimState.Elect;
@@ -108,6 +112,9 @@ public class CheckUI : MonoBehaviour
         }
         if(animState==AnimState.ElectEnd)
         {
+            if (isPlayingJudgementVideos || isWaitingForJudgementVideoClick) return;
+
+            SoundManager.Instance.PlaySFX(ButtonSpecialSfxName);
             PlayJudgementVideos();
         }
     }
@@ -135,10 +142,30 @@ public class CheckUI : MonoBehaviour
         SetSprite(4+(winner%4));
 
         string s = JudgeMessage[winner];
-        text.text = s.Replace("NAME", ElectionManager.Instance.CurrentWinnerCandidate.name); //이름 찾아야 함. StatsUI에서 찾는 방식은 좀 그럼.
+        text.text = s.Replace("NAME", GetWinnerDisplayName());
         miscText.text = miscMessage;
 
         jackpotCoroutine = StartCoroutine(JackpotRoutine(winProbability));
+    }
+    private string GetWinnerDisplayName()
+    {
+        Cardinal candidate = ElectionManager.Instance != null
+            ? ElectionManager.Instance.CurrentWinnerCandidate
+            : null;
+        string fallbackName = candidate != null ? candidate.name : string.Empty;
+        GameNameSaveData names = SaveManager.Instance != null
+            ? SaveManager.Instance.CurrentGameNames
+            : null;
+
+        if (names == null) return fallbackName;
+
+        string displayName = winner == 0
+            ? names.playerName
+            : winner > 0 && names.npcNames != null && winner - 1 < names.npcNames.Count
+                ? names.npcNames[winner - 1]
+                : string.Empty;
+
+        return string.IsNullOrWhiteSpace(displayName) ? fallbackName : displayName;
     }
     private IEnumerator JackpotRoutine(float finalProb)
     {

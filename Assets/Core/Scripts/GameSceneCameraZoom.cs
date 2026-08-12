@@ -20,6 +20,7 @@ public sealed class GameSceneCameraZoom : MonoBehaviour
     private Vector3 initialCameraPosition;
     private Coroutine releaseRoutine;
     private bool isReleasingZoom;
+    private bool isZoomInBlocked;
 
     public static void Attach(Camera camera, CanvasGroup uiGroup)
     {
@@ -55,7 +56,9 @@ public sealed class GameSceneCameraZoom : MonoBehaviour
     private void Update()
     {
         float scrollDelta = Input.mouseScrollDelta.y;
-        if (!isReleasingZoom && !Mathf.Approximately(scrollDelta, 0f))
+        if (!isReleasingZoom &&
+            (!isZoomInBlocked || scrollDelta < 0f) &&
+            !Mathf.Approximately(scrollDelta, 0f))
         {
             if (scrollDelta > 0f && !TryFindPlayerTarget())
             {
@@ -156,6 +159,16 @@ public sealed class GameSceneCameraZoom : MonoBehaviour
         }
     }
 
+    public static void LockAllGameCamerasZoomedOut(float duration = 1f)
+    {
+        GameSceneCameraZoom[] zoomControllers = Object.FindObjectsByType<GameSceneCameraZoom>(FindObjectsSortMode.None);
+        foreach (GameSceneCameraZoom zoomController in zoomControllers)
+        {
+            zoomController.isZoomInBlocked = true;
+            zoomController.ReleaseZoomAndFollowOverTime(duration);
+        }
+    }
+
     public void ReleaseZoomAndFollowOverTime(float duration)
     {
         if (targetCamera == null)
@@ -174,7 +187,7 @@ public sealed class GameSceneCameraZoom : MonoBehaviour
 
     public void ZoomToMinimumOverTime(float duration)
     {
-        if (targetCamera == null)
+        if (targetCamera == null || isZoomInBlocked)
         {
             return;
         }

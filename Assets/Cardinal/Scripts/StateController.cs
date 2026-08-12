@@ -1461,6 +1461,21 @@ public class StateController : MonoBehaviour
         agent.isStopped = locked;
     }
 
+    public void StopForGameOver()
+    {
+        ChangeState(CardinalState.CutScene);
+        StopAllActionCoroutines();
+
+        if (stunCoroutine != null)
+        {
+            StopCoroutine(stunCoroutine);
+            stunCoroutine = null;
+        }
+
+        ResetPhysicalStatus();
+        HideBubble();
+    }
+
 
     private void OnTriggerEnter2D(Collider2D other)
     {

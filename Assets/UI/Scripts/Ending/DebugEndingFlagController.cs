@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -6,6 +7,7 @@ public class DebugEndingFlagController : MonoBehaviour
 {
     [SerializeField] private string endingSceneName = "EndingScene";
     private bool isHereticWarGameOverFlag;
+    private Coroutine gameOverRoutine;
 
     private void Awake()
     {
@@ -65,11 +67,40 @@ public class DebugEndingFlagController : MonoBehaviour
 
     public void TriggerGameOver()
     {
-        SetPlayerHpToOne();
+        if (gameOverRoutine == null)
+        {
+            gameOverRoutine = StartCoroutine(TriggerGameOverRoutine());
+        }
+    }
+
+    private IEnumerator TriggerGameOverRoutine()
+    {
+        Cardinal player = FindPlayerCardinal();
+        if (player == null)
+        {
+            Debug.LogWarning("[Ending Debug] Player cardinal was not found. Cannot trigger game over.");
+            gameOverRoutine = null;
+            yield break;
+        }
+
+        player.ChangeHp(1f - player.Hp);
+        Debug.Log($"[Ending Debug] Player HP set to {player.Hp}.");
+
+        yield return new WaitForSecondsRealtime(3f);
+
+        if (player == null)
+        {
+            gameOverRoutine = null;
+            yield break;
+        }
+
+        player.ChangeHp(-1f);
+        Debug.Log($"[Ending Debug] Player HP reduced to {player.Hp}.");
+        gameOverRoutine = null;
 
         if (!isHereticWarGameOverFlag)
         {
-            return;
+            yield break;
         }
 
         isHereticWarGameOverFlag = false;
@@ -128,19 +159,6 @@ public class DebugEndingFlagController : MonoBehaviour
         {
             SceneManager.LoadScene(endingSceneName);
         }
-    }
-
-    private void SetPlayerHpToOne()
-    {
-        Cardinal player = FindPlayerCardinal();
-        if (player == null)
-        {
-            Debug.LogWarning("[Ending Debug] Player cardinal was not found. Cannot set HP to 1.");
-            return;
-        }
-
-        player.ChangeHp(1f - player.Hp);
-        Debug.Log($"[Ending Debug] Player HP set to {player.Hp}.");
     }
 
     private Cardinal FindPlayerCardinal()

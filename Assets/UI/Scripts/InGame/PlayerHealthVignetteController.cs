@@ -8,16 +8,17 @@ public class PlayerHealthVignetteController : MonoBehaviour
     public static PlayerHealthVignetteController Instance { get; private set; }
 
     private const float CriticalHpThreshold = 2f;
-    private const float LowHpMaxAlpha = 34f;
+    private const float LowHpMaxAlpha = 255f * 0.9f;
     private const float FirstDownMaxAlpha = 90f;
-    private const float FinalGameOverMaxAlpha = 255f;
 
     [Header("References")]
     [SerializeField] private Image vignettingImage;
+    [SerializeField] private Image gameOverImage;
     [SerializeField] private CanvasGroup gameOverTextGroup;
 
     [Header("Auto Find Names")]
     [SerializeField] private string vignettingObjectName = "Vignetting";
+    [SerializeField] private string gameOverObjectName = "GameOver";
     [SerializeField] private string gameOverTextObjectName = "TXT";
 
     private Cardinal player;
@@ -162,7 +163,15 @@ public class PlayerHealthVignetteController : MonoBehaviour
         ResolveReferences();
 
         SetTextAlpha(0f);
-        SetVignetteAlphaByte(FinalGameOverMaxAlpha);
+        SetVignetteAlphaByte(0f);
+
+        if (gameOverImage != null)
+        {
+            gameOverImage.gameObject.SetActive(true);
+            gameOverImage.canvasRenderer.SetAlpha(0f);
+            gameOverImage.CrossFadeAlpha(1f, 1.5f, true);
+        }
+
         yield return WaitUnscaled(1.5f);
         yield return FadeTextAlpha(0f, 1f, 1f);
         yield return WaitUnscaled(3f);
@@ -250,6 +259,12 @@ public class PlayerHealthVignetteController : MonoBehaviour
             vignettingImage = vignettingTransform != null ? vignettingTransform.GetComponent<Image>() : null;
         }
 
+        if (gameOverImage == null)
+        {
+            Transform gameOverTransform = transform.Find(gameOverObjectName);
+            gameOverImage = gameOverTransform != null ? gameOverTransform.GetComponent<Image>() : null;
+        }
+
         if (gameOverTextGroup == null)
         {
             Transform textTransform = transform.Find(gameOverTextObjectName);
@@ -312,6 +327,12 @@ public class PlayerHealthVignetteController : MonoBehaviour
     {
         SetVignetteAlphaByte(0f);
         SetTextAlpha(0f);
+
+        if (gameOverImage != null)
+        {
+            gameOverImage.canvasRenderer.SetAlpha(0f);
+            gameOverImage.gameObject.SetActive(false);
+        }
     }
 
     private float GetVignetteAlphaByte()

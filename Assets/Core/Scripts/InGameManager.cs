@@ -674,6 +674,9 @@ public class InGameManager : MonoBehaviour
         }
 
         isHandlingFinalPlayerHpZero = true;
+        StateController playerState = player.GetComponent<StateController>();
+        playerState?.StopForGameOver();
+        GameSceneCameraZoom.LockAllGameCamerasZoomedOut(1f);
         StopTimer();
 
         if (SoundManager.Instance != null)
