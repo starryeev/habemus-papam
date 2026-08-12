@@ -85,6 +85,11 @@ public class Cardinal : MonoBehaviour
                 isKnockedOut = true;
                 hp = 0f;
 
+                if (CompareTag("Player") && SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlaySFX("35 인게임- 기절사망");
+                }
+
                 if (ActionRecordManager.Instance != null)
                 {
                     ActionRecordManager.Instance.RecordKnockOut(this);

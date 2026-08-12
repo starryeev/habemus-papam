@@ -10,6 +10,7 @@ public class PlayerHealthVignetteController : MonoBehaviour
     private const float CriticalHpThreshold = 2f;
     private const float LowHpMaxAlpha = 255f * 0.9f;
     private const float FirstDownMaxAlpha = 90f;
+    private const string LowHpSfxName = "36 인게임- 체력없음";
 
     [Header("References")]
     [SerializeField] private Image vignettingImage;
@@ -132,6 +133,11 @@ public class PlayerHealthVignetteController : MonoBehaviour
     {
         while (true)
         {
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySFX(LowHpSfxName);
+            }
+
             yield return FadeVignetteAlpha(GetVignetteAlphaByte(), LowHpMaxAlpha, 0.2f);
             yield return FadeVignetteAlpha(GetVignetteAlphaByte(), 0f, 0.6f);
 
