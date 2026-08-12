@@ -486,7 +486,11 @@ public class Cardinal : MonoBehaviour
         {
             ActionRecordManager.Instance.RecordPray(this);
         }
-        if (completePlayerAction) InGameManager.Instance.CompletePlayerAction(this);
+        if (completePlayerAction)
+        {
+            GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
+            InGameManager.Instance.CompletePlayerAction(this);
+        }
     }
 
     public void Speech()
@@ -585,7 +589,11 @@ public class Cardinal : MonoBehaviour
         {
             ActionRecordManager.Instance.RecordSpeech(this);
         }
-        if (completePlayerAction) InGameManager.Instance.CompletePlayerAction(this);
+        if (completePlayerAction)
+        {
+            GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
+            InGameManager.Instance.CompletePlayerAction(this);
+        }
     }
 
     public void OnPlotExecuted()

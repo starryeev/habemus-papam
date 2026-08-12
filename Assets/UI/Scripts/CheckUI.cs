@@ -8,6 +8,10 @@ public class CheckUI : MonoBehaviour
 {
     private const string VoteOpenSfxName = "28 인게임- 투표함 개봉";
     private const string ButtonSpecialSfxName = "ButtonSpecial";
+    private const float ResultRevealDuration = 0.3f;
+    private const float ResultToVideoDelay = 3f;
+    private const float ResultPunchScale = 1.15f;
+    private static readonly Color ResultGoldColor = new Color32(255, 210, 70, 255);
 
     private Image img;
     [SerializeField] private Button SkipButton;
@@ -48,6 +52,13 @@ public class CheckUI : MonoBehaviour
     private int currentVideoIndex;
     private bool isPlayingJudgementVideos;
     private bool isWaitingForJudgementVideoClick;
+    private bool isRevealingResult;
+    private Coroutine resultRevealCoroutine;
+    private Vector3 probabilityBaseScale;
+    private Color probabilityBaseColor;
+    private Color32 probabilityBaseOutlineColor;
+    private float probabilityBaseOutlineWidth;
+    private bool probabilityVisualCached;
     private float winProbability = 0; //ElectionManager에서 정해진 승리 확률.
     private int winner = -1;
     public void SetWinner(int i) {winner = i;}
@@ -67,7 +78,17 @@ public class CheckUI : MonoBehaviour
         subText.text = "";
         probabilityText.text = "";
         miscText.text = "";
+        CacheProbabilityVisual();
         SetJudgementVideoObjectActive(false);
+    }
+    private void OnDisable()
+    {
+        if (jackpotCoroutine != null) StopCoroutine(jackpotCoroutine);
+        if (resultRevealCoroutine != null) StopCoroutine(resultRevealCoroutine);
+        jackpotCoroutine = null;
+        resultRevealCoroutine = null;
+        isRevealingResult = false;
+        RestoreProbabilityVisual();
     }
     private void OnDestroy()
     {
@@ -86,7 +107,12 @@ public class CheckUI : MonoBehaviour
     }
     private void Skip() //스킵 버튼을 누르면 스킵.
     {
-        if(jackpotCoroutine != null) StopCoroutine(jackpotCoroutine);
+        if (isRevealingResult) return;
+        if (animState == AnimState.ElectEnd)
+        {
+            RevealFinalResult();
+            return;
+        }
         if(animState == AnimState.None)
         {
             Debug.Log("투표 화면 오류!");
@@ -112,10 +138,8 @@ public class CheckUI : MonoBehaviour
         }
         if(animState==AnimState.ElectEnd)
         {
-            if (isPlayingJudgementVideos || isWaitingForJudgementVideoClick) return;
-
-            SoundManager.Instance.PlaySFX(ButtonSpecialSfxName);
-            PlayJudgementVideos();
+            if (isPlayingJudgementVideos || isWaitingForJudgementVideoClick || isRevealingResult) return;
+            RevealFinalResult();
         }
     }
     private void OnEnable()
@@ -124,6 +148,10 @@ public class CheckUI : MonoBehaviour
         text.text = ElectionMessage;
         subText.text = ElectionSubMessage;
         probabilityText.text = "";
+        RestoreProbabilityVisual();
+        isRevealingResult = false;
+        Vote.interactable = true;
+        if (SkipButton != null) SkipButton.interactable = true;
         anim.Play("Enter", 0, 0f);
         Vote.gameObject.SetActive(false);
         SetJudgementVideoObjectActive(false);
@@ -138,6 +166,7 @@ public class CheckUI : MonoBehaviour
     }
     public void OnElectAnimFinished()
     {
+        if (animState == AnimState.ElectEnd) return;
         animState = AnimState.ElectEnd;
         SetSprite(4+(winner%4));
 
@@ -185,12 +214,84 @@ public class CheckUI : MonoBehaviour
             yield return null;
         }
 
-        if (probabilityText != null)
+        jackpotCoroutine = null;
+        RevealFinalResult();
+    }
+    private void RevealFinalResult()
+    {
+        if (isRevealingResult || isPlayingJudgementVideos || isWaitingForJudgementVideoClick) return;
+
+        if (jackpotCoroutine != null)
         {
-            probabilityText.text = $" <color=white>{finalProb:F1}%</color>";
+            StopCoroutine(jackpotCoroutine);
+            jackpotCoroutine = null;
         }
 
-        jackpotCoroutine = null;
+        resultRevealCoroutine = StartCoroutine(ResultRevealRoutine());
+    }
+    private IEnumerator ResultRevealRoutine()
+    {
+        isRevealingResult = true;
+        Vote.interactable = false;
+        if (SkipButton != null) SkipButton.interactable = false;
+
+        CacheProbabilityVisual();
+        if (probabilityText != null)
+        {
+            probabilityText.text = $" {winProbability:F1}%";
+        }
+
+        float elapsed = 0f;
+        while (elapsed < ResultRevealDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = Mathf.Clamp01(elapsed / ResultRevealDuration);
+            float easedProgress = Mathf.SmoothStep(0f, 1f, progress);
+
+            if (probabilityText != null)
+            {
+                probabilityText.rectTransform.localScale = probabilityBaseScale *
+                    Mathf.Lerp(ResultPunchScale, 1f, easedProgress);
+                probabilityText.color = Color.Lerp(ResultGoldColor, probabilityBaseColor, easedProgress);
+                probabilityText.outlineColor = (Color32)Color.Lerp(
+                    ResultGoldColor, probabilityBaseOutlineColor, easedProgress);
+                probabilityText.outlineWidth = Mathf.Lerp(0.25f, probabilityBaseOutlineWidth, easedProgress);
+            }
+
+            yield return null;
+        }
+
+        RestoreProbabilityVisual();
+
+        float remainingDelay = Mathf.Max(0f, ResultToVideoDelay - ResultRevealDuration);
+        if (remainingDelay > 0f)
+        {
+            yield return new WaitForSecondsRealtime(remainingDelay);
+        }
+
+        resultRevealCoroutine = null;
+        isRevealingResult = false;
+        SoundManager.Instance.PlaySFX(ButtonSpecialSfxName);
+        PlayJudgementVideos();
+    }
+    private void CacheProbabilityVisual()
+    {
+        if (probabilityVisualCached || probabilityText == null) return;
+
+        probabilityBaseScale = probabilityText.rectTransform.localScale;
+        probabilityBaseColor = probabilityText.color;
+        probabilityBaseOutlineColor = probabilityText.outlineColor;
+        probabilityBaseOutlineWidth = probabilityText.outlineWidth;
+        probabilityVisualCached = true;
+    }
+    private void RestoreProbabilityVisual()
+    {
+        if (!probabilityVisualCached || probabilityText == null) return;
+
+        probabilityText.rectTransform.localScale = probabilityBaseScale;
+        probabilityText.color = probabilityBaseColor;
+        probabilityText.outlineColor = probabilityBaseOutlineColor;
+        probabilityText.outlineWidth = probabilityBaseOutlineWidth;
     }
     private void PlayJudgementVideos()
     {
