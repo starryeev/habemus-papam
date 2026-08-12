@@ -71,14 +71,28 @@ public class PlotManager : MonoBehaviour
 
     public PlotSet GeneratePlotSet()
     {
+        return GeneratePlotSet(null);
+    }
+
+    private PlotSet GeneratePlotSet(ICollection<Plot> excludedPlots)
+    {
         float playerInfluence = GetPlayerInfluence();
         Plot[] selectedPlots = new Plot[3];
 
-        selectedPlots[0] = PickSlotPlot(Random.value < 0.6f ? PlotGrade.Common : PlotGrade.Rare, playerInfluence, selectedPlots);
-        selectedPlots[1] = PickSlotPlot(Random.value < 0.9f ? PlotGrade.Rare : PlotGrade.Legendary, playerInfluence, selectedPlots);
-        selectedPlots[2] = PickSlotPlot(Random.value < 0.6f ? PlotGrade.Common : PlotGrade.Rare, playerInfluence, selectedPlots);
+        for (int slot = 0; slot < selectedPlots.Length; slot++)
+        {
+            selectedPlots[slot] = PickSlotPlot(
+                RollPreferredGrade(slot), playerInfluence, selectedPlots, excludedPlots);
+        }
 
         return new PlotSet(selectedPlots);
+    }
+
+    private static PlotGrade RollPreferredGrade(int slot)
+    {
+        return slot == 1
+            ? (Random.value < 0.9f ? PlotGrade.Rare : PlotGrade.Legendary)
+            : (Random.value < 0.6f ? PlotGrade.Common : PlotGrade.Rare);
     }
 
     private float GetPlayerInfluence()
@@ -89,31 +103,56 @@ public class PlotManager : MonoBehaviour
         return player != null ? player.Influence : 0f;
     }
 
-    private Plot PickSlotPlot(PlotGrade grade, float playerInfluence, Plot[] alreadySelected)
+    private Plot PickSlotPlot(PlotGrade preferredGrade, float playerInfluence, Plot[] alreadySelected,
+        ICollection<Plot> excludedPlots)
     {
-        List<Plot> available = GetAvailablePlots(grade, alreadySelected);
-        if (available.Count == 0 && grade == PlotGrade.Legendary)
-            return PickSlotPlot(PlotGrade.Rare, playerInfluence, alreadySelected);
-        if (available.Count == 0) return null;
-
         int conditionPenalty = InGameManager.Instance != null && InGameManager.Instance.IsNpcCandidateLeading(2) ? 1 : 0;
-        List<Plot> lower = available.Where(plot => plot.GetInfluenceRequirement() + conditionPenalty < playerInfluence).ToList();
-        List<Plot> higher = available.Where(plot => playerInfluence < plot.GetInfluenceRequirement() + conditionPenalty &&
-            plot.GetInfluenceRequirement() + conditionPenalty < playerInfluence + 2f).ToList();
+        List<Plot> available = GetAvailablePlots(alreadySelected, excludedPlots);
+        List<Plot> reachable = available.Where(plot =>
+            plot.GetInfluenceRequirement() + conditionPenalty <= playerInfluence + 2f).ToList();
+        if (reachable.Count > 0) available = reachable;
 
-        bool chooseLower = Random.value < 0.8f;
-        List<Plot> selectedBand = chooseLower ? lower : higher;
-        if (selectedBand.Count == 0) selectedBand = chooseLower ? higher : lower;
-        if (selectedBand.Count == 0 && grade == PlotGrade.Legendary)
-            return PickSlotPlot(PlotGrade.Rare, playerInfluence, alreadySelected);
-        if (selectedBand.Count == 0) return null;
-        return selectedBand[Random.Range(0, selectedBand.Count)];
+        if (available.Count == 0 && excludedPlots != null && excludedPlots.Count > 0)
+        {
+            available = GetAvailablePlots(alreadySelected, null);
+        }
+
+        return PickWeightedPlot(available, preferredGrade, playerInfluence, conditionPenalty);
     }
 
-    private List<Plot> GetAvailablePlots(PlotGrade grade, Plot[] alreadySelected)
+    private List<Plot> GetAvailablePlots(Plot[] alreadySelected, ICollection<Plot> excludedPlots)
     {
-        return plots.Where(plot => plot != null && plot.plotGrade == grade && IsSupportedByTurnSystem(plot) &&
-            !usedPlots.Contains(plot) && !alreadySelected.Contains(plot)).ToList();
+        return plots.Where(plot => plot != null && IsSupportedByTurnSystem(plot) &&
+            !usedPlots.Contains(plot) && !alreadySelected.Contains(plot) &&
+            (excludedPlots == null || !excludedPlots.Contains(plot))).ToList();
+    }
+
+    private static Plot PickWeightedPlot(List<Plot> candidates, PlotGrade preferredGrade,
+        float playerInfluence, int conditionPenalty)
+    {
+        if (candidates == null || candidates.Count == 0) return null;
+
+        float weightSum = candidates.Sum(plot => GetSelectionWeight(
+            plot, preferredGrade, playerInfluence, conditionPenalty));
+        float roll = Random.Range(0f, weightSum);
+
+        foreach (Plot candidate in candidates)
+        {
+            roll -= GetSelectionWeight(candidate, preferredGrade, playerInfluence, conditionPenalty);
+            if (roll <= 0f) return candidate;
+        }
+
+        return candidates[candidates.Count - 1];
+    }
+
+    private static float GetSelectionWeight(Plot plot, PlotGrade preferredGrade,
+        float playerInfluence, int conditionPenalty)
+    {
+        int requirement = plot.GetInfluenceRequirement() + conditionPenalty;
+        float gradeWeight = plot.plotGrade == preferredGrade ? 3f : 1f;
+        float requirementWeight = requirement <= playerInfluence ? 4f :
+            requirement <= playerInfluence + 2f ? 1f : 0.25f;
+        return Mathf.Max(0.01f, plot.GetPlotWeight()) * gradeWeight * requirementWeight;
     }
 
     private static bool IsSupportedByTurnSystem(Plot plot)
@@ -159,9 +198,13 @@ public class PlotManager : MonoBehaviour
             int currentDay = InGameManager.Instance.Context.CurrentDay;
             if (activePlotDay == currentDay && availPlotSets.All(plotSet => plotSet != null)) return;
 
+            HashSet<Plot> previousDayPlots = new HashSet<Plot>(availPlotSets
+                .Where(plotSet => plotSet != null)
+                .SelectMany(plotSet => plotSet.plots)
+                .Where(plot => plot != null));
             activePlotDay = currentDay;
-            availPlotSets[0] = GeneratePlotSet();
-            availPlotSets[1] = GeneratePlotSet();
+            availPlotSets[0] = GeneratePlotSet(previousDayPlots);
+            availPlotSets[1] = GeneratePlotSet(previousDayPlots);
         }
     }
 
@@ -201,7 +244,11 @@ public class PlotManager : MonoBehaviour
         {
             activePlotDay = InGameManager.Instance.Context.CurrentDay;
         }
-        availPlotSets[plotSet] = GeneratePlotSet();
+
+        HashSet<Plot> previousPlots = availPlotSets[plotSet] != null
+            ? new HashSet<Plot>(availPlotSets[plotSet].plots.Where(plot => plot != null))
+            : null;
+        availPlotSets[plotSet] = GeneratePlotSet(previousPlots);
     }
 
     public Plot GetPlotById(string plotId)
@@ -270,14 +317,26 @@ public class PlotManager : MonoBehaviour
             }
 
             Plot[] restoredPlots = new Plot[3];
+            bool[] restoredFromSave = new bool[3];
 
             for (int slot = 0; slot < 3; slot++)
             {
                 string plotId = setSave.plotIds[slot];
                 restoredPlots[slot] = GetPlotById(plotId);
+                restoredFromSave[slot] = restoredPlots[slot] != null;
                 if (!string.IsNullOrWhiteSpace(plotId) && restoredPlots[slot] == null)
                 {
                     Debug.LogWarning($"[Save] 공작 '{plotId}'를 찾지 못해 빈 슬롯으로 복원합니다.");
+                }
+            }
+
+            float playerInfluence = GetPlayerInfluence();
+            for (int slot = 0; slot < restoredPlots.Length; slot++)
+            {
+                if (restoredPlots[slot] == null)
+                {
+                    restoredPlots[slot] = PickSlotPlot(
+                        RollPreferredGrade(slot), playerInfluence, restoredPlots, null);
                 }
             }
 
@@ -287,7 +346,7 @@ public class PlotManager : MonoBehaviour
             {
                 for (int slot = 0; slot < 3 && slot < setSave.usedSlots.Count; slot++)
                 {
-                    if (setSave.usedSlots[slot])
+                    if (restoredFromSave[slot] && setSave.usedSlots[slot])
                     {
                         availPlotSets[i].use(slot);
                     }
