@@ -22,9 +22,11 @@ class EventWindow : MonoBehaviour
         }
         else ChoiceButton2.gameObject.SetActive(false);
         ChoiceButton1.SetButton(CurrentEvent.option1, CurrentEvent.option1Requirement);
+        Cardinal performer = UIManager.Instance.Ingame.Stats.LinkedCardinals[0];
         
         //이벤트 진행이 불가능하다면 버튼 어둡게 처리하고 비활성화
-        if(!CurrentEvent.CanChoiceOption1(UIManager.Instance.Ingame.Stats.LinkedCardinals[0])) ChoiceButton1.DisableButton();
+        if (!CurrentEvent.CanChoiceOption1(performer)) ChoiceButton1.DisableButton();
+        if (evt.option2 != "" && !CurrentEvent.CanChoiceOption2(performer)) ChoiceButton2.DisableButton();
     }
     public void ShowEvent(string id)
     {

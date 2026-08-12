@@ -9,9 +9,12 @@ class ChoiceButton : MonoBehaviour
     [SerializeField] Button ButtonKoraji;
     [SerializeField] TextMeshProUGUI text;
     [SerializeField] private TextMeshProUGUI req;
+    public bool IsConditionUnavailable { get; private set; }
 
     public void SetButton(string desc, string req = "")
     {
+        SetConditionAvailable();
+
         if(req != "")
         {
             ButtonKoraji.image.sprite = ButtonWithReq;
@@ -27,6 +30,7 @@ class ChoiceButton : MonoBehaviour
     }
     public void DisableButton()
     {
+        IsConditionUnavailable = true;
         ButtonKoraji.image.color = new Color(0.5f, 0.5f, 0.5f);
         ButtonKoraji.interactable = false;
     }
@@ -45,13 +49,20 @@ class ChoiceButton : MonoBehaviour
     }
     public void Clear()
     {
+        SetConditionAvailable();
+
+        if (text != null) text.text = "";
+        if (req != null) req.text = "";
+    }
+
+    private void SetConditionAvailable()
+    {
+        IsConditionUnavailable = false;
+
         if (ButtonKoraji != null)
         {
             ButtonKoraji.interactable = true;
             ButtonKoraji.image.color = Color.white;
         }
-
-        if (text != null) text.text = "";
-        if (req != null) req.text = "";
     }
 }

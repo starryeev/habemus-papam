@@ -238,6 +238,31 @@ public class PlotUI : MonoBehaviour
         buttonText.text = finalProgressText + $"<br><color=red><size=60%>{statusMessage}</size></color>";
     }
 
+    public bool IsConditionUnavailable(Button button)
+    {
+        PlotManager pm = PlotManager.Instance;
+        if (button == null || performer == null || pm == null ||
+            pm.AvailPlotSets == null || pm.AvailPlotSets.Length == 0 || pm.AvailPlotSets[0] == null)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < plotUseButtons.Length; i++)
+        {
+            if (plotUseButtons[i] != button)
+            {
+                continue;
+            }
+
+            PlotSet plotSet = pm.AvailPlotSets[0];
+            Plot plot = plotSet.plots[i];
+            return !plotSet.isUsed[i] && plot != null &&
+                   (!plot.IsEffectiveCostEnough(performer) || !pm.MeetsEffectiveInfluenceCondition(plot, performer));
+        }
+
+        return false;
+    }
+
     // 공작 UI 정보 리셋 함수
     public void ResetPlotUI()
     {

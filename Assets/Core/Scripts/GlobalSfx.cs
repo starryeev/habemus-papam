@@ -11,6 +11,7 @@ public sealed class GlobalSfx : MonoBehaviour
     private const string OnMouseSfxName = "OnMouse";
     private const string ButtonLightSfxName = "ButtonLight";
     private const string ButtonHeavySfxName = "ButtonHeavy";
+    private const string UnavailableSfxName = "25 인게임- 발동불가";
     private static readonly HashSet<string> selectionEffectButtonNames = new()
     {
         "GameStartBtn",
@@ -26,6 +27,7 @@ public sealed class GlobalSfx : MonoBehaviour
     private EventSystem pointerEventSystem;
     private PointerEventData pointerEventData;
     private Button hoveredButton;
+    private Button pointedButton;
 
     private void Awake()
     {
@@ -45,6 +47,7 @@ public sealed class GlobalSfx : MonoBehaviour
         if (sceneName != MainSceneName && sceneName != GameSceneName)
         {
             hoveredButton = null;
+            pointedButton = null;
             return;
         }
 
@@ -52,6 +55,7 @@ public sealed class GlobalSfx : MonoBehaviour
             CardinalManager.Instance.IsConclaveTransitionInProgress)
         {
             hoveredButton = null;
+            pointedButton = null;
             return;
         }
 
@@ -70,6 +74,7 @@ public sealed class GlobalSfx : MonoBehaviour
         if (eventSystem == null)
         {
             hoveredButton = null;
+            pointedButton = null;
             return;
         }
 
@@ -87,6 +92,7 @@ public sealed class GlobalSfx : MonoBehaviour
         Button currentButton = raycastResults.Count > 0
             ? raycastResults[0].gameObject.GetComponentInParent<Button>()
             : null;
+        pointedButton = currentButton;
 
         if (currentButton != null &&
             (!currentButton.isActiveAndEnabled || !currentButton.interactable))
@@ -131,11 +137,34 @@ public sealed class GlobalSfx : MonoBehaviour
 
     private void PlayClickSound(string sceneName)
     {
+        if (sceneName == GameSceneName && IsUnavailableAction(pointedButton))
+        {
+            SoundManager.Instance.PlaySFX(UnavailableSfxName);
+            return;
+        }
+
         string sfxName = GetClickSfxName(hoveredButton, sceneName);
         if (!string.IsNullOrEmpty(sfxName))
         {
             SoundManager.Instance.PlaySFX(sfxName);
         }
+    }
+
+    private static bool IsUnavailableAction(Button button)
+    {
+        if (button == null)
+        {
+            return false;
+        }
+
+        ChoiceButton choiceButton = button.GetComponentInParent<ChoiceButton>();
+        if (choiceButton != null && choiceButton.IsConditionUnavailable)
+        {
+            return true;
+        }
+
+        PlotUI plotUI = button.GetComponentInParent<PlotUI>();
+        return plotUI != null && plotUI.IsConditionUnavailable(button);
     }
 
     private static string GetClickSfxName(Button button, string sceneName)
