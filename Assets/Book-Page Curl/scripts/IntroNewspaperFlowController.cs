@@ -7,6 +7,8 @@ using UnityEngine.UI;
 public sealed class IntroNewspaperFlowController : MonoBehaviour
 {
     private const string GameSceneName = "GameScene";
+    private const string NewspaperSfxName = "12 컷신- 신문지";
+    private const string GameStartConfirmSfxName = "ButtonSpecial";
     private const string NextButtonName = "btn_next";
     private const string PreviousButtonName = "btn_prev";
     private const string ConfirmButtonName = "ConfirmBtn";
@@ -96,6 +98,8 @@ public sealed class IntroNewspaperFlowController : MonoBehaviour
         if (book.currentPage == NameInputPage && (inputNameUIController == null || !inputNameUIController.HasPlayerName))
             return;
 
+        SoundManager.Instance.PlaySFX(NewspaperSfxName);
+
         if (book.currentPage == GameStartConfirmPage)
         {
             ShowGameStartConfirmPopup();
@@ -110,6 +114,7 @@ public sealed class IntroNewspaperFlowController : MonoBehaviour
         if (isWaitingForGameSceneLoad || autoFlip == null || autoFlip.IsFlipping)
             return;
 
+        SoundManager.Instance.PlaySFX(NewspaperSfxName);
         autoFlip.FlipLeftPage();
     }
 
@@ -129,6 +134,7 @@ public sealed class IntroNewspaperFlowController : MonoBehaviour
         if (isWaitingForGameSceneLoad || autoFlip == null)
             return;
 
+        SoundManager.Instance.PlaySFX(GameStartConfirmSfxName);
         SetGameStartConfirmPopup(false);
         isWaitingForGameSceneLoad = true;
         RefreshNavigationButtons();
