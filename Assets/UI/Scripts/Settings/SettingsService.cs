@@ -5,6 +5,7 @@ public class SettingsService : MonoBehaviour
     private const string SettingsUIPrefabPath = "UI/SettingsUI";
 
     public static SettingsService Instance { get; private set; }
+    public bool IsInputCaptured => settingsUI != null && settingsUI.IsInputCaptured;
 
     private SettingsUI settingsUI;
 

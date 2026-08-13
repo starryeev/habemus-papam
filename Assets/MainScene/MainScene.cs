@@ -139,6 +139,11 @@ public class MainScene : MonoBehaviour
     {
         EnsureEventSystemNavigationDisabled();
         RefreshNavigation(false);
+        if (IsSettingsInputCaptured())
+        {
+            return;
+        }
+
         HandlePopeListPopupInput();
         HandleNavigationInput();
     }
@@ -945,13 +950,19 @@ public class MainScene : MonoBehaviour
 
     private bool IsNavigationBlocked()
     {
-        return IsPopupOpen(startGameWarningPopup)
+        return IsSettingsInputCaptured()
+            || IsPopupOpen(startGameWarningPopup)
             || IsPopupOpen(loadWarningPopup)
             || IsPopupOpen(loadPopup)
             || IsPopupOpen(selectNamePopup)
             || IsPopupOpen(dictPopup)
             || IsPopupOpen(resetDataPopup)
             || IsPopupOpen(popeListPopup);
+    }
+
+    private static bool IsSettingsInputCaptured()
+    {
+        return SettingsService.Instance != null && SettingsService.Instance.IsInputCaptured;
     }
 
     private static bool IsPopupOpen(GameObject popup)
