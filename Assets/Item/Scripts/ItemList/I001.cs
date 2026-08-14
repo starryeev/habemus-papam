@@ -23,7 +23,7 @@ public class I001 : Item
         usageType = ItemUsageType.Active;
 
         itemName = "묵직한 아령";
-        itemEffectDescription = "소지 시 기도로 체력을 회복할 수 없다. 사용 시 소지했던 턴 수만큼 체력을 회복한다.";
+        itemEffectDescription = "소지 중에는 기도로 <color=#5BD65B>체력</color>을 회복할 수 없다. 사용 시 보유했던 턴 수만큼 <color=#5BD65B>체력</color>을 회복한다.";
         healPerHeldTurn = 1;
     }
 

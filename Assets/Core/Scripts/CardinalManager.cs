@@ -136,6 +136,14 @@ public class CardinalManager : MonoBehaviour
             statsUI.HideForConclaveEntrance();
         }
 
+        TimeUI timeUI = UIManager.Instance != null && UIManager.Instance.Ingame != null
+            ? UIManager.Instance.Ingame.Time
+            : null;
+        if (timeUI != null)
+        {
+            timeUI.HideForConclaveEntrance();
+        }
+
         StartCoroutine(ResetAndEnterSequence());
         SoundManager.Instance.PlayBGM("DummyBGM", 1);
     }
@@ -235,6 +243,14 @@ public class CardinalManager : MonoBehaviour
         {
             statsUI.Initialize(cardinals);
             statsUI.FadeInAfterConclaveEntrance(1f);
+
+            TimeUI timeUI = UIManager.Instance != null && UIManager.Instance.Ingame != null
+                ? UIManager.Instance.Ingame.Time
+                : null;
+            if (timeUI != null)
+            {
+                timeUI.FadeInAfterConclaveEntrance(1f);
+            }
 
             InGameManager.Instance.StartTimer();
         }

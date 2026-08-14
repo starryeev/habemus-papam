@@ -17,9 +17,7 @@ MonoBehaviour:
   itemDescription: "\uC774 \uC794\uC5D0 \uBBF8\uC0AC\uB97C \uD560 \uB54C\uB9C8\uB2E4
     \uD0DC\uC591\uC8FC\uB97C \uD55C \uC794\uC529 \uB9C8\uC2E4 \uC218 \uC788\uB2E4.
     \uADF8\uAC83\uC774 \uBBF8\uC0AC\uB2C8\uAE4C! (\uB044\uB355)"
-  itemEffectDescription: "\uC774\uBC88 \uCF58\uD074\uB77C\uBCA0 \uB3D9\uC548 \uAE30\uB3C4
-    \uC2DC \uCCB4\uB825 \uD68C\uBCF5\uB7C9 5 \uAC10\uC18C, \uC5F0\uC124 \uC2DC \uC815\uCE58\uB825
-    \uD68C\uBCF5\uB7C9 5 \uC99D\uAC00"
+  itemEffectDescription: "이번 콘클라베 동안 기도 시 <color=#5BD65B>체력</color> 회복량에 <color=#FF4D4D>-1</color>, 연설 시 <color=#4488FF>정치력</color> 획득량에 <color=#66CCFF>+1</color>이 적용된다."
   itemImage: {fileID: -7100975165044134398, guid: fff5961c772d01f489e9d3b4de1f173f, type: 3}
   itemGrade: 0
   itemExpirationType: 0

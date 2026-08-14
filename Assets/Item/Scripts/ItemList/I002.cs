@@ -16,7 +16,7 @@ public class I002 : Item
 
         itemName = "나무지팡이";
         itemDescription = "걷기가 편해진다. 마음에 안 드는 사람을 위협할 수도 있다!";
-        itemEffectDescription = "획득 시 다음 턴 행동 횟수 1회 증가. 사용 시 체력이 가장 낮은 후보(NPC)의 체력 4 감소.";
+        itemEffectDescription = "획득 시 다음 턴 행동 횟수가 <color=#66CCFF>+1</color>회 증가한다. 사용 시 <color=#5BD65B>체력</color>이 가장 낮은 후보 NPC의 <color=#5BD65B>체력</color>을 <color=#FF4D4D>-4</color> 감소시킨다.";
 
         damageAmount = 4;
     }

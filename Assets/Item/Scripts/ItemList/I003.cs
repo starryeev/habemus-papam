@@ -16,7 +16,7 @@ public class I003 : Item
 
 
         itemName = "은으로 만든 성배";
-        itemEffectDescription = "이번 콘클라베 동안 기도 시 체력 회복량 5 감소, 연설 시 정치력 회복량 5 증가";
+        itemEffectDescription = "이번 콘클라베 동안 기도 시 <color=#5BD65B>체력</color> 회복량에 <color=#FF4D4D>-1</color>, 연설 시 <color=#4488FF>정치력</color> 획득량에 <color=#66CCFF>+1</color>이 적용된다.";
         itemDescription = "이 잔에 미사를 할 때마다 태양주를 한 잔씩 마실 수 있다. 그것이 미사니까! (끄덕)";
         
 

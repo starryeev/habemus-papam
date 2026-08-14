@@ -386,6 +386,11 @@ public class InGameManager : MonoBehaviour
 
     private void SpawnFieldItems()
     {
+        if (spawnChance <= 0f)
+        {
+            return;
+        }
+
         if (spawnPoints == null || spawnPoints.Count == 0)
         {
             return;
@@ -1330,6 +1335,14 @@ public class InGameManager : MonoBehaviour
             return;
         }
         StartNextTurnOrEndConclave();
+    }
+
+    public void DebugEndTurn()
+    {
+        if (!isTimeRunning || isConclaveExitInProgress || awaitingTurnEvent) return;
+
+        gameContext.CompleteRemainingActions();
+        ResolveCompletedTurn();
     }
 
     public void EndCurrentConclave()

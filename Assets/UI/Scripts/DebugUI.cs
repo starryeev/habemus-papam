@@ -3,14 +3,17 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class DebugEndingFlagController : MonoBehaviour
+public class DebugUI : MonoBehaviour
 {
     [SerializeField] private string endingSceneName = "EndingScene";
+    [SerializeField] private Item[] debugItems;
     private bool isHereticWarGameOverFlag;
     private Coroutine gameOverRoutine;
+    private GameObject itemPanel;
 
     private void Awake()
     {
+        ConfigureItemPanel();
         WireButtons();
     }
 
@@ -118,6 +121,63 @@ public class DebugEndingFlagController : MonoBehaviour
         AddClick("E32002_2_Flag", TriggerDiplomaticVictory);
         AddClick("GameOver", TriggerGameOver);
         AddClick("smoke_shell_Fail", TriggerSmokeBombFail);
+        AddClick("TurnEnd", EndTurn);
+        AddClick("ItemPanelOpen", OpenItemPanel);
+
+        if (debugItems == null)
+        {
+            return;
+        }
+
+        foreach (Item item in debugItems)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.itemID))
+            {
+                continue;
+            }
+
+            Item capturedItem = item;
+            AddClick($"ItemPanel/{capturedItem.itemID}", () => AddDebugItem(capturedItem));
+        }
+    }
+
+    private void ConfigureItemPanel()
+    {
+        Transform panelTransform = transform.Find("ItemPanel");
+        if (panelTransform == null)
+        {
+            Debug.LogWarning("[Debug UI] ItemPanel was not found.");
+            return;
+        }
+
+        itemPanel = panelTransform.gameObject;
+        itemPanel.SetActive(false);
+    }
+
+    private void OpenItemPanel()
+    {
+        if (itemPanel != null)
+        {
+            itemPanel.SetActive(true);
+        }
+    }
+
+    private void EndTurn()
+    {
+        if (InGameManager.Instance != null)
+        {
+            InGameManager.Instance.DebugEndTurn();
+        }
+    }
+
+    private void AddDebugItem(Item item)
+    {
+        if (item == null || InventoryManager.Instance == null)
+        {
+            return;
+        }
+
+        InventoryManager.Instance.AddItem(item);
     }
 
     private void AddClick(string buttonName, UnityEngine.Events.UnityAction action)
@@ -125,14 +185,14 @@ public class DebugEndingFlagController : MonoBehaviour
         Transform buttonTransform = transform.Find(buttonName);
         if (buttonTransform == null)
         {
-            Debug.LogWarning($"[Ending Debug] Button was not found: {buttonName}");
+            Debug.LogWarning($"[Debug UI] Button was not found: {buttonName}");
             return;
         }
 
         Button button = buttonTransform.GetComponent<Button>();
         if (button == null)
         {
-            Debug.LogWarning($"[Ending Debug] Button component was not found: {buttonName}");
+            Debug.LogWarning($"[Debug UI] Button component was not found: {buttonName}");
             return;
         }
 

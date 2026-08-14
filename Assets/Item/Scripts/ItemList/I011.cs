@@ -15,7 +15,7 @@ public class I011 : Item
         itemID = "I011";
         itemName = "교황청 비밀문서";
         itemDescription = "이걸 폭로해서 모두의 눈길을 돌리면 자연스럽게 교황 자리를 피할 수 있다!";
-        itemEffectDescription = "사용한 콘클라베 동안 연설 시 정치력 대신 체력과 경건함을 10씩 회복";
+        itemEffectDescription = "사용한 콘클라베 동안 연설의 <color=#4488FF>정치력</color> 변화량을 <color=#FF4D4D>0</color>으로 만들고, <color=#5BD65B>체력</color>과 <color=#FFD84D>경건함</color>을 각각 <color=#66CCFF>+1</color> 회복한다.";
 
         itemGrade = ItemGrade.Rare; // 고급
         itemExpirationType = ItemExpirationType.Conclave; // 콘클라베 종료 시 소멸

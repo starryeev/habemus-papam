@@ -440,6 +440,11 @@ public class SaveManager : MonoBehaviour
         {
             CardinalManager.Instance.StatsUI.Initialize(CardinalManager.Instance.Cardinals);
             CardinalManager.Instance.StatsUI.FadeInAfterConclaveEntrance(1f);
+
+            if (timeUI != null)
+            {
+                timeUI.FadeInAfterConclaveEntrance(1f);
+            }
         }
     }
 

@@ -12,7 +12,7 @@ public class I010 : Item
         itemID = "I010";
         itemName = "교황청 주보";
         itemDescription = "교회의 동향을 파악해 교황 자리를 한 발 빠르게 피한다.";
-        itemEffectDescription = "연설 시 정치력 회복량 최소로 고정, 대신 경건함을 5씩 회복";
+        itemEffectDescription = "연설 시 <color=#4488FF>정치력</color> 변화량을 <color=#66CCFF>+1</color>로 고정하고 <color=#FFD84D>경건함</color>을 <color=#66CCFF>+1</color> 회복한다.";
 
         itemGrade = ItemGrade.Common;
         itemExpirationType = ItemExpirationType.Day; 

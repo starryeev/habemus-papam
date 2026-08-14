@@ -20,7 +20,7 @@ public class I006 : Item
 
         itemName = "최고급 태양주";
         itemDescription = "최고급 이탈리아 포도를 발효한 후 수도원 지하에서 다섯 번 증류한 화끈한 술.";
-        itemEffectDescription = "오늘 기도 시 체력 회복량 두 배";
+        itemEffectDescription = "사용한 날 동안 기도 시 <color=#5BD65B>체력</color>을 <color=#66CCFF>+1</color> 추가 회복한다.";
 
         prayerBonusHp = 1;
     }

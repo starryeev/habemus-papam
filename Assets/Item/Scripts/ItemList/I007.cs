@@ -24,7 +24,7 @@ public class I007 : Item
 
         itemName = "태양의 은총";
         itemDescription = "은으로 만든 총이다. 발사 기능은 없지만 뇌물로서의 가치는 뛰어나다.";
-        itemEffectDescription = "오늘 공작 시 정치력 20 증가, 내일 0으로 초기화";
+        itemEffectDescription = "오늘 처음 실행한 공작으로 <color=#4488FF>정치력</color>을 <color=#66CCFF>+2</color> 추가 획득한다. 효과가 발동했다면 하루가 끝날 때 <color=#4488FF>정치력</color>이 <color=#FF4D4D>0</color>으로 초기화된다.";
 
         plotInfluenceBonus = 2f;
     }

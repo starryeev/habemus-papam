@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -29,6 +30,13 @@ public class TimeUI : MonoBehaviour
     [Header("이미지")]
     [SerializeField] List<Sprite> LightList;
 
+    private CanvasGroup canvasGroup;
+    private Coroutine alphaCoroutine;
+
+    private void Awake()
+    {
+        HideForConclaveEntrance();
+    }
 
     void Start()
     {
@@ -93,6 +101,62 @@ public class TimeUI : MonoBehaviour
         Morning.sprite = LightList[0];
         Afternoon.sprite = LightList[0];
         Evening.sprite = LightList[0];
+    }
+
+    public void HideForConclaveEntrance()
+    {
+        EnsureCanvasGroup();
+        if (alphaCoroutine != null)
+        {
+            StopCoroutine(alphaCoroutine);
+            alphaCoroutine = null;
+        }
+
+        canvasGroup.alpha = 0f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+    }
+
+    public void FadeInAfterConclaveEntrance(float duration = 1f)
+    {
+        EnsureCanvasGroup();
+        if (alphaCoroutine != null)
+        {
+            StopCoroutine(alphaCoroutine);
+        }
+
+        alphaCoroutine = StartCoroutine(FadeCanvasAlpha(1f, duration));
+    }
+
+    private void EnsureCanvasGroup()
+    {
+        if (canvasGroup == null)
+        {
+            canvasGroup = GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+            {
+                canvasGroup = gameObject.AddComponent<CanvasGroup>();
+            }
+        }
+    }
+
+    private IEnumerator FadeCanvasAlpha(float targetAlpha, float duration)
+    {
+        float startAlpha = canvasGroup.alpha;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float progress = duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration);
+            canvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, progress);
+            yield return null;
+        }
+
+        canvasGroup.alpha = targetAlpha;
+        canvasGroup.interactable = targetAlpha > 0f;
+        canvasGroup.blocksRaycasts = targetAlpha > 0f;
+        alphaCoroutine = null;
     }
 
     
