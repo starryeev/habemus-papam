@@ -7,13 +7,26 @@ public class ItemSlotUI : MonoBehaviour
     [SerializeField] private Button slotButton;
 
     private Item currentItem;
-    private InventoryUI inventoryUI; 
+    private InventoryUI inventoryUI;
+    private Image _slotBackgroundImage;
+    private Sprite _defaultSlotSprite;
+    private Sprite _emptySlotSprite;
+    private Sprite _filledSlotSprite;
 
-    public void Setup(InventoryUI ui)
+    public void Setup(InventoryUI ui, Sprite emptySlotSprite, Sprite filledSlotSprite)
     {
         inventoryUI = ui;
+        _slotBackgroundImage = slotButton.targetGraphic as Image;
+        _defaultSlotSprite = _slotBackgroundImage != null ? _slotBackgroundImage.sprite : null;
+        _emptySlotSprite = emptySlotSprite;
+        _filledSlotSprite = filledSlotSprite;
+
+        ColorBlock colors = slotButton.colors;
+        colors.disabledColor = Color.white;
+        slotButton.colors = colors;
+
         slotButton.onClick.AddListener(OnSlotClicked);
-        ClearSlot(); 
+        ClearSlot();
     }
 
     public void SetItem(Item item)
@@ -21,9 +34,11 @@ public class ItemSlotUI : MonoBehaviour
         currentItem = item;
         if (item != null)
         {
+            ApplySlotBackground(_filledSlotSprite);
             iconImage.sprite = item.itemImage;
+            iconImage.preserveAspect = true;
             iconImage.gameObject.SetActive(true);
-            slotButton.interactable = true; 
+            slotButton.interactable = true;
         }
         else
         {
@@ -34,9 +49,18 @@ public class ItemSlotUI : MonoBehaviour
     public void ClearSlot()
     {
         currentItem = null;
+        ApplySlotBackground(_emptySlotSprite);
         iconImage.sprite = null;
-        iconImage.gameObject.SetActive(false); 
-        slotButton.interactable = false; 
+        iconImage.gameObject.SetActive(false);
+        slotButton.interactable = false;
+    }
+
+    private void ApplySlotBackground(Sprite targetSprite)
+    {
+        if (_slotBackgroundImage != null)
+        {
+            _slotBackgroundImage.sprite = targetSprite != null ? targetSprite : _defaultSlotSprite;
+        }
     }
 
     private void OnSlotClicked()
