@@ -47,6 +47,11 @@ public class I009 : Item
         Debug.Log($"[아이템 효과] 게르마늄 팔찌: 경건함 {beforePiety} -> {owner.Piety}");
     }
 
+    public override float PreviewPrayerPiety(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta + pietyBonus;
+    }
+
     public override bool OnHpReachedZero(Cardinal owner)
     {
         if (!hasUsedRevive)

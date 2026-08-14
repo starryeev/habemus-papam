@@ -64,4 +64,29 @@ public abstract class Item : ScriptableObject
     {
         return originalDelta;
     }
+
+    public virtual float PreviewPrayerPiety(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta;
+    }
+
+    public virtual float PreviewPrayerHp(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta;
+    }
+
+    public virtual float PreviewSpeechInfluence(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta;
+    }
+
+    public virtual float PreviewSpeechInfluenceAfterAction(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta;
+    }
+
+    public virtual float PreviewSpeechHp(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta;
+    }
 }

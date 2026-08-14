@@ -40,6 +40,11 @@ public class I006 : Item
         Debug.Log($"[버프 효과] 최고급 태양주의 기운! 기도 추가 회복: +{prayerBonusHp}");
     }
 
+    public override float PreviewPrayerHp(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta + prayerBonusHp;
+    }
+
     private Cardinal FindPlayer()
     {
         if (InventoryManager.Instance != null) return InventoryManager.Instance.Player;

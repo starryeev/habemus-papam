@@ -39,6 +39,16 @@ public class I011 : Item
         return 0f;
     }
 
+    public override float PreviewSpeechInfluence(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return 0f;
+    }
+
+    public override float PreviewSpeechHp(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta + healAmount;
+    }
+
     // 3. 가상 인벤토리(버프)에 있는 동안: 연설이 끝난 직후 체력과 경건함 회복
     public override void OnSpeech(Cardinal owner)
     {

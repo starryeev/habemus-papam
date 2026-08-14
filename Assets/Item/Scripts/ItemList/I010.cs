@@ -30,6 +30,11 @@ public class I010 : Item
         return fixedInfluence;
     }
 
+    public override float PreviewSpeechInfluence(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return balance.SpeechSuccessDeltaInfluenceMin;
+    }
+
     public override void OnSpeech(Cardinal owner)
     {
         float beforePiety = owner.Piety;

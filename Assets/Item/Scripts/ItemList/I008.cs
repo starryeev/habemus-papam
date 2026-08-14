@@ -29,4 +29,9 @@ public class I008 : Item
 
         Debug.Log($"[아이템 효과 발동] 태양 팔찌: 경건함 {beforePiety} -> {owner.Piety} (변화량: +{pietyBonus})");
     }
+
+    public override float PreviewPrayerPiety(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta + pietyBonus;
+    }
 }

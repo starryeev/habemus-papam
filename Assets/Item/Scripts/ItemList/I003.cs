@@ -41,4 +41,14 @@ public class I003 : Item
 
         //Debug.Log($"[아이템 효과 발동] 연설: 정치력 {beforeInf} -> {owner.Influence} (변화량: {influenceDelta})");
     }
+
+    public override float PreviewPrayerHp(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta + hpDelta;
+    }
+
+    public override float PreviewSpeechInfluenceAfterAction(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta + influenceDelta;
+    }
 }

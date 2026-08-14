@@ -422,6 +422,62 @@ public class Cardinal : MonoBehaviour
         items.Clear();
     }
 
+    public void GetPrayerDeltaPreview(GameBalance balance, bool isSuccess, out float pietyDelta, out float hpDelta)
+    {
+        if (balance == null)
+        {
+            pietyDelta = 0f;
+            hpDelta = 0f;
+            return;
+        }
+
+        pietyDelta = isSuccess ? balance.PraySuccessDeltaPiety : balance.PrayFailDeltaPiety;
+        hpDelta = isSuccess ? balance.PraySuccessDeltaHp : balance.PrayFailDeltaHp;
+
+        foreach (Item item in items)
+        {
+            if (item == null) continue;
+            pietyDelta = item.PreviewPrayerPiety(pietyDelta, balance, isSuccess);
+            hpDelta = item.PreviewPrayerHp(hpDelta, balance, isSuccess);
+        }
+
+        if (hpDelta > 0f && items.Exists(item => item is I001))
+        {
+            hpDelta = 0f;
+        }
+    }
+
+    public void GetSpeechDeltaPreview(
+        GameBalance balance,
+        bool isSuccess,
+        float baseInfluenceDelta,
+        out float influenceDelta,
+        out float hpDelta)
+    {
+        if (balance == null)
+        {
+            influenceDelta = 0f;
+            hpDelta = 0f;
+            return;
+        }
+
+        influenceDelta = baseInfluenceDelta;
+        hpDelta = isSuccess ? balance.SpeechSuccessDeltaHp : balance.SpeechFailDeltaHp;
+
+        foreach (Item item in items)
+        {
+            if (item == null) continue;
+            influenceDelta = item.PreviewSpeechInfluence(influenceDelta, balance, isSuccess);
+            hpDelta = item.PreviewSpeechHp(hpDelta, balance, isSuccess);
+        }
+
+        foreach (Item item in items)
+        {
+            if (item == null) continue;
+            influenceDelta = item.PreviewSpeechInfluenceAfterAction(influenceDelta, balance, isSuccess);
+        }
+    }
+
     public void Pray()
     {
         if (InGameManager.Instance == null || !InGameManager.Instance.CanPerformPlayerAction(this))
