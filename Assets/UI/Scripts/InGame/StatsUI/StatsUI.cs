@@ -96,7 +96,11 @@ public class StatsUI : MonoBehaviour
                 .Replace("(랜덤 후보)", randomName)
                 .Replace("(랜덤) 후보", randomName)
                 .Replace("(후보 n)", randomName)
-                .Replace("(후보n)", randomName);
+                .Replace("(후보n)", randomName)
+                .Replace("랜덤후보", randomName)
+                .Replace("랜덤 후보", randomName)
+                .Replace("후보 n", randomName)
+                .Replace("후보n", randomName);
         }
 
         string candidate1 = GetDisplayName(1);
@@ -125,6 +129,24 @@ public class StatsUI : MonoBehaviour
                 .Replace($"후보 {candidateNumber}", displayName)
                 .Replace($"후보{candidateNumber}", displayName);
         }
+
+#if UNITY_EDITOR
+        if (!string.IsNullOrEmpty(randomName) &&
+            !string.IsNullOrEmpty(candidate1) &&
+            !string.IsNullOrEmpty(candidate2) &&
+            !string.IsNullOrEmpty(candidate3))
+        {
+            Debug.Assert(
+                !resolved.Contains("후보 n") &&
+                !resolved.Contains("후보n") &&
+                !resolved.Contains("랜덤후보") &&
+                !resolved.Contains("랜덤 후보") &&
+                !resolved.Contains("(후보 1)") &&
+                !resolved.Contains("(후보 2)") &&
+                !resolved.Contains("(후보 3)"),
+                $"이벤트 후보 이름 치환에 실패했습니다: {resolved}");
+        }
+#endif
 
         return resolved;
     }
