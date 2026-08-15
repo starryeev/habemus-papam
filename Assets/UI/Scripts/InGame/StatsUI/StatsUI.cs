@@ -49,6 +49,74 @@ public class StatsUI : MonoBehaviour
         return Array.IndexOf(linkedCardinals, candidate);
     }
 
+    public string GetDisplayName(int linkedIndex)
+    {
+        if (linkedIndex < 0 || linkedIndex >= linkedCardinals.Length)
+        {
+            return string.Empty;
+        }
+
+        GameNameSaveData names = SaveManager.Instance != null
+            ? SaveManager.Instance.CurrentGameNames
+            : null;
+
+        if (names != null)
+        {
+            if (linkedIndex == 0 && !string.IsNullOrWhiteSpace(names.playerName))
+            {
+                return names.playerName;
+            }
+
+            int npcIndex = linkedIndex - 1;
+            if (npcIndex >= 0 && names.npcNames != null &&
+                npcIndex < names.npcNames.Count &&
+                !string.IsNullOrWhiteSpace(names.npcNames[npcIndex]))
+            {
+                return names.npcNames[npcIndex];
+            }
+        }
+
+        Cardinal cardinal = linkedCardinals[linkedIndex];
+        return cardinal != null ? cardinal.name : string.Empty;
+    }
+
+    public string ResolveCandidateNames(string source, int randomCandidateNumber)
+    {
+        if (string.IsNullOrEmpty(source))
+        {
+            return source;
+        }
+
+        string resolved = source;
+        string randomName = GetDisplayName(randomCandidateNumber);
+        if (!string.IsNullOrEmpty(randomName))
+        {
+            resolved = resolved
+                .Replace("(랜덤후보)", randomName)
+                .Replace("(랜덤 후보)", randomName)
+                .Replace("(랜덤) 후보", randomName)
+                .Replace("(후보 n)", randomName)
+                .Replace("(후보n)", randomName);
+        }
+
+        for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+        {
+            string displayName = GetDisplayName(candidateNumber);
+            if (string.IsNullOrEmpty(displayName))
+            {
+                continue;
+            }
+
+            resolved = resolved
+                .Replace($"(후보 {candidateNumber})", displayName)
+                .Replace($"(후보{candidateNumber})", displayName)
+                .Replace($"후보 {candidateNumber}", displayName)
+                .Replace($"후보{candidateNumber}", displayName);
+        }
+
+        return resolved;
+    }
+
     public void HideForConclaveEntrance()
     {
         EnsureCanvasGroup();
@@ -149,33 +217,17 @@ public class StatsUI : MonoBehaviour
 
     public void ApplySavedNames()
     {
-        if (SaveManager.Instance == null || StatsList == null)
+        if (StatsList == null)
         {
             return;
         }
 
-        GameNameSaveData names = SaveManager.Instance.CurrentGameNames;
-        if (names == null)
+        for (int i = 0; i < StatsList.Length; i++)
         {
-            return;
-        }
-
-        if (StatsList.Length > 0 && StatsList[0] != null)
-        {
-            StatsList[0].SetName(names.playerName);
-        }
-
-        if (names.npcNames == null)
-        {
-            return;
-        }
-
-        for (int i = 1; i < StatsList.Length; i++)
-        {
-            int npcIndex = i - 1;
-            if (StatsList[i] != null && npcIndex < names.npcNames.Count)
+            string displayName = GetDisplayName(i);
+            if (StatsList[i] != null && !string.IsNullOrEmpty(displayName))
             {
-                StatsList[i].SetName(names.npcNames[npcIndex]);
+                StatsList[i].SetName(displayName);
             }
         }
     }
