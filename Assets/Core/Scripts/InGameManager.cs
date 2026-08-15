@@ -69,15 +69,20 @@ public class GameContext
         ResetTurns();
     }
 
-    public void RestoreState(int day, Conclave conclave, int restoredTurn, int restoredCompletedActions,
+    public void RestoreState(int day, Conclave conclave, int restoredCompletedActions,
         int restoredActionsThisTurn, bool restoredEventPhase, int positionProgressVersion)
     {
         currentDay = day;
         currentConclave = conclave;
         currentTurn = (int)currentConclave + 1;
-        actionsThisTurn = Mathf.Max(0, restoredActionsThisTurn);
-        int maxRestoredProgress = positionProgressVersion > 0 ? TriggerSpan : actionsThisTurn;
-        completedActions = Mathf.Clamp(restoredCompletedActions, 0, maxRestoredProgress);
+        bool usedOneActionPerPosition = positionProgressVersion == 1;
+        actionsThisTurn = Mathf.Max(0, usedOneActionPerPosition
+            ? restoredActionsThisTurn * ActionsPerPosition
+            : restoredActionsThisTurn);
+        int restoredProgress = usedOneActionPerPosition
+            ? restoredCompletedActions * ActionsPerPosition
+            : restoredCompletedActions;
+        completedActions = Mathf.Clamp(restoredProgress, 0, TotalActionSlots);
         isEventPhase = restoredEventPhase;
     }
 
@@ -147,6 +152,38 @@ public class GameContext
     public void SetEvent(Event evt)
     {
         currentEvent = evt;
+    }
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    public static void ValidateActionRules()
+    {
+        GameContext test = new GameContext
+        {
+            currentConclave = Conclave.Dawn,
+            currentTurn = 1,
+            completedActions = 0,
+            actionsThisTurn = BasePlayerActions
+        };
+
+        Debug.Assert(test.TriggerSpan == 4 && test.CurrentActionPosition == 1,
+            "기본 행동 위치 규칙이 손상됐습니다.");
+        test.CompleteAction();
+        Debug.Assert(test.CurrentActionPosition == 1 && !test.IsAtActionPositionStart,
+            "첫 행동 후 같은 Y를 유지하지 않습니다.");
+        test.CompleteAction();
+        Debug.Assert(test.CurrentActionPosition == 2 && test.IsAtActionPositionStart,
+            "두 행동 후 다음 Y로 이동하지 않습니다.");
+
+        test.actionsThisTurn = BasePlayerActions + 1;
+        test.completedActions = BasePlayerActions;
+        Debug.Assert(test.TriggerSpan == 5 && test.CurrentActionPosition == 5 && test.CanPlayerAct(),
+            "홀수 행동 증가 규칙이 손상됐습니다.");
+
+        test.actionsThisTurn = BasePlayerActions - 2;
+        test.completedActions = BasePlayerActions - 2;
+        Debug.Assert(test.CurrentActionPosition == 4 && !test.CanPlayerAct() &&
+            test.CompleteUnavailablePosition() && test.AreActionsComplete(),
+            "행동 감소 위치 검사 규칙이 손상됐습니다.");
     }
 
     private void ResetTurns()
@@ -225,6 +262,7 @@ public class InGameManager : MonoBehaviour
 
         Instance = this;
 
+        GameContext.ValidateActionRules();
         gameContext = new GameContext();
         gameContext.OnGameContextEvent += HandleGameContextEvent;
 
@@ -569,7 +607,7 @@ public class InGameManager : MonoBehaviour
             currentTurn = gameContext.CurrentTurn,
             completedActions = gameContext.CompletedActions,
             actionsThisTurn = gameContext.ActionsThisTurn,
-            positionProgressVersion = 1,
+            positionProgressVersion = 2,
             isEventPhase = gameContext.IsEventPhase,
             nextTurnActionModifier = nextTurnActionModifier,
             blockNextTurn = blockNextTurn,
@@ -621,7 +659,7 @@ public class InGameManager : MonoBehaviour
 
         GameContext.Conclave conclave = (GameContext.Conclave)Mathf.Clamp(saveData.conclave, 0, Enum.GetValues(typeof(GameContext.Conclave)).Length - 1);
 
-        gameContext.RestoreState(saveData.day, conclave, saveData.currentTurn, saveData.completedActions,
+        gameContext.RestoreState(saveData.day, conclave, saveData.completedActions,
             saveData.actionsThisTurn, saveData.isEventPhase, saveData.positionProgressVersion);
         isTimeRunning = saveData.isTimeRunning;
         isFirstStart = saveData.isFirstStart;

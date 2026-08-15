@@ -256,7 +256,7 @@ public class GameContextSaveData
     public int conclave;
     public int currentTurn = 1;
     public int completedActions;
-    public int actionsThisTurn = 4;
+    public int actionsThisTurn = 8;
     public int positionProgressVersion;
     public bool isEventPhase;
     public int nextTurnActionModifier;

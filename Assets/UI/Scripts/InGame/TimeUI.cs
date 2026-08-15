@@ -94,7 +94,9 @@ public class TimeUI : MonoBehaviour
 
     public void EndConclaveUI()
     {
-        RightText2.text = "Turn 4-4";
+        int turn = InGameManager.Instance != null ? InGameManager.Instance.GetCurrentTurn() : 4;
+        int phase = InGameManager.Instance != null ? InGameManager.Instance.GetCurrentTurnPhase() : 4;
+        RightText2.text = $"Turn {turn}-{phase}";
         ClockHand.transform.rotation = Quaternion.identity;
 
         Dawn.sprite = LightList[0];

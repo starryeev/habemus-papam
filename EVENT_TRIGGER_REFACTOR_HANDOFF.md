@@ -23,66 +23,67 @@ Day + Conclave + Turn(x) + ActionPosition(y)
 ```
 
 - `Day`: 별도로 존재하는 일차.
-- `Conclave`: 각 Day 안의 `Dawn`, `Morning`, `Afternoon`, `Evening`이다.
-- `x`: 각 Conclave 안의 `CurrentTurn`이다.
+- `Conclave`: 각 Day 안의 `Dawn`, `Morning`, `Evening`, `Night`이다.
+- `x`: Conclave와 1:1로 대응하는 `CurrentTurn`이다.
 - `y`: 각 Turn 안의 행동 위치다.
-- 현재 코드의 `Day > Conclave > Turn > Action` 계층을 유지한다.
+- `Dawn=1`, `Morning=2`, `Evening=3`, `Night=4` 불변식을 유지한다.
 - UI 표기는 현재 형식인 `Turn x-y`를 유지한다.
 
-각 Conclave 안의 기본 진행은 다음과 같다.
+각 Day의 기본 진행은 다음과 같다.
 
 ```text
-1-1 → 1-2 → 1-3 → 1-4
-2-1 → 2-2 → 2-3 → 2-4
-3-1 → 3-2 → 3-3 → 3-4
-4-1 → 4-2 → 4-3 → 4-4
-→ 다음 Conclave의 1-1
+Dawn:   1-1 → 1-2 → 1-3 → 1-4
+Morning: 2-1 → 2-2 → 2-3 → 2-4
+Evening: 3-1 → 3-2 → 3-3 → 3-4
+Night:   4-1 → 4-2 → 4-3 → 4-4
+→ 다음 Day의 Dawn 1-1
 ```
 
-마지막 `Evening 4-4`가 끝나면 다음 Day의 `Dawn 1-1`로 이동한다. `GameContext.Conclave`의 `Dawn`, `Morning`, `Afternoon`, `Evening` 명칭과 순서는 변경하지 않는다.
+각 X의 마지막 Y가 끝나면 기존 Conclave 종료/선거/초밥 흐름을 실행한다. 마지막 `Night 4-(끝)`가 끝나면 다음 Day의 `Dawn 1-1`로 이동한다.
 
 ### 2.2 기본 행동 수와 증감
 
-- 각 Turn의 기본 플레이어 행동 수는 4회다.
-- 행동 증가 `+1`이면 해당 Turn이 `x-5`까지 확장된다.
-- 행동 감소 `-1`이면 플레이어가 실제로 행동할 수 있는 위치는 `x-3`까지다.
-- 행동 감소 상태에서도 기준 위치 `x-4`까지 시간은 진행한다.
-- `x-4`에서는 이벤트 조건을 정상적으로 검사한다.
-- 행동 가능 횟수를 넘은 위치는 플레이어 행동을 받지 않고 이벤트 처리 후 즉시 다음 Turn으로 넘어간다.
+- 각 X의 기본 Y는 4개이며, 각 Y에서 플레이어 행동을 2회 수행한다.
+- 기본 플레이어 행동 수는 8회다.
+- 행동 증가 `+1`이면 `x-5`에 행동 1회, `+2`면 `x-5`에 행동 2회가 생긴다.
+- 행동 감소 `-1`이면 `x-4`에서 행동 1회, `-2`면 `x-4`는 이벤트만 검사한다.
+- 행동 가능 횟수를 넘은 위치는 플레이어 행동을 받지 않고 이벤트 처리 후 다음 Y로 넘어간다.
 - 행동이 완전히 차단된 경우에도 `x-1~x-4` 이벤트 검사는 생략하지 않는다.
 
 현재 위치에서 검사해야 하는 마지막 `y`는 다음과 같다.
 
 ```text
-TriggerSpan = max(4, ActionsThisTurn)
+TriggerSpan = max(4, ceil(ActionsThisTurn / 2))
 ```
 
 행동 가능 여부는 별도로 판단한다.
 
 ```text
-CanPlayerAct = ActionPosition <= ActionsThisTurn
+CanPlayerAct = CompletedActionSlots < ActionsThisTurn
 ```
 
-`CompletedActions`는 새 상태를 추가하지 않고 "현재 Turn에서 처리 완료한 위치 수"로 통일한다.
+`CompletedActions`는 새 상태를 추가하지 않고 "현재 X에서 처리 완료한 행동 슬롯 수"로 사용한다.
 
 ```text
-CurrentActionPosition = CompletedActions + 1
+CurrentActionPosition = CompletedActions / 2 + 1
 ```
 
-- 플레이어가 행동한 위치는 행동 완료 후 `CompletedActions`를 증가시킨다.
-- 행동 감소/차단으로 플레이어 행동이 없는 위치도 이벤트 처리가 끝나면 `CompletedActions`를 증가시킨다.
-- `CompletedActions`의 최대 복원값은 `ActionsThisTurn`이 아니라 `TriggerSpan`이다.
+- 플레이어 행동 한 번마다 `CompletedActions`를 1 증가시킨다.
+- 짝수 슬롯에서만 새 Y 이벤트를 검사한다.
+- 행동 감소/차단으로 행동이 없는 Y는 이벤트 처리 후 다음 Y 시작 슬롯으로 이동한다.
+- 완료 기준은 `TriggerSpan * 2` 슬롯이다.
 
 예시:
 
 ```text
-기본: 2-1, 2-2, 2-3, 2-4에서 이벤트 검사와 플레이어 행동
-+1:   2-1~2-5에서 이벤트 검사와 플레이어 행동
--1:   2-1~2-3에서 이벤트 검사와 플레이어 행동
-      2-4에서 이벤트만 검사한 뒤 3-1로 자동 이동
+기본 8: 2-1~2-4에서 각 2회 행동
++1 = 9: 2-5에서 이벤트 검사 후 1회 행동
++2 = 10: 2-5에서 이벤트 검사 후 2회 행동
+-1 = 7: 2-4에서 이벤트 검사 후 1회 행동
+-2 = 6: 2-4에서 이벤트만 검사
 ```
 
-NPC 행동은 현재 고정 배열과 기존 2회 행동 의미를 유지하는 안을 우선한다. `y >= 3`에서는 `npcTurnBehaviours`와 `npcTurnActionsExecuted`에 접근하지 않아 P022의 `+2`로 `x-6`까지 확장돼도 배열 범위를 넘지 않게 한다. 최종 적용 여부는 Q1에서 확인한다.
+NPC는 현재 고정 배열과 기존 2회 행동 의미를 유지한다. 현재 X의 첫 두 플레이어 행동에서만 NPC 배열 인덱스 0, 1을 사용하고 이후 슬롯에서는 배열에 접근하지 않는다.
 
 ### 2.3 이벤트와 플레이어 행동의 순서
 
@@ -93,26 +94,27 @@ NPC 행동은 현재 고정 배열과 기존 2회 행동 의미를 유지하는 
 → 해당 위치 이벤트 조건 검사
 → 이벤트가 있으면 이벤트 실행
 → 연속 대기 이벤트가 있으면 모두 실행
-→ 게임이 계속되고 해당 위치에서 행동 가능하면 같은 위치의 플레이어 행동 진행
-→ 행동 완료 후 다음 행동 위치로 이동
+→ 게임이 계속되고 해당 위치에서 행동 가능하면 같은 위치의 첫 번째 행동 진행
+→ 같은 x-y를 유지한 채 두 번째 행동 진행
+→ 두 번째 행동 완료 후 다음 행동 위치로 이동
 ```
 
 예시:
 
 ```text
-2-3 플레이어 행동 완료
+2-3 두 번째 플레이어 행동 완료
 → 2-4 진입
 → 2-4 이벤트 발생 및 종료
-→ 2-4 플레이어 행동 진행
-→ 행동 완료
-→ 3-1 진입
+→ 2-4 플레이어 행동 2회 진행
+→ 현재 Conclave 종료
+→ Evening 3-1 진입
 ```
 
 예외:
 
-- 행동 감소로 `2-4`가 행동 불가 위치라면 이벤트 종료 후 플레이어 행동 없이 `3-1`로 이동한다.
+- 행동 감소로 `2-4`가 행동 불가 위치라면 이벤트 종료 후 플레이어 행동 없이 현재 Conclave를 종료하고 `3-1`로 이동한다.
 - 이벤트 선택 결과로 엔딩이나 Turn/Conclave 강제 종료가 발생하면 같은 위치의 남은 플레이어 행동을 실행하지 않는다.
-- `E11100 → E11200`처럼 같은 위치의 연속 이벤트는 모두 끝난 뒤 한 번만 플레이어 행동으로 복귀한다.
+- `E11100 → E11200`처럼 같은 위치의 연속 이벤트는 모두 끝난 뒤 해당 Y의 첫 번째 플레이어 행동으로 복귀한다.
 
 ## 3. 현재 코드와 목표 모델의 차이
 
@@ -125,18 +127,18 @@ NPC 행동은 현재 고정 배열과 기존 2회 행동 의미를 유지하는 
 - `ActionsThisTurn`
 - `IsEventPhase`
 
-현재 구현은 한 Conclave 안에서 `CurrentTurn`이 1~4로 진행되고 각 Turn마다 기본 행동을 2회 수행한 뒤 이벤트 단계로 들어간다. 이 시간 계층과 저장 구조는 유지하되, 기본 행동 수와 이벤트 검사 시점만 변경한다.
+현재 구현은 Conclave와 `CurrentTurn`을 1:1로 동기화하고 각 Y마다 행동 슬롯 2개를 처리한다.
 
 목표 상태:
 
 - `CurrentDay`
-- `CurrentConclave`: `Dawn`, `Morning`, `Afternoon`, `Evening`
-- `CurrentTurn`: UI의 `x`
-- `CompletedActions`: 현재 행동 진행값
-- `ActionsThisTurn`: 현재 Turn에서 실제로 가능한 플레이어 행동 수
+- `CurrentConclave`: `Dawn`, `Morning`, `Evening`, `Night`
+- `CurrentTurn`: Conclave에 대응하는 UI의 `x`
+- `CompletedActions`: 현재 X에서 처리한 행동 슬롯 수
+- `ActionsThisTurn`: 현재 X에서 실제로 가능한 플레이어 행동 수, 기본 8
 - `IsEventPhase`
 
-`ActionPosition(y)`는 `CompletedActions + 1`로 계산한다. `CompletedActions`의 의미를 플레이어 행동 완료 수에서 처리 완료 위치 수로 변경하므로 별도 `CurrentActionPosition` 상태는 추가하지 않는다.
+`ActionPosition(y)`는 `CompletedActions / 2 + 1`로 계산한다. 별도 `CurrentActionPosition` 상태는 추가하지 않는다.
 
 현재 `DisplayPhase`의 1~2/이벤트 3 표시는 제거한다.
 
@@ -325,12 +327,12 @@ E50000~E50600
 트리거 위치 판정 규칙:
 
 - `Day n, x-y`로 지정된 이벤트는 `CurrentDay == n`, `CurrentTurn == x`, `ActionPosition == y`를 검사한다.
-- Conclave가 별도로 지정되지 않은 규칙은 해당 Day의 `Dawn`, `Morning`, `Afternoon`, `Evening` 모두에서 같은 `x-y`를 검사한다.
-- Day가 명시되지 않은 `x-y` 규칙은 모든 Day와 모든 Conclave에서 같은 `x-y`를 검사한다.
+- Conclave가 별도로 지정되지 않은 규칙은 X와 동기화된 해당 시간대에서 `x-y`를 검사한다.
+- Day가 명시되지 않은 `x-y` 규칙은 모든 Day의 X와 대응하는 Conclave에서 검사한다.
 - 이벤트가 이미 발생했다면 위치가 다시 일치해도 후보에서 제외한다.
 - 확률형 이벤트가 실패했다면 다음 유효 위치에서 다시 추첨한다.
 
-예를 들어 `Day 1, 3-2`는 Day 1의 각 Conclave에서 `Turn 3, Action 2`에 도달할 때 조건을 검사한다. 이미 이벤트가 발생했다면 이후 Conclave에서는 검사 결과가 비활성화된다.
+예를 들어 `Day 1, 3-2`는 Day 1의 `Evening`, 즉 X=3의 Y=2에 처음 진입할 때 한 번 조건을 검사한다.
 
 ### 6.1 튜토리얼
 
@@ -539,19 +541,18 @@ Day 2
 진행 규칙:
 
 ```text
-lastY = max(4, ActionsThisTurn)
+lastY = max(4, ceil(ActionsThisTurn / 2))
 
 현재 y < lastY
-→ 같은 Turn의 y + 1
+→ 같은 X의 y + 1
 
-현재 y == lastY && Turn < 4
-→ 같은 Conclave의 다음 Turn, x+1의 y=1
+현재 y == lastY && X < 4
+→ 현재 Conclave 종료
+→ 다음 Conclave의 x+1, y=1
 
-현재 y == lastY && Turn == 4 && Conclave가 Evening이 아님
-→ 다음 Conclave의 Turn 1, y=1
-
-현재 y == lastY && Turn == 4 && Conclave가 Evening
-→ 다음 Day의 Dawn, Turn 1, y=1
+현재 y == lastY && X == 4(Night)
+→ Night Conclave 종료
+→ 다음 Day의 Dawn 1-1
 ```
 
 행동 감소는 `lastY`를 4보다 작게 만들지 않는다. 행동 증가는 `lastY`를 5 이상으로 확장한다.
@@ -594,13 +595,16 @@ public bool isEventPhase;
 public int positionProgressVersion;
 ```
 
-시간 계층을 바꾸지 않으므로 기존 저장을 무효화하지 않는다. `positionProgressVersion`으로 `completedActions`의 의미를 판별한다.
+저장된 Conclave를 시간 진행의 기준으로 사용하고 X는 `conclave + 1`로 다시 계산한다. 따라서 구버전의 Conclave와 X가 충돌하면 Conclave를 우선한다.
 
-- `0`: 구버전의 플레이어 행동 완료 수.
-- `1`: 신버전의 처리 완료 위치 수.
-- 구버전 저장의 현재 Turn은 저장된 `completedActions/actionsThisTurn` 값으로 복원하고, 다음 `BeginTurn()`부터 기본 행동 수 4를 적용한다.
+`positionProgressVersion`으로 `completedActions`와 `actionsThisTurn`의 의미를 판별한다.
+
+- `0`: 최초 구버전의 실제 행동 수. 슬롯 값으로 그대로 복원한다.
+- `1`: Y당 행동 1회 버전의 처리 위치 수. 두 값을 각각 2배로 변환한다.
+- `2`: Y당 행동 2회 버전의 처리 슬롯 수. 그대로 복원한다.
+- 다음 `BeginTurn()`부터 기본 행동 수 8을 적용한다.
 - `GameContextSaveData` 자체에 의미 버전이 있으므로 `SaveManager`가 나중에 복원되는 `EventManager.scheduleVersion`을 전달할 필요가 없다.
-- 복원 시 `completedActions`는 `0~max(4, actionsThisTurn)` 범위로 처리한다.
+- 복원 시 `completedActions`는 `0~TriggerSpan*2` 범위로 처리한다.
 
 `EventManagerSaveData.scheduleVersion`을 올리고 다음 데이터를 추가한다.
 
@@ -643,7 +647,7 @@ public bool subEventOccurredThisTurn;
 | 스크립트 | 변경 내용 |
 |---|---|
 | `Assets/Event/Scripts/EventManager.cs` | 이벤트 레지스트리, 중복 방지, 기록 기반 해금/차단, 분기, 확률 정규화, Turn당 1회 서브 이벤트, 상대 시점 확정 대기열과 저장/복원을 구현한다. 기존 Turn 종료 전용 추첨을 위치 진입 요청 방식으로 교체한다. |
-| `Assets/Core/Scripts/InGameManager.cs` | 파일 안의 `GameContext` 시간 계층은 유지한다. `CompletedActions`를 처리 위치 수로 통일하고, 기본 행동 수 4, `x-5` 이상 확장, 감소 시 `x-4`까지 이벤트 전용 진행, 위치 진입 시 이벤트 선처리와 같은 위치 행동 복귀를 연결한다. Q1 확정 시 NPC는 y 1~2에서만 기존 배열을 사용한다. |
+| `Assets/Core/Scripts/InGameManager.cs` | Conclave-X 동기화, Y당 행동 슬롯 2개, 기본 행동 수 8, `x-5` 이상 확장, 감소 시 `x-4`까지 이벤트 전용 진행과 같은 위치 행동 복귀를 연결한다. NPC는 첫 두 행동 슬롯에서만 기존 배열을 사용한다. |
 | `Assets/UI/Scripts/InGame/TimeUI.cs` | `Turn {CurrentTurn}-{ActionPosition}` 형식은 유지하면서 `DisplayPhase`의 1~2/이벤트 3 고정을 제거하고 실제 `y`를 표시한다. |
 | `Assets/Core/Scripts/SaveModel.cs` | `GameContextSaveData.positionProgressVersion`, 상대 시점 확정 대기열과 현재 Turn의 서브 이벤트 발생 여부를 추가한다. 기존 시간 필드와 이벤트 발생/선택 기록은 유지한다. |
 | `Assets/Plot/Scripts/PlotManager.cs` | 첫 공작 행동 후 E11200을 별도 호출하는 예외 트리거를 제거한다. E11200은 E11100 직후 `EventManager` 대기열에서 실행한다. |
@@ -694,11 +698,11 @@ E11200을 별도 호출하는 기존 첫 공작 트리거를 제거한다.
 
 ### `InGameManager.cs` / `GameContext`
 
-- 기존 `Day + Conclave + CurrentTurn + 행동` 시간 계층을 유지한다.
-- 기본 행동 수를 4로 변경한다.
+- Conclave와 X를 `Dawn=1`, `Morning=2`, `Evening=3`, `Night=4`로 동기화한다.
+- 기본 행동 수를 8로 변경하고 Y마다 행동 2회를 처리한다.
 - 행동 증가 시 `y` 최대값을 확장한다.
 - 행동 감소 시 기준 `y=4`까지 이벤트 검사만 계속한다.
-- 모든 위치 진입 시 이벤트를 먼저 요청한다.
+- 새 Y에 진입할 때만 이벤트를 먼저 요청한다.
 - 이벤트 종료 후 같은 위치의 플레이어 행동으로 복귀한다.
 - 이벤트가 엔딩/콘클라베 종료를 실행하면 같은 위치 행동을 취소한다.
 - 저장/복원 시 현재 행동 위치와 대기 이벤트를 복원한다.
@@ -718,8 +722,8 @@ Turn {CurrentTurn}-{ActionPosition}
 ## 11. 구현 순서
 
 1. 문서 마지막의 미확정 질문을 확정한다.
-2. 기존 `GameContext` 시간 계층을 유지하면서 기본 행동 수와 위치별 이벤트 검사 상태를 변경한다.
-3. 행동 수 증감과 다음 위치 계산을 변경한다.
+2. Conclave와 X를 1:1로 동기화한다.
+3. Y당 행동 2회와 행동 수 증감, 다음 위치 계산을 변경한다.
 4. `TimeUI`가 실제 `CurrentTurn-ActionPosition`을 표시하도록 변경한다.
 5. `EventTrigger.cs`와 규칙 테이블을 추가한다.
 6. `EventManager`에 상태, 우선순위, 확률과 대기열을 구현한다.
@@ -734,16 +738,16 @@ Turn {CurrentTurn}-{ActionPosition}
 
 ### 시간과 행동
 
-- 기본 행동: `1-1 → 1-2 → 1-3 → 1-4 → 2-1`.
-- 행동 +1: `1-4 → 1-5 → 2-1`.
-- P022 행동 +2: `1-4 → 1-5 → 1-6 → 2-1`, NPC 배열 범위 예외 없음.
-- 행동 -1: `1-3` 행동 후 `1-4` 이벤트 검사, 플레이어 행동 없이 `2-1`.
-- 각 Conclave의 `4-4` 또는 확장된 마지막 위치 후 다음 Conclave의 `1-1`.
-- `Evening 4-4` 또는 확장된 마지막 위치 후 다음 Day의 `Dawn 1-1`.
+- 기본 행동: 각 Y에서 두 번 행동하고 `1-1 → 1-2 → 1-3 → 1-4 → Morning 2-1`.
+- 행동 +1: `1-5`에서 이벤트 검사 후 행동 1회.
+- P022 행동 +2: `1-5`에서 이벤트 검사 후 행동 2회, NPC 배열 범위 예외 없음.
+- 행동 -1: `1-4`에서 이벤트 검사 후 행동 1회.
+- 행동 -2: `1-4` 이벤트 검사 후 플레이어 행동 없이 다음 Conclave의 `2-1`.
+- `Night 4-4` 또는 확장된 마지막 위치 후 다음 Day의 `Dawn 1-1`.
 - 이벤트가 있는 `2-4`에서 이벤트 종료 후 같은 위치 플레이어 행동 실행.
 - 이벤트가 콘클라베를 끝냈다면 같은 위치 플레이어 행동 미실행.
 - 저장/불러오기 후 같은 위치와 행동 가능 횟수 복원.
-- `positionProgressVersion` 0/1 저장을 각각 불러와 `completedActions`를 올바르게 해석.
+- `positionProgressVersion` 0/1/2 저장을 각각 불러와 `completedActions`를 올바르게 해석.
 
 ### 확정 이벤트
 
@@ -770,12 +774,12 @@ Turn {CurrentTurn}-{ActionPosition}
 
 ## 13. 확정된 추가 규칙
 
-### 13.1 시간 구조 유지
+### 13.1 시간 구조 압축
 
-- 기존 `Day > Conclave > CurrentTurn > Action` 구조를 변경하지 않는다.
-- Conclave 명칭은 `Dawn`, `Morning`, `Afternoon`, `Evening`을 유지한다.
-- `x-y`에서 `x`는 `CurrentTurn`, `y`는 행동 위치다.
-- 시간 저장 필드도 유지하고 이벤트 트리거 런타임 상태만 추가 저장한다.
+- Conclave 명칭은 `Dawn`, `Morning`, `Evening`, `Night`를 사용한다.
+- Conclave와 X를 1:1로 동기화하며 하루에는 X가 4개만 존재한다.
+- `x-y`에서 `x`는 시간대에 대응하는 `CurrentTurn`, `y`는 행동 위치다.
+- 구버전 저장은 Conclave를 우선하여 X를 변환한다.
 
 ### 13.2 확장 행동 위치
 
@@ -786,23 +790,23 @@ Turn {CurrentTurn}-{ActionPosition}
 ### 13.3 행동 증감 누적
 
 ```text
-ActionsThisTurn = max(0, 4 + 누적 증감치)
+ActionsThisTurn = max(0, 8 + 누적 증감치)
 ```
 
-- 누적 `+2`면 해당 Turn은 `x-6`까지 확장한다.
-- 누적 `-2`면 실제 플레이어 행동은 2회다.
-- 행동 수가 4보다 적어도 `x-4`까지 이벤트를 검사한다.
+- 누적 `+1`이면 `x-5`에서 행동 1회, `+2`면 행동 2회를 수행한다.
+- 누적 `-1`이면 `x-4`에서 행동 1회, `-2`면 실제 행동 없이 이벤트만 검사한다.
+- 행동 수가 8보다 적어도 `x-4`까지 이벤트를 검사한다.
 
 ### 13.4 위치 조건의 범위
 
-- Day와 `x-y`가 명시되면 해당 Day의 모든 Conclave에서 일치 여부를 검사한다.
-- Day가 명시되지 않은 `x-y` 조건은 모든 Day와 모든 Conclave에서 검사한다.
+- Day와 `x-y`가 명시되면 해당 Day의 대응 Conclave에서 한 번 일치 여부를 검사한다.
+- Day가 명시되지 않은 `x-y` 조건은 모든 Day의 대응 Conclave에서 검사한다.
 - 이미 발생한 이벤트는 모든 이후 검사에서 제외한다.
 
 ### 13.5 P1 검토 반영
 
 - `EventTriggerContext`만 사용하고 중복 `EventPosition` 타입은 만들지 않는다.
-- NPC 고정 배열을 동적화하지 않는다. Q1 확정 시 y 3 이상에서는 NPC 배열에 접근하지 않는다.
+- NPC 고정 배열을 동적화하지 않고 첫 두 행동 슬롯 이후에는 배열에 접근하지 않는다.
 - `GameContextSaveData.positionProgressVersion`으로 `completedActions` 의미를 판별한다.
 - 후속 이벤트는 절대 좌표가 아니라 `AfterCurrentEvent` 또는 `NextEnteredPosition` 상대 시점으로 저장한다.
 - 해금/차단/분기 상태는 기존 발생 및 선택 기록에서 계산하고 중복 저장하지 않는다.
@@ -812,9 +816,7 @@ ActionsThisTurn = max(0, 4 + 누적 증감치)
 
 ### Q1. NPC 행동 횟수
 
-현재 NPC의 실질 기본 행동은 Turn당 2회이고 y 3~4는 `PlayerExtraAction`으로 아무 효과도 실행하지 않는다.
-
-NPC는 기존 2회만 유지하고 y 3 이상에서는 NPC 배열을 읽거나 쓰지 않는다. 플레이어와 이벤트만 y 3 이상을 진행한다. 배열 및 NPC 저장 구조는 동적화하지 않는다.
+NPC는 X당 기존 2회만 유지하고 첫 두 플레이어 행동 슬롯에서만 기존 배열을 사용한다. 세 번째 슬롯부터는 NPC 배열을 읽거나 쓰지 않는다. 배열 및 NPC 저장 구조는 동적화하지 않는다.
 
 ### Q2. 이벤트가 부여하는 행동 증감의 적용 Turn
 
@@ -828,11 +830,11 @@ NPC는 기존 2회만 유지하고 y 3 이상에서는 NPC 배열을 읽거나 �
 
 - UI가 `Day`와 실제 `Turn x-y`를 일치하게 표시한다.
 - `x`가 `CurrentTurn`, `y`가 행동 위치로만 사용된다.
-- 모든 위치 진입 시 이벤트 조건을 정확히 한 번 계산한다.
-- 이벤트 종료 후 같은 위치의 플레이어 행동을 진행한다.
+- 새 Y 진입 시 이벤트 조건을 정확히 한 번 계산한다.
+- 이벤트 종료 후 같은 위치에서 플레이어 행동을 최대 두 번 진행한다.
 - 행동 감소 위치에서도 기준 `y=4`까지 이벤트 검사가 유지된다.
 - 행동 증가 시 `y=5` 이상으로 시간과 UI가 확장된다.
-- y 3 이상에서 NPC 고정 배열 범위를 접근하지 않는다.
+- 세 번째 플레이어 행동부터 NPC 고정 배열에 접근하지 않는다.
 - 확정 스토리가 있는 위치에는 다른 이벤트가 나오지 않는다.
 - 확률형 스토리와 서브 이벤트 합계가 100% 이하가 된다.
 - 서브 이벤트는 Turn당 최대 1회만 발생한다.

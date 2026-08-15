@@ -608,9 +608,10 @@ public class SaveManager : MonoBehaviour
                 File.Move(temporaryPath, SaveFilePath);
             }
 
-            int phase = saveModel.gameContext.isEventPhase
-                ? 3
-                : Mathf.Clamp(saveModel.gameContext.completedActions + 1, 1, 2);
+            int triggerSpan = Mathf.Max(GameContext.BaseActionPositions,
+                Mathf.CeilToInt(saveModel.gameContext.actionsThisTurn / (float)GameContext.ActionsPerPosition));
+            int phase = Mathf.Clamp(
+                saveModel.gameContext.completedActions / GameContext.ActionsPerPosition + 1, 1, triggerSpan);
             Debug.Log($"[Save] {saveModel.checkpointType} 완료: Turn " +
                 $"{saveModel.gameContext.currentTurn}-{phase} / {SaveFilePath}");
         }
