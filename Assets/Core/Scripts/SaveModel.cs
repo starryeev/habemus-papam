@@ -333,9 +333,23 @@ public class EventManagerSaveData
     public List<EventRecordSaveData> records = new List<EventRecordSaveData>();
     public List<EventChoiceSaveData> choices = new List<EventChoiceSaveData>();
     public List<EventPlotDamageBonusSaveData> plotDamageBonuses = new List<EventPlotDamageBonusSaveData>();
-    public List<int> attemptedScheduledSlots = new List<int>();
+    public List<PendingGuaranteedEventSaveData> pendingGuaranteedEvents = new List<PendingGuaranteedEventSaveData>();
+    public bool subEventOccurredThisTurn;
     public bool guaranteeNextPrayerOrSpeech;
     public bool freePlotPietyForCurrentConclave;
+}
+
+public enum PendingEventTiming
+{
+    AfterCurrentEvent,
+    NextEnteredPosition
+}
+
+[Serializable]
+public class PendingGuaranteedEventSaveData
+{
+    public string eventId;
+    public PendingEventTiming timing;
 }
 
 [Serializable]

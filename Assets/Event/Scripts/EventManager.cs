@@ -1,77 +1,23 @@
 using System.Collections.Generic;
 using System.Linq;
+using Habemus.Events;
 using UnityEngine;
 
 public class EventManager : MonoBehaviour
 {
+    private const int CurrentScheduleVersion = 3;
+
     [SerializeField] public List<Event> allEvents;
 
     private readonly HashSet<Event> appeared = new();
     private readonly Dictionary<Event, int> appearedCnt = new();
     private readonly Dictionary<string, ChoiceRecord> choiceRecords = new();
     private readonly Dictionary<int, float> plotDamageBonuses = new();
-    private readonly HashSet<int> attemptedScheduledSlots = new();
+    private readonly List<PendingGuaranteedEventSaveData> pendingGuaranteedEvents = new();
 
+    private bool subEventOccurredThisTurn;
     private bool guaranteeNextPrayerOrSpeech;
     private bool freePlotPietyForCurrentConclave;
-
-    private static readonly Dictionary<string, string> RequiredPreEventIds = new()
-    {
-        { "E11200", "E11100" },
-        { "E11300", "E11200" },
-        { "E21000", "E20000" },
-        { "E21100", "E21000" },
-        { "E21101", "E21100" },
-        { "E31000", "E30000" },
-        { "E31100", "E31000" },
-        { "E31101", "E31100" },
-        { "E31200", "E31000" },
-        { "E31210", "E31200" },
-        { "E31211", "E31210" },
-        { "E31213", "E31212" },
-        { "E32000", "E31213" },
-        { "E32001", "E32000" },
-        { "E32002", "E32000" }
-    };
-
-    private static readonly Dictionary<string, HashSet<string>> ConflictEventIds = new()
-    {
-        { "E21100", NewIdSet("E31100", "E31101", "E31200", "E31210", "E32000", "E32001") },
-        { "E21101", NewIdSet("E31100", "E31101", "E31200", "E31210", "E32000", "E32001") },
-        { "E31100", NewIdSet("E21000", "E21100", "E31200", "E31210", "E32000", "E32001") },
-        { "E31101", NewIdSet("E21000", "E21100", "E31200", "E31210", "E32000", "E32001") },
-        { "E31200", NewIdSet("E21000", "E21100", "E31100", "E31101", "E32000", "E32001") },
-        { "E31210", NewIdSet("E21000", "E21100", "E31100", "E31101", "E32000", "E32001") },
-        { "E31211", NewIdSet("E21000", "E21100", "E31100", "E31101", "E31200", "E32000", "E32001") },
-        { "E31212", NewIdSet("E31213", "E32000", "E32001") },
-        { "E32001", NewIdSet("E32002") },
-        { "E32002", NewIdSet("E32001") }
-    };
-
-    // 기획표의 m-n은 m일차 n번째 턴 경계다. n=1은 일차 시작, n=2는 1턴 종료 직후다.
-    // 확률이 없는 이벤트는 100%로 취급하며, 슬롯 확률의 남는 몫은 일반 이벤트가 차지한다.
-    private static readonly Dictionary<string, HashSet<int>> ScheduledTurnSlots = new()
-    {
-        { "E11100", NewSlotSet(1, 1) },
-        { "E11300", NewSlotSet(1, 2) },
-        { "E12100", NewSlotSet(2, 2) },
-        { "E12200", NewSlotSet(2, 2) },
-        { "E12300", NewSlotSet(2, 2) },
-        { "E20000", NewSlotSet(2, 1) },
-        { "E21000", NewSlotSet(2, 3) },
-        { "E21100", NewSlotSet(3, 1) },
-        { "E21101", NewSlotSet(4, 1) },
-        { "E30000", NewSlotSet(1, 3) },
-        { "E31000", NewSlotSet(1, 4) },
-        { "E31100", NewSlotSet(3, 1, 3, 2, 3, 3, 3, 4) },
-        { "E31101", NewSlotSet(4, 3) },
-        { "E31200", NewSlotSet(3, 1, 3, 2, 3, 3, 3, 4) },
-        { "E31210", NewSlotSet(4, 1) },
-        { "E31211", NewSlotSet(4, 3) },
-        { "E31212", NewSlotSet(1, 4) },
-        { "E31213", NewSlotSet(2, 2) },
-        { "E32000", NewSlotSet(3, 1, 3, 2, 3, 3) }
-    };
 
     private struct ChoiceRecord
     {
@@ -81,6 +27,7 @@ public class EventManager : MonoBehaviour
 
     void Start()
     {
+        EventTrigger.ValidateRules();
         if (InGameManager.Instance != null && InGameManager.Instance.Context != null)
         {
             InGameManager.Instance.Context.OnGameContextEvent += HandleGameContextEvent;
@@ -102,165 +49,109 @@ public class EventManager : MonoBehaviour
 
     public Event GetNewEvent()
     {
-        if (allEvents == null)
-        {
-            return null;
-        }
-
-        List<Event> conditionSatisfied = GetEligibleEvents();
-
-        bool scheduledSlotOpen = !IsCurrentScheduledSlotResolved() && HasScheduleForCurrentSlot();
-        List<Event> scheduledEvents = scheduledSlotOpen
-            ? conditionSatisfied.Where(IsScheduledForCurrentTurnBoundary).ToList()
-            : new List<Event>();
-        List<Event> scheduledStories = scheduledEvents.Where(IsStoryEvent).ToList();
-        if (scheduledStories.Count > 0) scheduledEvents = scheduledStories;
-        if (scheduledSlotOpen) attemptedScheduledSlots.Add(GetCurrentScheduleSlot());
-        bool invalidScheduledProbability = HasInvalidScheduledProbability(scheduledEvents);
-        Event pickedEvent = invalidScheduledProbability ? null : PickScheduledEvent(scheduledEvents);
-        if (pickedEvent == null && !invalidScheduledProbability)
-        {
-            List<Event> normalEvents = conditionSatisfied
-                .Where(IsNormalRandomEvent)
-                .ToList();
-            pickedEvent = PickUniformEvent(normalEvents);
-        }
-        if (pickedEvent == null)
-        {
-            Debug.LogWarning("[Event] 현재 조건을 만족하는 이벤트가 없습니다.");
-            return null;
-        }
-
-        MarkEventAppeared(pickedEvent);
-        Debug.Log($"이벤트 \"{pickedEvent.eventID}\" 선택");
-        return pickedEvent;
+        return InGameManager.Instance == null ? null : GetEventForPosition(new EventTriggerContext(
+            InGameManager.Instance.GetCurrentDay(),
+            InGameManager.Instance.GetCurrentConclave(),
+            InGameManager.Instance.GetCurrentTurn(),
+            InGameManager.Instance.GetCurrentTurnPhase()));
     }
 
-    public bool HasRemaining(Event e)
+    public Event GetEventForPosition(EventTriggerContext context)
     {
-        int count = 0;
-        appearedCnt.TryGetValue(e, out count);
+        Event pending = TakePendingEvent(PendingEventTiming.NextEnteredPosition);
+        if (pending != null) return pending;
 
-        return count < 1;
+        Event branch = PickCandidateBranch(context);
+        if (branch != null) return branch;
+
+        List<TriggerCandidate> candidates = GetEligibleCandidates(context);
+        Event guaranteed = candidates
+            .Where(candidate => candidate.trigger.Tier == EventTier.GuaranteedStory)
+            .OrderBy(candidate => candidate.evt.eventID)
+            .Select(candidate => candidate.evt)
+            .FirstOrDefault();
+        if (guaranteed != null) return SelectEvent(guaranteed);
+
+        List<TriggerCandidate> stories = candidates
+            .Where(candidate => candidate.trigger.Tier == EventTier.Story)
+            .OrderBy(candidate => candidate.evt.eventID)
+            .ToList();
+        List<Event> subEvents = subEventOccurredThisTurn
+            ? new List<Event>()
+            : candidates.Where(candidate => candidate.trigger.Tier == EventTier.Sub)
+                .Select(candidate => candidate.evt)
+                .ToList();
+
+        float storyTotal = stories.Sum(candidate => candidate.trigger.GetChance());
+        float roll = Random.value;
+        float accumulated = 0f;
+
+        if (storyTotal > 1f)
+        {
+            foreach (TriggerCandidate candidate in stories)
+            {
+                accumulated += candidate.trigger.GetChance() / storyTotal;
+                if (roll <= accumulated) return SelectEvent(candidate.evt);
+            }
+
+            return stories.Count > 0 ? SelectEvent(stories[stories.Count - 1].evt) : null;
+        }
+
+        foreach (TriggerCandidate candidate in stories)
+        {
+            accumulated += candidate.trigger.GetChance();
+            if (roll <= accumulated) return SelectEvent(candidate.evt);
+        }
+
+        if (subEvents.Count == 0) return null;
+        Event subEvent = PickUniformEvent(subEvents);
+        subEventOccurredThisTurn = subEvent != null;
+        return SelectEvent(subEvent);
+    }
+
+    public Event GetChainedEvent()
+    {
+        return TakePendingEvent(PendingEventTiming.AfterCurrentEvent);
     }
 
     public Event GetStartOfDayEvent()
     {
-        if (InGameManager.Instance == null || InGameManager.Instance.GetCurrentConclave() != GameContext.Conclave.Dawn)
-            return null;
-
-        int slot = Mathf.Max(1, InGameManager.Instance.GetCurrentDay()) * 10 + 1;
-        return PickAndMarkScheduledEvent(slot, false);
+        return GetNewEvent();
     }
 
     public Event GetFirstPlotTutorialEvent()
     {
+        if (!HasAppeared("E11100")) return null;
         Event tutorial = GetEventById("E11200");
-        if (tutorial == null || !HasRemaining(tutorial) || !PreEventSatisfied(tutorial) ||
-            !ConflictEventSatisfied(tutorial) || !NarrativeConditionSatisfied(tutorial))
-            return null;
-
-        MarkEventAppeared(tutorial);
-        return tutorial;
+        return tutorial != null && HasRemaining(tutorial) ? SelectEvent(tutorial) : null;
     }
 
-    private List<Event> GetEligibleEvents()
+    public bool HasRemaining(Event evt)
     {
-        return allEvents == null ? new List<Event>() : allEvents
-            .Where(e => e != null && HasRemaining(e) && PreEventSatisfied(e) &&
-                        ConflictEventSatisfied(e) && NarrativeConditionSatisfied(e) &&
-                        IsSupportedByTurnSystem(e))
-            .ToList();
+        return evt != null && (!appearedCnt.TryGetValue(evt, out int count) || count < 1);
     }
 
-    private Event PickAndMarkScheduledEvent(int slot, bool allowNormalFallback)
+    public bool HasAppeared(string eventId)
     {
-        if (attemptedScheduledSlots.Contains(slot)) return null;
-
-        List<Event> scheduled = GetEligibleEvents().Where(e => IsScheduledForSlot(e, slot)).ToList();
-        List<Event> stories = scheduled.Where(IsStoryEvent).ToList();
-        if (stories.Count > 0) scheduled = stories;
-        attemptedScheduledSlots.Add(slot);
-
-        bool invalidScheduledProbability = HasInvalidScheduledProbability(scheduled);
-        Event picked = invalidScheduledProbability ? null : PickScheduledEvent(scheduled);
-        if (picked == null && allowNormalFallback && !invalidScheduledProbability)
-            picked = PickUniformEvent(GetEligibleEvents().Where(IsNormalRandomEvent).ToList());
-        if (picked != null) MarkEventAppeared(picked);
-        return picked;
+        Event evt = GetEventById(eventId);
+        return evt != null && appeared.Contains(evt);
     }
 
-    public bool PreEventSatisfied(Event e)
+    public bool HasPendingEvent(string eventId)
     {
-        if (RequiredPreEventIds.TryGetValue(e.eventID, out string requiredId))
-        {
-            return HasAppeared(requiredId);
-        }
-
-        var pres = e.preEvents;
-
-        if(pres == null || pres.Count == 0) return true;
-
-        foreach(var pre in pres)
-        {
-            if(!pre) continue;
-
-            if (!appeared.Contains(pre))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return pendingGuaranteedEvents.Any(pending => pending != null && pending.eventId == eventId);
     }
 
-    public void MarkEventAppeared(Event e)
+    public bool IsCandidateBranchAvailable()
     {
-        appeared.Add(e);
-
-        int count = 0;
-        appearedCnt.TryGetValue(e, out count);
-
-        appearedCnt[e] = count + 1;
-    }
-
-    public bool ConflictEventSatisfied(Event e)
-    {
-        if (ConflictEventIds.TryGetValue(e.eventID, out HashSet<string> conflictIds))
-        {
-            foreach (string conflictId in conflictIds)
-            {
-                if (HasAppeared(conflictId)) return false;
-            }
-            return true;
-        }
-
-        var conflicts = e.conflictEvents;
-
-        if(conflicts == null || conflicts.Count == 0) return true;
-
-        foreach(var conf in conflicts)
-        {
-            if(!conf) continue;
-
-            if(appeared.Contains(conf)) return false;
-        }
-
-        return true;
+        return HasAppeared("E31000") && !HasAppeared("E31100") && !HasAppeared("E31200") &&
+            !HasPendingEvent("E31100") && !HasPendingEvent("E31200");
     }
 
     public Event GetEventById(string eventId)
     {
         if (allEvents == null) return null;
-
-        foreach(var e in allEvents)
-        {
-            if(!e) continue;
-
-            if(e.eventID == eventId) return e;
-        }
-
-        return null;
+        return allEvents.FirstOrDefault(evt => evt != null && evt.eventID == eventId);
     }
 
     public void InitEventManager()
@@ -269,20 +160,46 @@ public class EventManager : MonoBehaviour
         appearedCnt.Clear();
         choiceRecords.Clear();
         plotDamageBonuses.Clear();
-        attemptedScheduledSlots.Clear();
+        pendingGuaranteedEvents.Clear();
+        subEventOccurredThisTurn = false;
         ClearConclaveEffects();
     }
 
     public void RecordChoice(string eventId, int optionIndex, bool succeeded)
     {
         if (string.IsNullOrWhiteSpace(eventId)) return;
-        choiceRecords[eventId] = new ChoiceRecord { optionIndex = optionIndex, succeeded = succeeded };
 
         Event chosenEvent = GetEventById(eventId);
-        if (chosenEvent != null && !appeared.Contains(chosenEvent))
+        if (chosenEvent != null && !appeared.Contains(chosenEvent)) MarkEventAppeared(chosenEvent);
+
+        if (choiceRecords.TryGetValue(eventId, out ChoiceRecord existing) &&
+            existing.optionIndex == optionIndex && existing.succeeded == succeeded)
         {
-            appeared.Add(chosenEvent);
-            appearedCnt[chosenEvent] = Mathf.Max(1, appearedCnt.TryGetValue(chosenEvent, out int count) ? count : 0);
+            return;
+        }
+
+        choiceRecords[eventId] = new ChoiceRecord { optionIndex = optionIndex, succeeded = succeeded };
+
+        switch (eventId)
+        {
+            case "E11100":
+                QueueGuaranteedEvent("E11200", PendingEventTiming.AfterCurrentEvent);
+                break;
+            case "E31000":
+                QueueCandidateBranchIfReady();
+                break;
+            case "E31210" when optionIndex == 2 && !succeeded && !IsCandidateEliminated(1):
+                QueueGuaranteedEvent("E31211", PendingEventTiming.NextEnteredPosition);
+                break;
+            case "E32000" when optionIndex == 1 && !succeeded:
+                QueueGuaranteedEvent("E32001", PendingEventTiming.NextEnteredPosition);
+                break;
+            case "E32001" when optionIndex == 1:
+                QueueGuaranteedEvent("E32002", PendingEventTiming.NextEnteredPosition);
+                break;
+            case "E32001" when optionIndex == 2:
+                CancelPendingEvent("E32002");
+                break;
         }
     }
 
@@ -329,20 +246,6 @@ public class EventManager : MonoBehaviour
         }
     }
 
-    private bool TryGetRecordedOption(string eventId, out int optionIndex)
-    {
-        optionIndex = 0;
-        if (!choiceRecords.TryGetValue(eventId, out ChoiceRecord record)) return false;
-        optionIndex = record.optionIndex;
-        return true;
-    }
-
-    private bool TryGetBooleanChoice(string eventId, int expectedOption, out int value)
-    {
-        value = WasChoice(eventId, expectedOption) ? 1 : 0;
-        return value != 0;
-    }
-
     public void SetPlotDamageBonus(int candidateNumber, float bonus)
     {
         plotDamageBonuses[candidateNumber] = bonus;
@@ -355,11 +258,7 @@ public class EventManager : MonoBehaviour
 
     public float ModifyPlotHpDelta(Cardinal performer, Cardinal target, float delta)
     {
-        if (delta >= 0f || performer == null || target == null || !performer.CompareTag("Player"))
-        {
-            return delta;
-        }
-
+        if (delta >= 0f || performer == null || target == null || !performer.CompareTag("Player")) return delta;
         int candidateNumber = GetCandidateNumber(target);
         return candidateNumber > 0 ? delta - GetPlotDamageBonus(candidateNumber) : delta;
     }
@@ -371,8 +270,7 @@ public class EventManager : MonoBehaviour
 
     public bool TryConsumeGuaranteedPrayerOrSpeech(Cardinal performer)
     {
-        if (performer == null || !performer.CompareTag("Player")) return false;
-        if (!guaranteeNextPrayerOrSpeech) return false;
+        if (performer == null || !performer.CompareTag("Player") || !guaranteeNextPrayerOrSpeech) return false;
         guaranteeNextPrayerOrSpeech = false;
         return true;
     }
@@ -393,16 +291,15 @@ public class EventManager : MonoBehaviour
     {
         EventManagerSaveData saveData = new EventManagerSaveData
         {
-            scheduleVersion = 2
+            scheduleVersion = CurrentScheduleVersion,
+            subEventOccurredThisTurn = subEventOccurredThisTurn,
+            guaranteeNextPrayerOrSpeech = guaranteeNextPrayerOrSpeech,
+            freePlotPietyForCurrentConclave = freePlotPietyForCurrentConclave
         };
 
         foreach (var pair in appearedCnt)
         {
-            if (pair.Key == null)
-            {
-                continue;
-            }
-
+            if (pair.Key == null) continue;
             saveData.records.Add(new EventRecordSaveData
             {
                 eventId = pair.Key.eventID,
@@ -429,9 +326,15 @@ public class EventManager : MonoBehaviour
             });
         }
 
-        saveData.guaranteeNextPrayerOrSpeech = guaranteeNextPrayerOrSpeech;
-        saveData.freePlotPietyForCurrentConclave = freePlotPietyForCurrentConclave;
-        saveData.attemptedScheduledSlots.AddRange(attemptedScheduledSlots.OrderBy(slot => slot));
+        foreach (PendingGuaranteedEventSaveData pending in pendingGuaranteedEvents)
+        {
+            if (pending == null || string.IsNullOrWhiteSpace(pending.eventId)) continue;
+            saveData.pendingGuaranteedEvents.Add(new PendingGuaranteedEventSaveData
+            {
+                eventId = pending.eventId,
+                timing = pending.timing
+            });
+        }
 
         return saveData;
     }
@@ -442,91 +345,136 @@ public class EventManager : MonoBehaviour
         appearedCnt.Clear();
         choiceRecords.Clear();
         plotDamageBonuses.Clear();
-        attemptedScheduledSlots.Clear();
+        pendingGuaranteedEvents.Clear();
+        subEventOccurredThisTurn = false;
         ClearConclaveEffects();
 
-        if (saveData == null)
-        {
-            return;
-        }
+        if (saveData == null) return;
 
-        if (saveData.records != null)
+        RestoreEventRecords(saveData.records);
+        RestoreChoiceRecords(saveData.choices);
+        RestorePlotBonuses(saveData.plotDamageBonuses);
+
+        if (saveData.scheduleVersion >= CurrentScheduleVersion && saveData.pendingGuaranteedEvents != null)
         {
-            foreach (var record in saveData.records)
+            foreach (PendingGuaranteedEventSaveData pending in saveData.pendingGuaranteedEvents)
             {
-                if (record == null || string.IsNullOrWhiteSpace(record.eventId))
-                {
-                    continue;
-                }
+                if (pending == null || string.IsNullOrWhiteSpace(pending.eventId) ||
+                    GetEventById(pending.eventId) == null || HasAppeared(pending.eventId)) continue;
 
-                Event restoredEvent = GetEventById(record.eventId);
-                if (restoredEvent == null)
+                pendingGuaranteedEvents.Add(new PendingGuaranteedEventSaveData
                 {
-                    Debug.LogWarning($"[Save] 이벤트 '{record.eventId}'를 찾지 못해 복원을 건너뜁니다.");
-                    continue;
-                }
-
-                appeared.Add(restoredEvent);
-                appearedCnt[restoredEvent] = Mathf.Max(0, record.appearCount);
+                    eventId = pending.eventId,
+                    timing = pending.timing
+                });
             }
-        }
 
-        if (saveData.choices != null)
-        {
-            foreach (var choice in saveData.choices)
-            {
-                if (choice == null || string.IsNullOrWhiteSpace(choice.eventId) ||
-                    choice.optionIndex < 1 || choice.optionIndex > 2)
-                {
-                    continue;
-                }
-
-                Event restoredEvent = GetEventById(choice.eventId);
-                if (restoredEvent == null)
-                {
-                    Debug.LogWarning($"[Save] 선택 결과 이벤트 '{choice.eventId}'를 찾지 못해 복원을 건너뜁니다.");
-                    continue;
-                }
-
-                choiceRecords[choice.eventId] = new ChoiceRecord
-                {
-                    optionIndex = choice.optionIndex,
-                    succeeded = choice.succeeded
-                };
-
-                appeared.Add(restoredEvent);
-                if (!appearedCnt.ContainsKey(restoredEvent))
-                {
-                    appearedCnt[restoredEvent] = 1;
-                }
-            }
-        }
-
-        if (saveData.plotDamageBonuses != null)
-        {
-            foreach (var plotBonus in saveData.plotDamageBonuses)
-            {
-                if (plotBonus == null || plotBonus.candidateNumber < 1 || plotBonus.candidateNumber > 3 ||
-                    float.IsNaN(plotBonus.bonus) || float.IsInfinity(plotBonus.bonus))
-                {
-                    continue;
-                }
-
-                plotDamageBonuses[plotBonus.candidateNumber] = Mathf.Max(0f, plotBonus.bonus);
-            }
-        }
-
-        // v1까지는 같은 숫자를 '일차-콘클라베'로 사용했으므로 새 턴 슬롯으로 재해석하지 않는다.
-        if (saveData.scheduleVersion >= 2 && saveData.attemptedScheduledSlots != null)
-        {
-            foreach (int slot in saveData.attemptedScheduledSlots)
-            {
-                if (slot >= 11 && slot <= 999) attemptedScheduledSlots.Add(slot);
-            }
+            subEventOccurredThisTurn = saveData.subEventOccurredThisTurn;
         }
 
         guaranteeNextPrayerOrSpeech = saveData.guaranteeNextPrayerOrSpeech;
         freePlotPietyForCurrentConclave = saveData.freePlotPietyForCurrentConclave;
+    }
+
+    public bool IsCandidateEliminated(int candidateNumber)
+    {
+        if (CardinalManager.Instance == null) return false;
+
+        StatsUI statsUI = CardinalManager.Instance.StatsUI;
+        Cardinal[] linked = statsUI != null ? statsUI.LinkedCardinals : null;
+        Cardinal candidate = linked != null && linked.Length > candidateNumber ? linked[candidateNumber] : null;
+
+        if (candidate == null)
+        {
+            List<Cardinal> ai = CardinalManager.Instance.GetAICardinlas();
+            int index = candidateNumber - 1;
+            candidate = index >= 0 && index < ai.Count ? ai[index] : null;
+        }
+
+        return candidate != null && (candidate.Hp <= 0f || candidate.IsKnockedOut);
+    }
+
+    private List<TriggerCandidate> GetEligibleCandidates(EventTriggerContext context)
+    {
+        List<TriggerCandidate> candidates = new();
+        if (allEvents == null) return candidates;
+
+        foreach (Event evt in allEvents)
+        {
+            if (evt == null || !HasRemaining(evt)) continue;
+            EventTrigger trigger = new EventTrigger(evt.eventID);
+            if (trigger.Tier == EventTier.GuaranteedChain || !trigger.IsEligible(context, this)) continue;
+            candidates.Add(new TriggerCandidate(evt, trigger));
+        }
+
+        return candidates;
+    }
+
+    private Event PickCandidateBranch(EventTriggerContext context)
+    {
+        Event event311 = GetEventById("E31100");
+        Event event312 = GetEventById("E31200");
+        bool can311 = event311 != null && new EventTrigger("E31100").IsEligible(context, this);
+        bool can312 = event312 != null && new EventTrigger("E31200").IsEligible(context, this);
+        if (!can311 && !can312) return null;
+
+        Event picked = can311 && can312 ? (Random.value < 0.5f ? event311 : event312) : can311 ? event311 : event312;
+        return SelectEvent(picked);
+    }
+
+    private void QueueCandidateBranchIfReady()
+    {
+        if (!IsCandidateBranchAvailable()) return;
+        bool can311 = IsCandidateEliminated(3);
+        bool can312 = IsCandidateEliminated(2) && !IsCandidateEliminated(1);
+        if (!can311 && !can312) return;
+
+        string eventId = can311 && can312 ? (Random.value < 0.5f ? "E31100" : "E31200")
+            : can311 ? "E31100" : "E31200";
+        QueueGuaranteedEvent(eventId, PendingEventTiming.NextEnteredPosition);
+    }
+
+    private void QueueGuaranteedEvent(string eventId, PendingEventTiming timing)
+    {
+        if (string.IsNullOrWhiteSpace(eventId) || HasAppeared(eventId) || HasPendingEvent(eventId)) return;
+        pendingGuaranteedEvents.Add(new PendingGuaranteedEventSaveData { eventId = eventId, timing = timing });
+    }
+
+    private void CancelPendingEvent(string eventId)
+    {
+        pendingGuaranteedEvents.RemoveAll(pending => pending != null && pending.eventId == eventId);
+    }
+
+    private Event TakePendingEvent(PendingEventTiming timing)
+    {
+        for (int index = 0; index < pendingGuaranteedEvents.Count; index++)
+        {
+            PendingGuaranteedEventSaveData pending = pendingGuaranteedEvents[index];
+            if (pending == null || pending.timing != timing) continue;
+            pendingGuaranteedEvents.RemoveAt(index--);
+            if (string.IsNullOrWhiteSpace(pending.eventId) || HasAppeared(pending.eventId)) continue;
+
+            Event evt = GetEventById(pending.eventId);
+            if (evt != null) return SelectEvent(evt);
+            Debug.LogWarning($"[Event] 대기 이벤트 '{pending.eventId}'가 등록되지 않았습니다.");
+        }
+
+        return null;
+    }
+
+    private Event SelectEvent(Event evt)
+    {
+        if (evt == null) return null;
+        MarkEventAppeared(evt);
+        Debug.Log($"[Event] 이벤트 '{evt.eventID}' 선택");
+        return evt;
+    }
+
+    private void MarkEventAppeared(Event evt)
+    {
+        if (evt == null) return;
+        appeared.Add(evt);
+        appearedCnt[evt] = appearedCnt.TryGetValue(evt, out int count) ? count + 1 : 1;
     }
 
     private static Event PickUniformEvent(List<Event> candidates)
@@ -535,147 +483,18 @@ public class EventManager : MonoBehaviour
         return candidates[Random.Range(0, candidates.Count)];
     }
 
-    private Event PickScheduledEvent(List<Event> candidates)
+    private bool TryGetRecordedOption(string eventId, out int optionIndex)
     {
-        if (candidates == null || candidates.Count == 0) return null;
-
-        if (HasInvalidScheduledProbability(candidates))
-        {
-            return null;
-        }
-
-        float roll = Random.value;
-        float accumulated = 0f;
-        foreach (Event candidate in candidates.OrderBy(e => e.eventID))
-        {
-            accumulated += GetScheduledChance(candidate);
-            if (roll <= accumulated) return candidate;
-        }
-
-        // 합계가 1 미만인 슬롯은 남은 확률로 일반 이벤트가 등장한다.
-        return null;
-    }
-
-    private static bool HasInvalidScheduledProbability(List<Event> candidates)
-    {
-        if (candidates == null || candidates.Count == 0) return false;
-        List<Event> undefined = candidates.Where(candidate => GetScheduledChance(candidate) < 0f).ToList();
-        if (undefined.Count > 0)
-        {
-            Debug.LogError($"[Event] 진행도 삭제 후 발생 확률이 정의되지 않았습니다: {string.Join(", ", undefined.Select(e => e.eventID))}");
-            return true;
-        }
-        float totalChance = candidates.Sum(GetScheduledChance);
-        if (totalChance <= 1.0001f) return false;
-        Debug.LogError($"[Event] 슬롯 확률 합이 100%를 초과합니다: {totalChance * 100f:0.##}% ({string.Join(", ", candidates.Select(e => e.eventID))})");
+        optionIndex = 0;
+        if (!choiceRecords.TryGetValue(eventId, out ChoiceRecord record)) return false;
+        optionIndex = record.optionIndex;
         return true;
     }
 
-    private static float GetScheduledChance(Event e)
+    private bool TryGetBooleanChoice(string eventId, int expectedOption, out int value)
     {
-        switch (e.eventID)
-        {
-            case "E12100":
-            case "E12200":
-            case "E12300": return 0.3333f;
-            case "E31000": return 0.7f;
-            case "E31212": return 0.3f;
-            case "E32000": return 0.3f;
-            case "E31101": return 1f;
-            default: return 1f;
-        }
-    }
-
-    private bool NarrativeConditionSatisfied(Event e)
-    {
-        switch (e.eventID)
-        {
-            case "E21100": return WasChoice("E21000", 1, true);
-            case "E31100": return IsCandidateEliminated(3);
-            case "E31101": return WasChoice("E31100", 1, true);
-            case "E31200": return IsCandidateEliminated(2) && !IsCandidateEliminated(1);
-            // 기획 행의 선행(E31200)과 서술을 함께 만족시키는 분기다.
-            case "E31210": return WasChoice("E31200", 1, true);
-            case "E31211": return !IsCandidateEliminated(1) && WasChoice("E31210", 2, false);
-            case "E32000": return WasChoice("E31213", 2, true);
-            case "E32001": return WasChoice("E32000", 1, false);
-            case "E32002": return !WasChoice("E32000", 1, false);
-            default: return true;
-        }
-    }
-
-    private static bool IsSupportedByTurnSystem(Event e)
-    {
-        return e != null;
-    }
-
-    private bool IsScheduledForCurrentTurnBoundary(Event e)
-    {
-        return IsScheduledForSlot(e, GetCurrentScheduleSlot());
-    }
-
-    private static bool IsScheduledForSlot(Event e, int slot)
-    {
-        return e != null && ScheduledTurnSlots.TryGetValue(e.eventID, out HashSet<int> slots) && slots.Contains(slot);
-    }
-
-    private static bool IsNormalRandomEvent(Event e)
-    {
-        return e != null && e.eventID != "E11200" && !ScheduledTurnSlots.ContainsKey(e.eventID);
-    }
-
-    private bool IsCurrentScheduledSlotResolved()
-    {
-        if (InGameManager.Instance == null) return false;
-        int slot = GetCurrentScheduleSlot();
-
-        return attemptedScheduledSlots.Contains(slot) || appeared.Any(evt => evt != null &&
-            ScheduledTurnSlots.TryGetValue(evt.eventID, out HashSet<int> slots) &&
-            slots.Contains(slot));
-    }
-
-    private static int GetCurrentScheduleSlot()
-    {
-        return Mathf.Max(1, InGameManager.Instance.GetCurrentDay()) * 10 +
-            Mathf.Clamp(InGameManager.Instance.GetCurrentTurn() + 1, 2, 4);
-    }
-
-    private static bool HasScheduleForCurrentSlot()
-    {
-        int slot = GetCurrentScheduleSlot();
-        return ScheduledTurnSlots.Values.Any(slots => slots.Contains(slot));
-    }
-
-    private static bool IsStoryEvent(Event e)
-    {
-        if (e == null || string.IsNullOrEmpty(e.eventID) || e.eventID.Length < 2) return false;
-        return int.TryParse(e.eventID.Substring(1, 1), out int category) && category >= 2 && category <= 3;
-    }
-
-    private bool HasAppeared(string eventId)
-    {
-        Event evt = GetEventById(eventId);
-        return evt != null && appeared.Contains(evt);
-    }
-
-    private bool IsCandidateEliminated(int candidateNumber)
-    {
-        if (CardinalManager.Instance == null) return false;
-
-        StatsUI statsUI = CardinalManager.Instance.StatsUI;
-        Cardinal[] linked = statsUI != null ? statsUI.LinkedCardinals : null;
-        Cardinal candidate = linked != null && linked.Length > candidateNumber
-            ? linked[candidateNumber]
-            : null;
-
-        if (candidate == null)
-        {
-            List<Cardinal> ai = CardinalManager.Instance.GetAICardinlas();
-            int index = candidateNumber - 1;
-            candidate = index < ai.Count ? ai[index] : null;
-        }
-
-        return candidate != null && (candidate.Hp <= 0f || candidate.IsKnockedOut);
+        value = WasChoice(eventId, expectedOption) ? 1 : 0;
+        return value != 0;
     }
 
     private int GetCandidateNumber(Cardinal target)
@@ -701,12 +520,64 @@ public class EventManager : MonoBehaviour
         return 0;
     }
 
+    private void RestoreEventRecords(List<EventRecordSaveData> records)
+    {
+        if (records == null) return;
+        foreach (EventRecordSaveData record in records)
+        {
+            if (record == null || string.IsNullOrWhiteSpace(record.eventId)) continue;
+            Event restoredEvent = GetEventById(record.eventId);
+            if (restoredEvent == null)
+            {
+                Debug.LogWarning($"[Save] 이벤트 '{record.eventId}'를 찾지 못해 복원을 건너뜁니다.");
+                continue;
+            }
+
+            appeared.Add(restoredEvent);
+            appearedCnt[restoredEvent] = Mathf.Max(0, record.appearCount);
+        }
+    }
+
+    private void RestoreChoiceRecords(List<EventChoiceSaveData> choices)
+    {
+        if (choices == null) return;
+        foreach (EventChoiceSaveData choice in choices)
+        {
+            if (choice == null || string.IsNullOrWhiteSpace(choice.eventId) ||
+                choice.optionIndex < 1 || choice.optionIndex > 2) continue;
+
+            Event restoredEvent = GetEventById(choice.eventId);
+            if (restoredEvent == null)
+            {
+                Debug.LogWarning($"[Save] 선택 결과 이벤트 '{choice.eventId}'를 찾지 못해 복원을 건너뜁니다.");
+                continue;
+            }
+
+            choiceRecords[choice.eventId] = new ChoiceRecord
+            {
+                optionIndex = choice.optionIndex,
+                succeeded = choice.succeeded
+            };
+            appeared.Add(restoredEvent);
+            if (!appearedCnt.ContainsKey(restoredEvent)) appearedCnt[restoredEvent] = 1;
+        }
+    }
+
+    private void RestorePlotBonuses(List<EventPlotDamageBonusSaveData> bonuses)
+    {
+        if (bonuses == null) return;
+        foreach (EventPlotDamageBonusSaveData bonus in bonuses)
+        {
+            if (bonus == null || bonus.candidateNumber < 1 || bonus.candidateNumber > 3 ||
+                float.IsNaN(bonus.bonus) || float.IsInfinity(bonus.bonus)) continue;
+            plotDamageBonuses[bonus.candidateNumber] = Mathf.Max(0f, bonus.bonus);
+        }
+    }
+
     private void HandleGameContextEvent(GameContext.GameContextEvent eventType)
     {
-        if (eventType == GameContext.GameContextEvent.ConclaveEnd)
-        {
-            ClearConclaveEffects();
-        }
+        if (eventType == GameContext.GameContextEvent.TurnStart) subEventOccurredThisTurn = false;
+        if (eventType == GameContext.GameContextEvent.ConclaveEnd) ClearConclaveEffects();
     }
 
     private void ClearConclaveEffects()
@@ -715,29 +586,24 @@ public class EventManager : MonoBehaviour
         guaranteeNextPrayerOrSpeech = false;
         freePlotPietyForCurrentConclave = false;
 
-        if (CardinalManager.Instance != null)
+        if (CardinalManager.Instance == null) return;
+        foreach (Cardinal cardinal in CardinalManager.Instance.Cardinals)
         {
-            foreach (Cardinal cardinal in CardinalManager.Instance.Cardinals)
-            {
-                if (cardinal == null) continue;
-                cardinal.SetMinHpOneEffect("E50600", false);
-                cardinal.SetMinHpOneEffect("P030", false);
-            }
+            if (cardinal == null) continue;
+            cardinal.SetMinHpOneEffect("E50600", false);
+            cardinal.SetMinHpOneEffect("P030", false);
         }
     }
 
-    private static HashSet<string> NewIdSet(params string[] ids)
+    private readonly struct TriggerCandidate
     {
-        return new HashSet<string>(ids);
-    }
+        public Event evt { get; }
+        public EventTrigger trigger { get; }
 
-    private static HashSet<int> NewSlotSet(params int[] dayAndConclavePairs)
-    {
-        HashSet<int> slots = new();
-        for (int index = 0; index + 1 < dayAndConclavePairs.Length; index += 2)
+        public TriggerCandidate(Event evt, EventTrigger trigger)
         {
-            slots.Add(dayAndConclavePairs[index] * 10 + dayAndConclavePairs[index + 1]);
+            this.evt = evt;
+            this.trigger = trigger;
         }
-        return slots;
     }
 }
