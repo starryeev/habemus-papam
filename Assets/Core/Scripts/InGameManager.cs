@@ -68,7 +68,8 @@ public class GameContext
         currentConclave = conclave;
         currentTurn = Mathf.Clamp(restoredTurn, 1, 4);
         actionsThisTurn = Mathf.Max(0, restoredActionsThisTurn);
-        completedActions = Mathf.Clamp(restoredCompletedActions, 0, Mathf.Max(4, actionsThisTurn));
+        int maxRestoredProgress = positionProgressVersion > 0 ? TriggerSpan : actionsThisTurn;
+        completedActions = Mathf.Clamp(restoredCompletedActions, 0, maxRestoredProgress);
         isEventPhase = restoredEventPhase;
     }
 
