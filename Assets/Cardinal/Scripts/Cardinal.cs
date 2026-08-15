@@ -100,6 +100,11 @@ public class Cardinal : MonoBehaviour
                     InGameManager.Instance.HandlePlayerHpReachedZero(this);
                 }
 
+                if (CardinalManager.Instance != null && CardinalManager.Instance.StatsUI != null)
+                {
+                    CardinalManager.Instance.StatsUI.RefreshVisualOrder();
+                }
+
                 Debug.Log($"[{gameObject.name}] 체력이 0이 되어 기절했습니다!");
             }
         }

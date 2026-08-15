@@ -245,6 +245,14 @@ public class StatsUI : MonoBehaviour
         else CalculateAndMoveStats();
     }
 
+    public void RefreshVisualOrder()
+    {
+        if (isInitialized && (closeup == null || !closeup.gameObject.activeSelf))
+        {
+            CalculateAndMoveStats();
+        }
+    }
+
     void CalculateAndMoveStats()
     {
         for (int i = 0; i < 4; i++)
@@ -260,21 +268,17 @@ public class StatsUI : MonoBehaviour
         for (int rank = 0; rank < 4; rank++)
         {
             int targetIndex = -1;
-            float highestVal = -10000f; 
 
             for (int i = 0; i < 4; i++)
             {
-                if (tempMaxStats[i] > highestVal)
+                if (tempMaxStats[i] <= -99999f)
                 {
-                    highestVal = tempMaxStats[i];
-                    targetIndex = i;
+                    continue;
                 }
-                else if(tempMaxStats[i] == highestVal)
+
+                if (targetIndex == -1 || HasHigherVisualPriority(i, targetIndex, tempMaxStats))
                 {
-                    if(SubStats[i] > SubStats[targetIndex])
-                    {
-                        targetIndex = i;
-                    }
+                    targetIndex = i;
                 }
             }
 
@@ -311,6 +315,28 @@ public class StatsUI : MonoBehaviour
                 tempMaxStats[targetIndex] = -99999f; 
             }
         }
+    }
+
+    private bool HasHigherVisualPriority(int candidateIndex, int currentIndex, float[] maxStats)
+    {
+        bool candidateIsActive = linkedCardinals[candidateIndex] != null &&
+            !linkedCardinals[candidateIndex].IsKnockedOut &&
+            linkedCardinals[candidateIndex].Hp > 0f;
+        bool currentIsActive = linkedCardinals[currentIndex] != null &&
+            !linkedCardinals[currentIndex].IsKnockedOut &&
+            linkedCardinals[currentIndex].Hp > 0f;
+
+        if (candidateIsActive != currentIsActive)
+        {
+            return candidateIsActive;
+        }
+
+        if (maxStats[candidateIndex] != maxStats[currentIndex])
+        {
+            return maxStats[candidateIndex] > maxStats[currentIndex];
+        }
+
+        return SubStats[candidateIndex] > SubStats[currentIndex];
     }
 
     //스탯 가져오기
