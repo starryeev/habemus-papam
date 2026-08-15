@@ -46,7 +46,9 @@ public class GameContext
     public int CompletedActions => completedActions;
     public int ActionsThisTurn => actionsThisTurn;
     public bool IsEventPhase => isEventPhase;
-    public int DisplayPhase => isEventPhase ? 3 : Mathf.Clamp(completedActions + 1, 1, 2);
+    public int TriggerSpan => Mathf.Max(4, actionsThisTurn);
+    public int CurrentActionPosition => Mathf.Clamp(completedActions + 1, 1, TriggerSpan);
+    public int DisplayPhase => CurrentActionPosition;
 
     private Event currentEvent;
     public Event CurrentEvent => currentEvent;
@@ -60,13 +62,13 @@ public class GameContext
     }
 
     public void RestoreState(int day, Conclave conclave, int restoredTurn, int restoredCompletedActions,
-        int restoredActionsThisTurn, bool restoredEventPhase)
+        int restoredActionsThisTurn, bool restoredEventPhase, int positionProgressVersion)
     {
         currentDay = day;
         currentConclave = conclave;
         currentTurn = Mathf.Clamp(restoredTurn, 1, 4);
-        actionsThisTurn = Mathf.Clamp(restoredActionsThisTurn, 0, 4);
-        completedActions = Mathf.Clamp(restoredCompletedActions, 0, actionsThisTurn);
+        actionsThisTurn = Mathf.Max(0, restoredActionsThisTurn);
+        completedActions = Mathf.Clamp(restoredCompletedActions, 0, Mathf.Max(4, actionsThisTurn));
         isEventPhase = restoredEventPhase;
     }
 
@@ -95,26 +97,35 @@ public class GameContext
     public void BeginTurn(int actionModifier, bool blockActions)
     {
         completedActions = 0;
-        actionsThisTurn = blockActions ? 0 : Mathf.Clamp(2 + actionModifier, 1, 3);
+        actionsThisTurn = blockActions ? 0 : Mathf.Max(0, 4 + actionModifier);
         isEventPhase = false;
         OnGameContextEvent?.Invoke(GameContextEvent.TurnStart);
     }
 
     public bool CompleteAction()
     {
-        if (isEventPhase || completedActions >= actionsThisTurn) return false;
+        if (!CanPlayerAct()) return false;
         completedActions++;
         return true;
     }
 
-    public bool AreActionsComplete() => completedActions >= actionsThisTurn;
+    public bool CanPlayerAct() => !isEventPhase && completedActions < actionsThisTurn;
 
-    public void CompleteRemainingActions() => completedActions = actionsThisTurn;
+    public bool CompleteUnavailablePosition()
+    {
+        if (isEventPhase || completedActions < actionsThisTurn || completedActions >= TriggerSpan) return false;
+        completedActions++;
+        return true;
+    }
+
+    public bool AreActionsComplete() => completedActions >= TriggerSpan;
+
+    public void BlockRemainingPlayerActions() => actionsThisTurn = Mathf.Min(actionsThisTurn, completedActions);
 
     public void AddCurrentTurnActions(int count)
     {
         if (isEventPhase || count <= 0) return;
-        actionsThisTurn = Mathf.Clamp(actionsThisTurn + count, completedActions, 4);
+        actionsThisTurn = Mathf.Max(completedActions, actionsThisTurn + count);
     }
 
     public void EnterEventPhase() => isEventPhase = true;
@@ -143,7 +154,7 @@ public class GameContext
     {
         currentTurn = 1;
         completedActions = 0;
-        actionsThisTurn = 2;
+        actionsThisTurn = 4;
         isEventPhase = false;
     }
 }
@@ -567,6 +578,7 @@ public class InGameManager : MonoBehaviour
             currentTurn = gameContext.CurrentTurn,
             completedActions = gameContext.CompletedActions,
             actionsThisTurn = gameContext.ActionsThisTurn,
+            positionProgressVersion = 1,
             isEventPhase = gameContext.IsEventPhase,
             nextTurnActionModifier = nextTurnActionModifier,
             blockNextTurn = blockNextTurn,
@@ -619,11 +631,11 @@ public class InGameManager : MonoBehaviour
         GameContext.Conclave conclave = (GameContext.Conclave)Mathf.Clamp(saveData.conclave, 0, Enum.GetValues(typeof(GameContext.Conclave)).Length - 1);
 
         gameContext.RestoreState(saveData.day, conclave, saveData.currentTurn, saveData.completedActions,
-            saveData.actionsThisTurn, saveData.isEventPhase);
+            saveData.actionsThisTurn, saveData.isEventPhase, saveData.positionProgressVersion);
         isTimeRunning = saveData.isTimeRunning;
         isFirstStart = saveData.isFirstStart;
         isSushiOn = saveData.isSushiOn;
-        nextTurnActionModifier = Mathf.Clamp(saveData.nextTurnActionModifier, -2, 1);
+        nextTurnActionModifier = saveData.nextTurnActionModifier;
         blockNextTurn = saveData.blockNextTurn;
         blockRemainingCurrentTurn = saveData.blockRemainingCurrentTurn;
         awaitingTurnEvent = saveData.awaitingTurnEvent;
@@ -826,7 +838,7 @@ public class InGameManager : MonoBehaviour
     public bool CanPerformPlayerAction(Cardinal performer)
     {
         return performer == null || !performer.CompareTag("Player") ||
-            (isTimeRunning && !awaitingTurnEvent && !gameContext.IsEventPhase && !gameContext.AreActionsComplete());
+            (isTimeRunning && !awaitingTurnEvent && gameContext.CanPlayerAct());
     }
 
     public bool CanPerformPrayer(Cardinal performer, out string alertTitle, out string alertMessage)
@@ -856,20 +868,23 @@ public class InGameManager : MonoBehaviour
     public NPCBehaviour GetNPCBehaviourThisTurn(int candidateNumber)
     {
         int candidateIndex = Mathf.Clamp(candidateNumber - 1, 0, 2);
-        int actionIndex = Mathf.Clamp(gameContext.CompletedActions, 0, 3);
+        int actionIndex = gameContext.CompletedActions;
+        if (actionIndex >= 2) return NPCBehaviour.PlayerExtraAction;
         return npcTurnBehaviours[candidateIndex, actionIndex];
     }
 
     public NPCBehaviour GetNPCBehaviourThisTurn(int candidateNumber, int actionIndex)
     {
-        return npcTurnBehaviours[Mathf.Clamp(candidateNumber - 1, 0, 2), Mathf.Clamp(actionIndex, 0, 3)];
+        if (actionIndex < 0 || actionIndex >= 2) return NPCBehaviour.PlayerExtraAction;
+        return npcTurnBehaviours[Mathf.Clamp(candidateNumber - 1, 0, 2), actionIndex];
     }
 
     public void ExecuteNpcActionsBeforePlayerAction(Cardinal performer)
     {
         if (performer == null || !performer.CompareTag("Player") || gameContext.IsEventPhase) return;
 
-        int actionIndex = Mathf.Clamp(gameContext.CompletedActions, 0, 3);
+        int actionIndex = gameContext.CompletedActions;
+        if (actionIndex >= 2) return;
         for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
         {
             int candidateIndex = candidateNumber - 1;
@@ -932,8 +947,7 @@ public class InGameManager : MonoBehaviour
             for (int actionIndex = 0; actionIndex < 4; actionIndex++)
             {
                 bool isBaseNpcAction = actionIndex < 2;
-                bool isPlayerExtraAction = actionIndex >= 2 && actionIndex < gameContext.ActionsThisTurn;
-                npcTurnActionsExecuted[candidateNumber - 1, actionIndex] = !isBaseNpcAction && !isPlayerExtraAction;
+                npcTurnActionsExecuted[candidateNumber - 1, actionIndex] = !isBaseNpcAction;
 
                 if (isBaseNpcAction)
                 {
@@ -943,8 +957,7 @@ public class InGameManager : MonoBehaviour
                 }
                 else
                 {
-                    npcTurnBehaviours[candidateNumber - 1, actionIndex] = isPlayerExtraAction
-                        ? NPCBehaviour.PlayerExtraAction : NPCBehaviour.None;
+                    npcTurnBehaviours[candidateNumber - 1, actionIndex] = NPCBehaviour.PlayerExtraAction;
                 }
             }
         }
@@ -1252,7 +1265,7 @@ public class InGameManager : MonoBehaviour
         if (blockRemainingCurrentTurn)
         {
             blockRemainingCurrentTurn = false;
-            gameContext.CompleteRemainingActions();
+            gameContext.BlockRemainingPlayerActions();
         }
         if (queuedImmediateEvent != null)
         {
@@ -1262,6 +1275,7 @@ public class InGameManager : MonoBehaviour
             SaveTurnPhaseCheckpoint(SaveResumeStep.ReopenPendingEvent);
             return;
         }
+        AdvanceUnavailablePositions();
         if (gameContext.AreActionsComplete())
         {
             ResolveCompletedTurn();
@@ -1288,21 +1302,12 @@ public class InGameManager : MonoBehaviour
 
     public void QueueNextTurnActionDelta(int delta)
     {
-        nextTurnActionModifier = Mathf.Clamp(nextTurnActionModifier + delta, -2, 1);
+        nextTurnActionModifier += delta;
     }
 
     public void AddCurrentTurnActions(int count)
     {
-        int previousActionCount = gameContext.ActionsThisTurn;
         gameContext.AddCurrentTurnActions(count);
-        for (int actionIndex = Mathf.Max(2, previousActionCount); actionIndex < gameContext.ActionsThisTurn; actionIndex++)
-        {
-            for (int candidateIndex = 0; candidateIndex < 3; candidateIndex++)
-            {
-                npcTurnBehaviours[candidateIndex, actionIndex] = NPCBehaviour.PlayerExtraAction;
-                npcTurnActionsExecuted[candidateIndex, actionIndex] = false;
-            }
-        }
     }
 
     public void BlockPlayerTurnActions()
@@ -1318,6 +1323,7 @@ public class InGameManager : MonoBehaviour
         if (eventBeforeActions)
         {
             eventBeforeActions = false;
+            AdvanceUnavailablePositions();
             if (gameContext.AreActionsComplete())
             {
                 ResolveCompletedTurn();
@@ -1464,7 +1470,13 @@ public class InGameManager : MonoBehaviour
 
     private void TryResolveTurnWithoutActions()
     {
+        AdvanceUnavailablePositions();
         if (isTimeRunning && gameContext.AreActionsComplete()) ResolveCompletedTurn();
+    }
+
+    private void AdvanceUnavailablePositions()
+    {
+        while (gameContext.CompleteUnavailablePosition()) { }
     }
 
     private int ConsumeNextTurnActionModifier()

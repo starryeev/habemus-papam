@@ -94,7 +94,7 @@ public class TimeUI : MonoBehaviour
 
     public void EndConclaveUI()
     {
-        RightText2.text = "Turn 4-2";
+        RightText2.text = "Turn 4-4";
         ClockHand.transform.rotation = Quaternion.identity;
 
         Dawn.sprite = LightList[0];

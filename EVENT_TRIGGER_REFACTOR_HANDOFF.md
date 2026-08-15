@@ -63,6 +63,16 @@ TriggerSpan = max(4, ActionsThisTurn)
 CanPlayerAct = ActionPosition <= ActionsThisTurn
 ```
 
+`CompletedActions`는 새 상태를 추가하지 않고 "현재 Turn에서 처리 완료한 위치 수"로 통일한다.
+
+```text
+CurrentActionPosition = CompletedActions + 1
+```
+
+- 플레이어가 행동한 위치는 행동 완료 후 `CompletedActions`를 증가시킨다.
+- 행동 감소/차단으로 플레이어 행동이 없는 위치도 이벤트 처리가 끝나면 `CompletedActions`를 증가시킨다.
+- `CompletedActions`의 최대 복원값은 `ActionsThisTurn`이 아니라 `TriggerSpan`이다.
+
 예시:
 
 ```text
@@ -71,6 +81,8 @@ CanPlayerAct = ActionPosition <= ActionsThisTurn
 -1:   2-1~2-3에서 이벤트 검사와 플레이어 행동
       2-4에서 이벤트만 검사한 뒤 3-1로 자동 이동
 ```
+
+NPC 행동은 현재 고정 배열과 기존 2회 행동 의미를 유지하는 안을 우선한다. `y >= 3`에서는 `npcTurnBehaviours`와 `npcTurnActionsExecuted`에 접근하지 않아 P022의 `+2`로 `x-6`까지 확장돼도 배열 범위를 넘지 않게 한다. 최종 적용 여부는 Q1에서 확인한다.
 
 ### 2.3 이벤트와 플레이어 행동의 순서
 
@@ -124,7 +136,7 @@ CanPlayerAct = ActionPosition <= ActionsThisTurn
 - `ActionsThisTurn`: 현재 Turn에서 실제로 가능한 플레이어 행동 수
 - `IsEventPhase`
 
-`ActionPosition(y)`는 현재 행동을 실행하기 전에는 `CompletedActions + 1`이다. 행동 감소 때문에 실제 행동이 끝난 뒤에도 기준 위치 4까지 이벤트를 검사할 수 있도록, 이벤트 검사 완료 여부를 행동 완료 여부와 분리해 관리한다.
+`ActionPosition(y)`는 `CompletedActions + 1`로 계산한다. `CompletedActions`의 의미를 플레이어 행동 완료 수에서 처리 완료 위치 수로 변경하므로 별도 `CurrentActionPosition` 상태는 추가하지 않는다.
 
 현재 `DisplayPhase`의 1~2/이벤트 3 표시는 제거한다.
 
@@ -182,11 +194,9 @@ public sealed class EventTrigger
 - 이벤트 ID → `Event` 객체 조회
 - 발생 완료 기록
 - 선택지와 성공/실패 기록
-- 해금 이벤트 집합
-- 영구 차단 이벤트 집합
-- 다음 행동 위치 확정 이벤트 대기열
-- 이미 처리한 행동 위치 기록
-- `E31100`/`E31200` 분기 승자 기록
+- 기존 발생/선택 기록에서 해금 및 차단 상태 계산
+- 같은 이벤트 직후 또는 다음 실제 진입 위치에 실행할 확정 이벤트 대기열
+- 현재 Turn의 서브 이벤트 발생 여부
 - 확정 이벤트 우선 처리
 - 확률형 스토리 추첨
 - 서브 이벤트 균등 분배
@@ -216,7 +226,7 @@ public void RecordChoice(string eventId, int optionIndex, bool succeeded);
 → 행동 불가: 다음 위치로 자동 이동
 ```
 
-동일 위치에서 `BeginTriggerWindow()`를 두 번 호출하지 않도록 처리 위치 키를 저장한다.
+`BeginTriggerWindow()`는 위치 진입 직후 한 번만 호출한다. 이벤트가 없으면 같은 호출 흐름에서 플레이어 입력으로 넘어가며 중간 저장을 만들지 않는다. 이벤트가 있으면 기존 `IsEventPhase`, `awaitingTurnEvent`, 저장 재개 단계로 같은 위치에 복귀하므로 모든 과거 위치 키를 저장하지 않는다.
 
 ### 4.4 개별 `Event` 클래스
 
@@ -289,6 +299,16 @@ E50000~E50600
 ```
 
 기존 `eventWeightBase`, `eventWeightMultiplier`는 폐기한다.
+
+서브 이벤트 추첨 단위는 행동 위치 `y`가 아니라 현재 Turn `x`다.
+
+- 한 `CurrentTurn(x)`에서 서브 이벤트는 최대 1회만 발생한다.
+- 서브 이벤트가 발생하면 `subEventOccurredThisTurn = true`로 기록한다.
+- 같은 x의 남은 y에서는 서브 이벤트 확률을 0%로 고정한다.
+- 다음 Turn으로 넘어가 x가 변경되면 `subEventOccurredThisTurn`을 초기화한다.
+- 확정 스토리가 현재 `x-y`를 차지하면 그 위치에서는 서브 이벤트를 추첨하지 않는다.
+- 확률형 스토리가 당첨되면 서브 이벤트는 발생하지 않은 것이므로 같은 x의 다음 y에서 다시 후보가 될 수 있다.
+- 확률형 스토리가 없고 사용 가능한 서브 이벤트가 있다면, 해당 x에서 처음 도달한 서브 이벤트 가능 위치의 서브 이벤트 총확률은 100%다.
 
 ```text
 개별 서브 이벤트 확률
@@ -514,17 +534,7 @@ Day 2
 
 ## 7. 다음 행동 위치 계산
 
-현재 `GameContext`의 Turn 및 Conclave 진행을 유지하고, 현재 Turn의 실제 행동 수로 다음 위치를 계산한다.
-
-```csharp
-public readonly struct EventPosition
-{
-    public int Day { get; }
-    public GameContext.Conclave Conclave { get; }
-    public int Turn { get; }
-    public int ActionPosition { get; }
-}
-```
+별도 `EventPosition` 타입을 만들지 않는다. 현재 위치는 `EventTriggerContext` 하나로만 표현하며 다음 위치 이동은 기존 `GameContext`가 담당한다.
 
 진행 규칙:
 
@@ -546,6 +556,30 @@ lastY = max(4, ActionsThisTurn)
 
 행동 감소는 `lastY`를 4보다 작게 만들지 않는다. 행동 증가는 `lastY`를 5 이상으로 확장한다.
 
+### 7.1 확정 후속 이벤트 예약
+
+확정 후속 이벤트를 Day/Conclave/Turn/Action 절대 좌표로 저장하지 않는다.
+
+```csharp
+public enum PendingEventTiming
+{
+    AfterCurrentEvent,
+    NextEnteredPosition
+}
+
+[Serializable]
+public class PendingGuaranteedEventSaveData
+{
+    public string eventId;
+    public PendingEventTiming timing;
+}
+```
+
+- `AfterCurrentEvent`: E11100 직후 같은 위치에서 E11200 실행.
+- `NextEnteredPosition`: 현재 이벤트와 강제 이동 처리가 모두 끝난 뒤 실제로 처음 진입한 위치에서 실행.
+- E32000 선택지 1 실패처럼 현재 Conclave가 강제 종료되면, E32001은 폐기된 같은 Conclave 좌표가 아니라 다음 Conclave에서 실제로 진입한 첫 위치에 실행한다.
+- E32001 선택지 2로 엔딩이 발생하면 E32002 대기를 제거한다.
+
 ## 8. 저장 데이터 변경
 
 기존 `GameContextSaveData` 시간 구조를 유지한다.
@@ -557,31 +591,25 @@ public int currentTurn;
 public int completedActions;
 public int actionsThisTurn;
 public bool isEventPhase;
+public int positionProgressVersion;
 ```
 
-시간 계층을 바꾸지 않으므로 기존 저장 구조를 폐기하거나 진행 중 저장을 강제로 무효화하지 않는다. 구버전 저장의 현재 Turn은 저장된 `completedActions/actionsThisTurn` 값으로 마무리하고, 다음 `BeginTurn()`부터 기본 행동 수 4를 적용한다. 새 이벤트 트리거 상태가 없는 저장은 기존 이벤트 발생/선택 기록을 기준으로 초기화한다.
+시간 계층을 바꾸지 않으므로 기존 저장을 무효화하지 않는다. `positionProgressVersion`으로 `completedActions`의 의미를 판별한다.
+
+- `0`: 구버전의 플레이어 행동 완료 수.
+- `1`: 신버전의 처리 완료 위치 수.
+- 구버전 저장의 현재 Turn은 저장된 `completedActions/actionsThisTurn` 값으로 복원하고, 다음 `BeginTurn()`부터 기본 행동 수 4를 적용한다.
+- `GameContextSaveData` 자체에 의미 버전이 있으므로 `SaveManager`가 나중에 복원되는 `EventManager.scheduleVersion`을 전달할 필요가 없다.
+- 복원 시 `completedActions`는 `0~max(4, actionsThisTurn)` 범위로 처리한다.
 
 `EventManagerSaveData.scheduleVersion`을 올리고 다음 데이터를 추가한다.
 
 ```csharp
-public List<string> unlockedEventIds;
-public List<string> permanentlyBlockedEventIds;
 public List<PendingGuaranteedEventSaveData> pendingGuaranteedEvents;
-public List<string> resolvedTriggerPositions;
-public string exclusiveBranchEventId;
+public bool subEventOccurredThisTurn;
 ```
 
-```csharp
-[Serializable]
-public class PendingGuaranteedEventSaveData
-{
-    public string eventId;
-    public int day;
-    public int conclave;
-    public int turn;
-    public int actionPosition;
-}
-```
+해금, 영구 차단과 분기 승자는 기존 `records`, `choices`, `pendingGuaranteedEvents`에서 계산한다. 별도 `unlockedEventIds`, `permanentlyBlockedEventIds`, `exclusiveBranchEventId`를 저장하지 않는다. 모든 과거 위치를 문자열로 저장하는 `resolvedTriggerPositions`도 만들지 않는다.
 
 저장 후 복원 검증 대상:
 
@@ -601,6 +629,42 @@ public class PendingGuaranteedEventSaveData
 - 37개 ID를 `GetEventById()`로 모두 조회할 수 있어야 한다.
 
 ## 10. 파일별 변경 범위
+
+### 10.1 수정 대상 스크립트 요약
+
+#### 신설
+
+| 스크립트 | 변경 내용 |
+|---|---|
+| `Assets/Event/Scripts/EventTrigger.cs` | `Day + Conclave + Turn(x) + Action(y)` 위치 조건, 발생 전제와 확률을 판정하는 규칙 테이블을 신설한다. 난수 추첨과 런타임 상태 변경은 넣지 않는다. |
+
+#### 필수 수정
+
+| 스크립트 | 변경 내용 |
+|---|---|
+| `Assets/Event/Scripts/EventManager.cs` | 이벤트 레지스트리, 중복 방지, 기록 기반 해금/차단, 분기, 확률 정규화, Turn당 1회 서브 이벤트, 상대 시점 확정 대기열과 저장/복원을 구현한다. 기존 Turn 종료 전용 추첨을 위치 진입 요청 방식으로 교체한다. |
+| `Assets/Core/Scripts/InGameManager.cs` | 파일 안의 `GameContext` 시간 계층은 유지한다. `CompletedActions`를 처리 위치 수로 통일하고, 기본 행동 수 4, `x-5` 이상 확장, 감소 시 `x-4`까지 이벤트 전용 진행, 위치 진입 시 이벤트 선처리와 같은 위치 행동 복귀를 연결한다. Q1 확정 시 NPC는 y 1~2에서만 기존 배열을 사용한다. |
+| `Assets/UI/Scripts/InGame/TimeUI.cs` | `Turn {CurrentTurn}-{ActionPosition}` 형식은 유지하면서 `DisplayPhase`의 1~2/이벤트 3 고정을 제거하고 실제 `y`를 표시한다. |
+| `Assets/Core/Scripts/SaveModel.cs` | `GameContextSaveData.positionProgressVersion`, 상대 시점 확정 대기열과 현재 Turn의 서브 이벤트 발생 여부를 추가한다. 기존 시간 필드와 이벤트 발생/선택 기록은 유지한다. |
+| `Assets/Plot/Scripts/PlotManager.cs` | 첫 공작 행동 후 E11200을 별도 호출하는 예외 트리거를 제거한다. E11200은 E11100 직후 `EventManager` 대기열에서 실행한다. |
+
+#### 원칙적으로 수정하지 않는 스크립트
+
+| 스크립트 | 유지 이유 |
+|---|---|
+| `Assets/Event/Scripts/Event.cs` | 개별 이벤트 효과와 `FinishChoice()` 경로를 유지한다. |
+| `Assets/UI/Scripts/InGame/StatsUI/EventUI/EventResult.cs` | 기존 선택 결과 전달 및 체크포인트 저장 흐름을 유지한다. `Event.cs`에서도 선택 결과가 기록될 수 있으므로 중복 호출은 `EventManager.RecordChoice()`가 멱등 처리한다. |
+| `Assets/UI/Scripts/InGame/StatsUI/EventUI/EventUI.cs` | 기존 `OnTurnEventClosed()` 콜백을 유지한다. 콜백 이후 다음 대기 이벤트 실행 여부는 `InGameManager`가 판단한다. |
+| `Assets/Event/EventsScripts/E#####.cs` | 선택지 조건과 능력치, 후보 탈락, 엔딩 등 효과 적용은 기존 각 Event 객체가 계속 담당한다. 발생 조건을 이 파일들에 추가하지 않는다. |
+| `Assets/Core/Scripts/SaveManager.cs` | 이미 `InGameManager.CaptureSaveData()`와 `EventManager.CaptureSaveData()/RestoreFromSave()`에 위임한다. `completedActions` 의미 버전은 `GameContextSaveData`에 저장하므로 복원 순서를 바꾸지 않고 전역 저장 버전도 올리지 않는다. |
+
+#### 스크립트 외 필수 수정
+
+| 파일 | 변경 내용 |
+|---|---|
+| `Assets/Scenes/Main/GameScene.unity` | `EventManager.allEvents`에 정식 이벤트 SO 37개를 모두 등록한다. |
+
+새 `EventTrigger.cs.meta`는 Unity가 생성하도록 두며 직접 작성하지 않는다.
 
 ### `EventManager.cs`
 
@@ -622,6 +686,7 @@ public class PendingGuaranteedEventSaveData
 - 기도/연설 확정 성공
 - 공작 경건함 면제
 - 저장/복원 골격
+- `RecordChoice()`는 같은 이벤트의 같은 결과가 중복 전달돼도 해금 또는 확정 대기열을 두 번 추가하지 않도록 멱등 처리
 
 ### `PlotManager.cs`
 
@@ -661,7 +726,7 @@ Turn {CurrentTurn}-{ActionPosition}
 7. `InGameManager` 위치 진입/이벤트/행동 흐름을 연결한다.
 8. `EventResult.RecordChoice()` 이후 분기 해금과 예약을 연결한다.
 9. `PlotManager`의 E11200 예외 트리거를 제거한다.
-10. 저장 모델 버전과 복원 로직을 확장한다.
+10. `EventManagerSaveData.scheduleVersion`과 복원 로직을 확장한다. 전역 저장 버전은 유지한다.
 11. `GameScene.allEvents`에 37개 SO를 등록한다.
 12. 컴파일과 최소 런타임 검증을 수행한다.
 
@@ -671,12 +736,14 @@ Turn {CurrentTurn}-{ActionPosition}
 
 - 기본 행동: `1-1 → 1-2 → 1-3 → 1-4 → 2-1`.
 - 행동 +1: `1-4 → 1-5 → 2-1`.
+- P022 행동 +2: `1-4 → 1-5 → 1-6 → 2-1`, NPC 배열 범위 예외 없음.
 - 행동 -1: `1-3` 행동 후 `1-4` 이벤트 검사, 플레이어 행동 없이 `2-1`.
 - 각 Conclave의 `4-4` 또는 확장된 마지막 위치 후 다음 Conclave의 `1-1`.
 - `Evening 4-4` 또는 확장된 마지막 위치 후 다음 Day의 `Dawn 1-1`.
 - 이벤트가 있는 `2-4`에서 이벤트 종료 후 같은 위치 플레이어 행동 실행.
 - 이벤트가 콘클라베를 끝냈다면 같은 위치 플레이어 행동 미실행.
 - 저장/불러오기 후 같은 위치와 행동 가능 횟수 복원.
+- `positionProgressVersion` 0/1 저장을 각각 불러와 `completedActions`를 올바르게 해석.
 
 ### 확정 이벤트
 
@@ -690,12 +757,14 @@ Turn {CurrentTurn}-{ActionPosition}
 - E20000 미발생 시 E21000 지정 위치 재시도.
 - 확률 합이 100%를 넘으면 비례 정규화.
 - 남은 확률을 사용 가능한 서브 이벤트에 균등 분배.
+- 같은 Turn의 여러 y에서 서브 이벤트가 최대 1회만 발생하고 다음 Turn에서 다시 허용.
 - 발생한 서브 이벤트가 다시 후보에 들어오지 않음.
 - 후보 3만 탈락하면 다음 행동에 E31100.
 - 후보 2 탈락 및 후보 1 생존이면 다음 행동에 E31200.
 - 동시 조건에서 50:50 선택 후 패자 영구 차단.
 - E31210 선택지 2 실패 후 다음 행동 E31211.
 - E32000 선택지 1 실패 후 다음 행동 E32001.
+- E32000이 Conclave를 강제 종료해도 다음 Conclave의 첫 실제 진입 위치에서 E32001.
 - E32001 선택지 1 후 다음 행동 E32002.
 - E32001 선택지 2 엔딩 후 E32002 대기열 폐기.
 
@@ -712,6 +781,7 @@ Turn {CurrentTurn}-{ActionPosition}
 
 - E31000 70%, E21101 20%, 서브 이벤트는 `x-5` 이상의 확장 위치에서도 검사한다.
 - E20000, E21000, E31212, E32000처럼 정확한 위치 목록이 있는 이벤트는 목록에 없는 확장 위치에서 검사하지 않는다.
+- 서브 이벤트는 확장 위치를 포함해 검사하지만 같은 Turn 전체에서 최대 1회만 발생한다.
 
 ### 13.3 행동 증감 누적
 
@@ -729,7 +799,32 @@ ActionsThisTurn = max(0, 4 + 누적 증감치)
 - Day가 명시되지 않은 `x-y` 조건은 모든 Day와 모든 Conclave에서 검사한다.
 - 이미 발생한 이벤트는 모든 이후 검사에서 제외한다.
 
-## 14. 완료 조건
+### 13.5 P1 검토 반영
+
+- `EventTriggerContext`만 사용하고 중복 `EventPosition` 타입은 만들지 않는다.
+- NPC 고정 배열을 동적화하지 않는다. Q1 확정 시 y 3 이상에서는 NPC 배열에 접근하지 않는다.
+- `GameContextSaveData.positionProgressVersion`으로 `completedActions` 의미를 판별한다.
+- 후속 이벤트는 절대 좌표가 아니라 `AfterCurrentEvent` 또는 `NextEnteredPosition` 상대 시점으로 저장한다.
+- 해금/차단/분기 상태는 기존 발생 및 선택 기록에서 계산하고 중복 저장하지 않는다.
+- 모든 과거 트리거 위치 문자열 목록은 저장하지 않는다.
+
+## 14. 최종 확정 사항
+
+### Q1. NPC 행동 횟수
+
+현재 NPC의 실질 기본 행동은 Turn당 2회이고 y 3~4는 `PlayerExtraAction`으로 아무 효과도 실행하지 않는다.
+
+NPC는 기존 2회만 유지하고 y 3 이상에서는 NPC 배열을 읽거나 쓰지 않는다. 플레이어와 이벤트만 y 3 이상을 진행한다. 배열 및 NPC 저장 구조는 동적화하지 않는다.
+
+### Q2. 이벤트가 부여하는 행동 증감의 적용 Turn
+
+`QueueNextTurnActionDelta()`는 이름대로 항상 다음 Turn에 적용하고, `AddCurrentTurnActions()`만 현재 Turn을 즉시 확장한다. 따라서 E40200, I002, P007과 각 이벤트의 기존 의도가 유지되며 P022만 현재 Turn을 `+2` 확장한다.
+
+### Q3. 확정 스토리와 Turn당 서브 이벤트의 관계
+
+확정 스토리는 발생한 해당 `x-y`에서만 서브 이벤트를 막는다. 같은 x의 다음 y에서는 아직 서브 이벤트가 발생하지 않았다면 다시 추첨하고, 서브 이벤트가 한 번 발생한 뒤에만 다음 x까지 차단한다.
+
+## 15. 완료 조건
 
 - UI가 `Day`와 실제 `Turn x-y`를 일치하게 표시한다.
 - `x`가 `CurrentTurn`, `y`가 행동 위치로만 사용된다.
@@ -737,8 +832,10 @@ ActionsThisTurn = max(0, 4 + 누적 증감치)
 - 이벤트 종료 후 같은 위치의 플레이어 행동을 진행한다.
 - 행동 감소 위치에서도 기준 `y=4`까지 이벤트 검사가 유지된다.
 - 행동 증가 시 `y=5` 이상으로 시간과 UI가 확장된다.
+- y 3 이상에서 NPC 고정 배열 범위를 접근하지 않는다.
 - 확정 스토리가 있는 위치에는 다른 이벤트가 나오지 않는다.
 - 확률형 스토리와 서브 이벤트 합계가 100% 이하가 된다.
+- 서브 이벤트는 Turn당 최대 1회만 발생한다.
 - 모든 정식 이벤트가 씬에 등록된다.
 - 모든 이벤트가 런당 최대 1회 발생한다.
 - 분기 해금, 영구 차단과 다음 행동 이벤트가 저장 후 유지된다.
