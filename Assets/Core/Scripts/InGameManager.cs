@@ -128,7 +128,7 @@ public class GameContext
         actionsThisTurn = Mathf.Max(completedActions, actionsThisTurn + count);
     }
 
-    public void EnterEventPhase() => isEventPhase = true;
+    public void SetEventPhase(bool value) => isEventPhase = value;
 
     public bool AdvanceTurn()
     {
@@ -140,10 +140,6 @@ public class GameContext
     public void StartGame()
     {
         OnGameContextEvent?.Invoke(GameContextEvent.ConclaveStart);
-    }
-    public void SetNewEvent()
-    {
-        currentEvent = InGameManager.Instance.EventManager.GetNewEvent();
     }
     public void SetEvent(Event evt)
     {
@@ -200,7 +196,6 @@ public class InGameManager : MonoBehaviour
     private bool blockRemainingCurrentTurn;
     private bool awaitingTurnEvent;
     private bool eventBeforeActions;
-    private Event queuedImmediateEvent;
     private bool endConclaveAfterEvent;
     private readonly NPCBehaviour[,] npcTurnBehaviours = new NPCBehaviour[3, 4];
     private readonly bool[,] npcTurnActionsExecuted = new bool[3, 4];
@@ -282,13 +277,7 @@ public class InGameManager : MonoBehaviour
         }
 
         SpawnFieldItems();
-        Event startEvent = eventManager != null ? eventManager.GetStartOfDayEvent() : null;
-        if (startEvent != null)
-        {
-            OpenEventBeforeActions(startEvent);
-            return;
-        }
-        TryResolveTurnWithoutActions();
+        BeginCurrentActionPosition();
     }
 
     public void StopTimer()
@@ -324,7 +313,6 @@ public class InGameManager : MonoBehaviour
         blockRemainingCurrentTurn = false;
         awaitingTurnEvent = false;
         eventBeforeActions = false;
-        queuedImmediateEvent = null;
         endConclaveAfterEvent = false;
         prayerBlockedCandidateNumbers.Clear();
         pendingEffects.Clear();
@@ -1267,33 +1255,20 @@ public class InGameManager : MonoBehaviour
             blockRemainingCurrentTurn = false;
             gameContext.BlockRemainingPlayerActions();
         }
-        if (queuedImmediateEvent != null)
-        {
-            Event immediateEvent = queuedImmediateEvent;
-            queuedImmediateEvent = null;
-            OpenEventBeforeActions(immediateEvent);
-            SaveTurnPhaseCheckpoint(SaveResumeStep.ReopenPendingEvent);
-            return;
-        }
-        AdvanceUnavailablePositions();
         if (gameContext.AreActionsComplete())
         {
             ResolveCompletedTurn();
             return;
         }
 
-        SaveTurnPhaseCheckpoint(SaveResumeStep.Gameplay);
-    }
-
-    public void QueueImmediateEventAfterPlayerAction(Event evt)
-    {
-        if (evt != null && queuedImmediateEvent == null) queuedImmediateEvent = evt;
+        BeginCurrentActionPosition();
     }
 
     private void OpenEventBeforeActions(Event evt)
     {
         if (evt == null) return;
         gameContext.SetEvent(evt);
+        gameContext.SetEventPhase(true);
         awaitingTurnEvent = true;
         eventBeforeActions = true;
         if (UIManager.Instance != null && UIManager.Instance.Ingame != null)
@@ -1320,26 +1295,39 @@ public class InGameManager : MonoBehaviour
     {
         if (!awaitingTurnEvent) return;
         awaitingTurnEvent = false;
-        if (eventBeforeActions)
+
+        Event chainedEvent = eventManager != null ? eventManager.GetChainedEvent() : null;
+        if (chainedEvent != null)
         {
-            eventBeforeActions = false;
-            AdvanceUnavailablePositions();
-            if (gameContext.AreActionsComplete())
-            {
-                ResolveCompletedTurn();
-            }
-            else
-            {
-                SaveTurnPhaseCheckpoint(SaveResumeStep.Gameplay);
-            }
+            OpenEventBeforeActions(chainedEvent);
+            SaveTurnPhaseCheckpoint(SaveResumeStep.ReopenPendingEvent);
             return;
         }
+
+        gameContext.SetEventPhase(false);
+
         if (endConclaveAfterEvent)
         {
             endConclaveAfterEvent = false;
             FinishCurrentConclave();
             return;
         }
+
+        if (eventBeforeActions)
+        {
+            eventBeforeActions = false;
+            if (gameContext.CanPlayerAct())
+            {
+                SaveTurnPhaseCheckpoint(SaveResumeStep.Gameplay);
+            }
+            else
+            {
+                gameContext.CompleteUnavailablePosition();
+                ContinueAfterPositionCompleted();
+            }
+            return;
+        }
+
         StartNextTurnOrEndConclave();
     }
 
@@ -1370,7 +1358,6 @@ public class InGameManager : MonoBehaviour
         StopTimer();
         awaitingTurnEvent = false;
         eventBeforeActions = false;
-        queuedImmediateEvent = null;
         gameContext.EndConclave();
     }
 
@@ -1390,27 +1377,7 @@ public class InGameManager : MonoBehaviour
     {
         ExecuteRemainingNpcBaseActions();
         if (!ApplyTurnEndHealthLoss()) return;
-
-        if (gameContext.CurrentTurn >= 4)
-        {
-            EndCurrentConclave();
-            return;
-        }
-
-        gameContext.EnterEventPhase();
-        awaitingTurnEvent = true;
-        gameContext.SetNewEvent();
-
-        if (gameContext.CurrentEvent != null && UIManager.Instance != null && UIManager.Instance.Ingame != null)
-        {
-            UIManager.Instance.Ingame.Event.UISetEvent();
-            SaveTurnPhaseCheckpoint(SaveResumeStep.ReopenPendingEvent);
-        }
-        else
-        {
-            Debug.LogWarning("[Turn] 표시할 이벤트가 없어 다음 턴으로 진행합니다.");
-            OnTurnEventClosed();
-        }
+        StartNextTurnOrEndConclave();
     }
 
     private bool ApplyTurnEndHealthLoss()
@@ -1450,7 +1417,7 @@ public class InGameManager : MonoBehaviour
         }
 
         gameContext.BeginTurn(ConsumeNextTurnActionModifier(), ConsumeNextTurnBlock());
-        TryResolveTurnWithoutActions();
+        BeginCurrentActionPosition();
 
         if (isTimeRunning && SaveManager.Instance != null)
         {
@@ -1468,15 +1435,36 @@ public class InGameManager : MonoBehaviour
         }
     }
 
-    private void TryResolveTurnWithoutActions()
+    private void BeginCurrentActionPosition()
     {
-        AdvanceUnavailablePositions();
-        if (isTimeRunning && gameContext.AreActionsComplete()) ResolveCompletedTurn();
+        if (!isTimeRunning || isConclaveExitInProgress || awaitingTurnEvent) return;
+
+        while (!gameContext.AreActionsComplete())
+        {
+            Event evt = eventManager != null ? eventManager.GetNewEvent() : null;
+            if (evt != null)
+            {
+                OpenEventBeforeActions(evt);
+                SaveTurnPhaseCheckpoint(SaveResumeStep.ReopenPendingEvent);
+                return;
+            }
+
+            if (gameContext.CanPlayerAct())
+            {
+                SaveTurnPhaseCheckpoint(SaveResumeStep.Gameplay);
+                return;
+            }
+
+            if (!gameContext.CompleteUnavailablePosition()) break;
+        }
+
+        if (gameContext.AreActionsComplete()) ResolveCompletedTurn();
     }
 
-    private void AdvanceUnavailablePositions()
+    private void ContinueAfterPositionCompleted()
     {
-        while (gameContext.CompleteUnavailablePosition()) { }
+        if (gameContext.AreActionsComplete()) ResolveCompletedTurn();
+        else BeginCurrentActionPosition();
     }
 
     private int ConsumeNextTurnActionModifier()

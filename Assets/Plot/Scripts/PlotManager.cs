@@ -224,11 +224,6 @@ public class PlotManager : MonoBehaviour
         if (InGameManager.Instance != null) InGameManager.Instance.ExecuteNpcActionsBeforePlayerAction(performer);
         selectedPlot.Execute(performer);
         performer?.OnPlotExecuted();
-        if (InGameManager.Instance != null && InGameManager.Instance.EventManager != null)
-        {
-            Event tutorial = InGameManager.Instance.EventManager.GetFirstPlotTutorialEvent();
-            InGameManager.Instance.QueueImmediateEventAfterPlayerAction(tutorial);
-        }
         AvailPlotSets[plotSet].use(index);
 
         if (ActionRecordManager.Instance != null)

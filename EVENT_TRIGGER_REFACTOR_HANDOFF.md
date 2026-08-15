@@ -206,8 +206,8 @@ public sealed class EventTrigger
 권장 호출 형태:
 
 ```csharp
-public void BeginTriggerWindow(EventTriggerContext context);
-public Event TryDequeueNextEvent();
+public Event GetEventForPosition(EventTriggerContext context);
+public Event GetChainedEvent();
 public void RecordChoice(string eventId, int optionIndex, bool succeeded);
 ```
 
@@ -217,8 +217,7 @@ public void RecordChoice(string eventId, int optionIndex, bool succeeded);
 
 ```text
 행동 위치 진입
-→ EventManager.BeginTriggerWindow(context)
-→ EventManager.TryDequeueNextEvent()
+→ EventManager.GetEventForPosition(context)
 → 이벤트 UI 표시
 → 이벤트 종료 시 다음 대기 이벤트 확인
 → 대기열이 비면 같은 위치의 플레이어 행동 가능 여부 확인
@@ -226,7 +225,7 @@ public void RecordChoice(string eventId, int optionIndex, bool succeeded);
 → 행동 불가: 다음 위치로 자동 이동
 ```
 
-`BeginTriggerWindow()`는 위치 진입 직후 한 번만 호출한다. 이벤트가 없으면 같은 호출 흐름에서 플레이어 입력으로 넘어가며 중간 저장을 만들지 않는다. 이벤트가 있으면 기존 `IsEventPhase`, `awaitingTurnEvent`, 저장 재개 단계로 같은 위치에 복귀하므로 모든 과거 위치 키를 저장하지 않는다.
+`GetEventForPosition()`은 위치 진입 직후 한 번만 호출한다. 이벤트가 없으면 같은 호출 흐름에서 플레이어 입력으로 넘어간다. 이벤트가 있으면 기존 `IsEventPhase`, `awaitingTurnEvent`, 저장 재개 단계로 같은 위치에 복귀하므로 모든 과거 위치 키를 저장하지 않는다.
 
 ### 4.4 개별 `Event` 클래스
 

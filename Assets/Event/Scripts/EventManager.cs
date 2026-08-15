@@ -114,18 +114,6 @@ public class EventManager : MonoBehaviour
         return TakePendingEvent(PendingEventTiming.AfterCurrentEvent);
     }
 
-    public Event GetStartOfDayEvent()
-    {
-        return GetNewEvent();
-    }
-
-    public Event GetFirstPlotTutorialEvent()
-    {
-        if (!HasAppeared("E11100")) return null;
-        Event tutorial = GetEventById("E11200");
-        return tutorial != null && HasRemaining(tutorial) ? SelectEvent(tutorial) : null;
-    }
-
     public bool HasRemaining(Event evt)
     {
         return evt != null && (!appearedCnt.TryGetValue(evt, out int count) || count < 1);
