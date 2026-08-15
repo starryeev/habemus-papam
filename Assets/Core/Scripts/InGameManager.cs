@@ -184,6 +184,33 @@ public class GameContext
         Debug.Assert(test.CurrentActionPosition == 4 && !test.CanPlayerAct() &&
             test.CompleteUnavailablePosition() && test.AreActionsComplete(),
             "행동 감소 위치 검사 규칙이 손상됐습니다.");
+
+        GameContext clock = new GameContext();
+        clock.currentDay = 1;
+        clock.currentConclave = Conclave.Dawn;
+        clock.ResetTurns();
+        clock.AdvanceConclave();
+        Debug.Assert(clock.CurrentConclave == Conclave.Morning && clock.CurrentTurn == 2 && clock.CurrentDay == 1,
+            "Morning과 X=2 동기화가 손상됐습니다.");
+        clock.AdvanceConclave();
+        Debug.Assert(clock.CurrentConclave == Conclave.Evening && clock.CurrentTurn == 3,
+            "Evening과 X=3 동기화가 손상됐습니다.");
+        clock.AdvanceConclave();
+        Debug.Assert(clock.CurrentConclave == Conclave.Night && clock.CurrentTurn == 4,
+            "Night와 X=4 동기화가 손상됐습니다.");
+        clock.AdvanceConclave();
+        Debug.Assert(clock.CurrentConclave == Conclave.Dawn && clock.CurrentTurn == 1 && clock.CurrentDay == 2,
+            "Night 종료 후 다음 Day 전환 규칙이 손상됐습니다.");
+
+        GameContext restored = new GameContext();
+        restored.RestoreState(2, Conclave.Morning, 1, 4, false, 1);
+        Debug.Assert(restored.CurrentTurn == 2 && restored.CompletedActions == 2 &&
+            restored.ActionsThisTurn == 8 && restored.CurrentActionPosition == 2,
+            "위치 진행 버전 1 저장 변환이 손상됐습니다.");
+        restored.RestoreState(2, Conclave.Evening, 1, 2, false, 0);
+        Debug.Assert(restored.CurrentTurn == 3 && restored.CompletedActions == 1 &&
+            restored.ActionsThisTurn == 2 && restored.CurrentActionPosition == 1,
+            "구버전 저장의 Conclave 우선 변환이 손상됐습니다.");
     }
 
     private void ResetTurns()
