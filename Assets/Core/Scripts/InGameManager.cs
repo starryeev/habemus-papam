@@ -1341,8 +1341,11 @@ public class InGameManager : MonoBehaviour
     {
         if (!isTimeRunning || isConclaveExitInProgress || awaitingTurnEvent) return;
 
-        gameContext.CompleteRemainingActions();
-        ResolveCompletedTurn();
+        Cardinal player = FindPlayerCardinal();
+        if (player == null || !CanPerformPlayerAction(player)) return;
+
+        ExecuteNpcActionsBeforePlayerAction(player);
+        CompletePlayerAction(player);
     }
 
     public void EndCurrentConclave()
