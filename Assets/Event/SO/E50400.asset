@@ -28,12 +28,8 @@ MonoBehaviour:
   option1: "\uC545! \uC545! \uC545!"
   option1Chance: 1
   option1Requirement: '-'
-  option1SuccessDescription: "\uD478\uC26C\uC774\uC774.... \uC774\uB9C8\uC5D0 \uC0BC\uC704\uC77C\uCCB4\uAC00
-    \uC2DC\uBED8\uAC8B\uAC8C \uC218\uB193\uC600\uB2E4.\n\uD0DC\uC591\uC758 \uC2E0\uC2E4\uD55C
-    \uC885 \uB2E4\uC6B4 \uD2B8\uB9AC\uD50C \uD639\uC774\uC5C8\uB2E4.\n\n\uCCB4\uB825
-    33 \uAC10\uC18C!\n\uC815\uCE58\uB825 3 \uC99D\uAC00!\n\uACBD\uAC74\uD568 3 \uC99D\uAC00!"
-  option1SuccessResult: "\uCCB4\uB825 - 33\n\uC815\uCE58\uB825 + 3\n\uACBD\uAC74\uD568
-    + 3"
+  option1SuccessDescription: "이마에 삼위일체가 시뻘겋게 수놓였다. 태양의 신실한 종다운 트리플 혹이었다.\n\n체력 4 감소!\n정치력 1 증가!\n경건함 1 증가!"
+  option1SuccessResult: "체력 -4\n정치력 +1\n경건함 +1"
   option1FailDescription: 
   option1FailResult: 
   option2: 

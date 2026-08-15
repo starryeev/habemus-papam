@@ -15,14 +15,14 @@ public class E40100 : Event
 
         option1 = "신님이 당신의 모습을 본 떠 인간을 빚었듯 태양의 불변함을 이 미물에 담은 것이다.";
         option1Chance = 1f;
-        option1Requirement = "경건함 40 이상";
-        option1SuccessDescription = "당신이 주장은 투구를 쓴 모 추기경에게 큰 지지를 받았다. \n\"요 신성한 벌레의 이름을 태양충으로 바꿉시다! 태양 만세!\"\n\n체력 10 증가!\n정치력 10 증가!";
-        option1SuccessResult = "체력 + 10\n정치력 + 10";
+        option1Requirement = "경건함 4 이상";
+        option1SuccessDescription = "당신의 주장은 큰 지지를 받았다. 추기경들은 이 신성한 벌레를 태양충이라 부르기로 했다.\n\n체력 1 증가!\n정치력 1 증가!";
+        option1SuccessResult = "체력 +1\n정치력 +1";
 
         option2 = "으디서 그런 수천 년 전 이교도가 할 법한 소리를!";
         option2Chance = 1f;
-        option2SuccessDescription = "이교! 척결!\n오늘도 당신의 손으로 '신앙의 순수함'을 지켜냈다.\n\n경건함 30 증가!";
-        option2SuccessResult = "경건함 + 30";
+        option2SuccessDescription = "이교! 척결! 오늘도 당신의 손으로 신앙의 순수함을 지켜냈다.\n\n경건함 3 증가!";
+        option2SuccessResult = "경건함 +3";
     }
 
     public override bool CanChoiceOption1(Cardinal performer)

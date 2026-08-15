@@ -39,13 +39,10 @@ MonoBehaviour:
     \uC5F0\uC124\uC5D0\uB294 \uC870\uAE08\uC758 \uB9DD\uC124\uC784\uB3C4 \uC5C6\uC5C8\uB2E4.\n\uC774\uB2E8\uC740
     \uCC99\uACB0\uB418\uC5B4\uC57C \uD55C\uB2E4!\n\n\uC36C\u3161\uD074\uB77C\uBCA0
     \uC885\uB8CC!\""
-  option1FailDescription: "\"\uC9C4\uC2E4\uC740 \uAE08\uC138 \uBC1D\uD600\uC84C\uB2E4.
-    \uC554\uC0B4\uC758 \uBC30\uD6C4\uC5D0\uB294 \uC5ED\uC2DC (\uD6C4\uBCF4 1)(\uC774)\uAC00
-    \uC788\uC5C8\uB2E4.\n(\uD6C4\uBCF4 1)\uB294 \uC989\uC2DC \uD30C\uBB38\uB418\uC5B4
-    \uC9C0\uD558 \uAC10\uC625\uC5D0 \uC218\uAC10\uB418\uC5C8\uB2E4.\n\uADF8\uB294
-    \uB2E4\uC2DC\uB294 \uD0DC\uC591\uC744 \uBCF4\uC9C0 \uBABB\uD560 \uAC83\uC774\uB2E4.\n\n(\uD6C4\uBCF4
-    1) \uC989\uC2DC \uD0C8\uB77D!\""
+  option1FailDescription: "진실은 금세 밝혀졌다. 암살의 배후에는 (후보 1)이(가) 있었다. (후보 1)과(와) (후보 2)은(는) 모두 후보 자격을 잃었다.\n\n(후보 1) 즉시 탈락!\n(후보 2) 즉시 탈락!"
   option2: 
   option2Chance: 1
   option2SuccessDescription: 
-  option2FailDescription: 
+  option2FailDescription:
+  option1SuccessResult: "게임 종료\n\"성전\" 엔딩"
+  option1FailResult: "(후보 1) 탈락\n(후보 2) 탈락"

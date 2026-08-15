@@ -15,14 +15,14 @@ public class E40200 : Event
 
         option1 = "젖 먹던 힘을 다해 당기자!";
         option1Chance = 1f;
-        option1Requirement = "체력 60 이상";
-        option1SuccessDescription = "역시 몸이 좋으면 머리가 고생을 안 한다.\n\n체력 5 증가!\n정치력 15 감소!";
-        option1SuccessResult = "체력 + 5\n정치력 - 15";
+        option1Requirement = "체력 6 이상";
+        option1SuccessDescription = "역시 몸이 좋으면 머리가 고생을 안 한다.\n\n체력 1 증가!\n정치력 2 감소!";
+        option1SuccessResult = "체력 +1\n정치력 -2";
 
         option2 = "힘이 부족하다.\n다른 수단을 찾아봐야 할 듯 한데....";
         option2Chance = 0.5f;
-        option2SuccessDescription = "문이 열렸다. 씨름한 보람이 있네!\n\n정치력 5 감소!";
-        option2SuccessResult = "정치력 - 5";
+        option2SuccessDescription = "문이 열렸다. 씨름한 보람이 있네!\n\n정치력 1 감소!";
+        option2SuccessResult = "정치력 -1";
         option2FailDescription = "꿈쩍도 안 하네. 애를 쓴 덕분인지 다음에는 몸이 더 가볍다.\n\n다음 턴 행동 횟수 1회 증가!";
         option2FailResult = "다음 턴 행동 횟수 +1";
     }

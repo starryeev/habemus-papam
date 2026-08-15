@@ -29,11 +29,8 @@ MonoBehaviour:
   option1: "\uAE61!"
   option1Chance: 1
   option1Requirement: '-'
-  option1SuccessDescription: "\uBD88\uACFC 5\uBD84\uB9CC\uC5D0 \uC774\uB2E8 \uC2E0\uBB38\uC758
-    \uBAA8\uB4E0 \uACFC\uC815\uC774 \uC804\uAC1C\uB410\uB2E4.\n\uD600\uB97C \uB0B4\uB450\uB97C\uB9CC\uD55C
-    \uC9C4\uD589 \uC18D\uB3C4\uB2E4. \uADF8 \uB300\uC0C1\uC774 \uB2F9\uC2E0\uB9CC
-    \uC544\uB2C8\uC5C8\uB2E4\uBA74 \uB9D0\uC774\uB2E4!\n\n\uCCB4\uB825 40 \uAC10\uC18C!"
-  option1SuccessResult: "\uCCB4\uB825 - 40"
+  option1SuccessDescription: "불과 5분 만에 이단 신문의 모든 과정이 전개됐다. 그 대상이 당신만 아니었다면 감탄했을 것이다.\n\n체력 4 감소!"
+  option1SuccessResult: "체력 -4"
   option1FailDescription: 
   option1FailResult: 
   option2: 

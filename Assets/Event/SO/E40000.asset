@@ -31,10 +31,8 @@ MonoBehaviour:
     \uC0B4\uD53C\uBA70 \uC870\uC2EC\uD788 \uB3CC\uC544\uC11C \uAC00\uC790."
   option1Chance: 1
   option1Requirement: "경건함 5 이상"
-  option1SuccessDescription: "\uC624\uB298\uB3C4 \uBB34\uC0AC\uD788 \uC0B0\uCC45\uC744
-    \uB9C8\uCCE4\uB2E4.\n\uC774 \uB610\uD55C \uD0DC\uC591\uC2E0\uC758 \uC740\uD61C\uACA0\uC9C0\uC694.\n\n\uCCB4\uB825
-    15 \uC99D\uAC00!\n\uACBD\uAC74\uD568 5 \uC99D\uAC00!"
-  option1SuccessResult: "\uCCB4\uB825 + 15\n\uACBD\uAC74\uD568 + 5"
+  option1SuccessDescription: "오늘도 무사히 산책을 마쳤다. 이 또한 태양신의 은혜겠지요.\n\n체력 2 증가!\n경건함 1 증가!"
+  option1SuccessResult: "체력 +2\n경건함 +1"
   option1FailDescription: '-'
   option1FailResult: '-'
   option2: "\uB3CC\uB2E4\uB9AC\uB294 \uB098\uC57D\uD55C \uC790\uB098 \uB450\uB4E4\uACA8

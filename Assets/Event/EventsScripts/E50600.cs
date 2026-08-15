@@ -19,8 +19,8 @@ public class E50600 : Event
         option1 = "성전이다!";
         option1Chance = 1f;
         option1Requirement = "-";
-        option1SuccessDescription = "너 죽고 나 죽자!\n내가 오늘 성전의 맛을 똑똑히 보여주겠다.\n\n모든 후보의 정치력 40 증가!\n이번 썬ㅡ클라베 동안 체력이 0으로 떨어지지 않음!";
-        option1SuccessResult = "모든 후보의 정치력 +40\n이번 콘클라베 동안 최소 체력 1 유지";
+        option1SuccessDescription = "너 죽고 나 죽자! 오늘 성전의 맛을 똑똑히 보여주겠다.\n\n플레이어와 후보 1, 2, 3의 정치력 4 증가!\n이번 콘클라베 동안 최소 체력 1 유지!";
+        option1SuccessResult = "플레이어와 후보 1, 2, 3 정치력 +4\n이번 콘클라베 동안 최소 체력 1 유지";
 
         option2 = "우매한 이단들아!";
         option2Chance = 1f;

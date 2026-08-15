@@ -27,17 +27,14 @@ MonoBehaviour:
   option1: "\uC816 \uBA39\uB358 \uD798\uC744 \uB2E4\uD574 \uB2F9\uAE30\uC790!"
   option1Chance: 1
   option1Requirement: "체력 6 이상"
-  option1SuccessDescription: "\uC5ED\uC2DC \uBAB8\uC774 \uC88B\uC73C\uBA74 \uBA38\uB9AC\uAC00
-    \uACE0\uC0DD\uC744 \uC548 \uD55C\uB2E4.\n\n\uCCB4\uB825 5 \uC99D\uAC00!\n\uC815\uCE58\uB825
-    15 \uAC10\uC18C!"
-  option1SuccessResult: "\uCCB4\uB825 + 5\n\uC815\uCE58\uB825 - 15"
+  option1SuccessDescription: "역시 몸이 좋으면 머리가 고생을 안 한다.\n\n체력 1 증가!\n정치력 2 감소!"
+  option1SuccessResult: "체력 +1\n정치력 -2"
   option1FailDescription: 
   option1FailResult: 
   option2: "\uD798\uC774 \uBD80\uC871\uD558\uB2E4.\n\uB2E4\uB978 \uC218\uB2E8\uC744
     \uCC3E\uC544\uBD10\uC57C \uD560 \uB4EF \uD55C\uB370...."
   option2Chance: 0.5
-  option2SuccessDescription: "\uBB38\uC774 \uC5F4\uB838\uB2E4. \uC528\uB984\uD55C
-    \uBCF4\uB78C\uC774 \uC788\uB124!\n\n\uC815\uCE58\uB825 5 \uAC10\uC18C!"
-  option2SuccessResult: "\uC815\uCE58\uB825 - 5"
+  option2SuccessDescription: "문이 열렸다. 씨름한 보람이 있네!\n\n정치력 1 감소!"
+  option2SuccessResult: "정치력 -1"
   option2FailDescription: "꿈쩍도 안 하네. 애를 쓴 덕분인지 다음에는 몸이 더 가볍다.\n\n다음 턴 행동 횟수 1회 증가!"
   option2FailResult: "다음 턴 행동 횟수 +1"

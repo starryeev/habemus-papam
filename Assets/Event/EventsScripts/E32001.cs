@@ -19,9 +19,9 @@ public class E32001 : Event
 
         option1 = "성전만큼은 막아야 한다!";
         option1Chance = 1f;
-        option1Requirement = "경건함 50 이상";
-        option1SuccessDescription = "끈질긴 설득 끝에, 원대한 군사 작전은 경제 재제와 외교적 항의로 축소되었다!\n교단이 평화를 되찾았다! 당신은 평화의 사도로서 큰 존경을 받게 되었다! 좋은 건가?\n\n경건함 20 증가!\n정치력 15 증가!";
-        option1SuccessResult = "경건함 +20\n정치력 +15";
+        option1Requirement = "경건함 5 이상";
+        option1SuccessDescription = "끈질긴 설득 끝에 군사 작전은 외교적 항의로 축소되었다. 당신은 평화의 사도로서 존경을 받았다.\n\n경건함 2 증가!\n정치력 2 증가!";
+        option1SuccessResult = "경건함 +2\n정치력 +2";
 
         option2 = "(후보 1) 교주 시키고 나는 은퇴나 할란다!";
         option2Chance = 1f;

@@ -15,9 +15,9 @@ public class E40600 : Event
 
         option1 = "너무 피곤하다.... 잠시 쉬다 가자.";
         option1Chance = 1f;
-        option1Requirement = "체력 25 이하";
-        option1SuccessDescription = "네잎 클로버를 발견했다. 인생지사 새옹지마라 했던가.\n무엇이든 해낼 수 있을 것 같은 기분이 든다!\n\n체력 40 증가!\n다음 기도/연설 시 무조건 성공!";
-        option1SuccessResult = "체력 + 40\n다음 기도/연설 시 무조건 성공";
+        option1Requirement = "체력 3 이하";
+        option1SuccessDescription = "네잎 클로버를 발견했다. 무엇이든 해낼 수 있을 것 같은 기분이 든다!\n\n체력 4 증가!\n다음 기도/연설 시 무조건 성공!";
+        option1SuccessResult = "체력 +4\n다음 기도/연설 시 무조건 성공";
 
         option2 = "자리를 뜬다.";
         option2Chance = 1f;

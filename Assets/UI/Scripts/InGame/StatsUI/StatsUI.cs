@@ -99,6 +99,18 @@ public class StatsUI : MonoBehaviour
                 .Replace("(후보n)", randomName);
         }
 
+        string candidate1 = GetDisplayName(1);
+        string candidate2 = GetDisplayName(2);
+        string candidate3 = GetDisplayName(3);
+        if (!string.IsNullOrEmpty(candidate1) &&
+            !string.IsNullOrEmpty(candidate2) &&
+            !string.IsNullOrEmpty(candidate3))
+        {
+            resolved = resolved.Replace(
+                "후보 1, 2, 3",
+                $"{candidate1}, {candidate2}, {candidate3}");
+        }
+
         for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
         {
             string displayName = GetDisplayName(candidateNumber);

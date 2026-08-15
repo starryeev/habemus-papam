@@ -16,7 +16,7 @@ public class E31212 : Event
 
         option1 = "황금 경판을 낭독한다!";
         option1Chance = 0.08f;
-        option1Requirement = "경건함 30 이상";
+        option1Requirement = "경건함 3 이상";
         option1SuccessDescription = "당신은 숨을 크게 들이쉬고, 태양의 기운이 담긴 판을 낭독한다.\n경전의 오묘한 신비에 취해 당신은 무아지경에 빠진다. 당신의 몸에 태양의 힘이 깃든다.\n당신의 목소리는 낮고 평안하면서도, 대신전 전체에 우레처럼 울러퍼진다.\n이윽고 하늘에서 밝은 빛줄기가 내려온다. 당신의 영혼이 대지를 떠나 태양을 향해 떠오른다.\n\n승리!";
         option1SuccessResult = "게임 오버\n\"승천\" 엔딩";
         option1FailDescription = "당신은 태양의 기운이 담긴 황금 경판을 집어든다.\n당연한 소리지만, 고대의 사제들만이 사용하던 비밀스러운 상형 문자로 적혀 있다.\n읽을 수는 없을 것 같다.\n\n아이템 '황금 경판' 획득!";

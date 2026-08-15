@@ -16,8 +16,8 @@ public class E50000 : Event
         option1 = "이게 대체 무슨 일이람!";
         option1Chance = 1f;
         option1Requirement = "-";
-        option1SuccessDescription = "\"세상에 70억명의 팬이 있다면....\"\n영문 모를 소리에 멍해진 당신은 어느새 (후보 n)와(과) 악수를 하고 있었다.\n추기경들의 박수 소리가 들린다. 당신의 명망이 더욱 높아졌다!\n\n경건함 30 증가!";
-        option1SuccessResult = "경건함 +30";
+        option1SuccessDescription = "영문 모를 찬양을 들으며 당신은 어느새 (후보 n)와(과) 악수하고 있었다. 추기경들의 박수 속에 신앙의 명망이 높아졌다.\n\n경건함 3 증가!";
+        option1SuccessResult = "경건함 +3";
         option2 = "";
     }
 

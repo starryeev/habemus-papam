@@ -33,11 +33,8 @@ MonoBehaviour:
     \uBCF4\uC774\uB294\uB370....\n\n\uC218\uC911\uC5D0 \uC788\uB294 \uBAA8\uB4E0
     \uC544\uC774\uD15C \uC18C\uBA78!"
   option1SuccessResult: "\uBAA8\uB4E0 \uC544\uC774\uD15C \uC18C\uBA78"
-  option1FailDescription: "\uAE4C\uC545! \uB2F9\uC2E0\uC740 \uAE4C\uB9C8\uADC0\uB4E4\uC744
-    \uC950\uC5B4\uBC15\uACE0 \uB0B4\uCAD3\uC558\uB2E4. \uBC29\uAE08\uC774 \uB9C8\uC9C0\uB9C9
-    \uB188\uC774\uC5C8\uB2E4.\n\uD558\uC597\uAC8C \uBD88\uD0DC\uC6E0\uC5B4....\n\n\uCCB4\uB825
-    30 \uAC10\uC18C!"
-  option1FailResult: "\uCCB4\uB825 - 30"
+  option1FailDescription: "까마귀들을 쥐어박고 내쫓았지만 완전히 지쳐 버렸다.\n\n체력 3 감소!"
+  option1FailResult: "체력 -3"
   option2: 
   option2Chance: 0
   option2SuccessDescription: 

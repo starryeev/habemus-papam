@@ -18,8 +18,8 @@ public class E50200 : Event
         option1Requirement = "-";
         option1SuccessDescription = "푸룬 주스였다! 남은 일을 해치우려 했지만 배가 심상치 않다.\n\n체력 1 감소!\n다음 턴 행동 횟수 1회 감소!";
         option1SuccessResult = "체력 -1\n다음 턴 행동 횟수 -1";
-        option1FailDescription = "푸룬 주스였다! 당신은 뱃속이 심상치 않음을 느끼고 화장실로 직행한다.\n아무튼 거짓말은 하지 않았다.\n\n이번 썬ㅡ클라베 즉시 종료!\n체력 10 증가!";
-        option1FailResult = "체력 + 10\n콘클라베 즉시 종료, 교주 판정으로 직행";
+        option1FailDescription = "푸룬 주스였다! 당신은 뱃속이 심상치 않음을 느끼고 화장실로 직행한다.\n\n체력 1 증가!\n해당 콘클라베 즉시 종료!";
+        option1FailResult = "체력 +1\n콘클라베 즉시 종료, 교주 판정으로 직행";
         option2 = "";
     }
 

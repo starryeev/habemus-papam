@@ -16,6 +16,7 @@ public class E12100 : Event
 
         option1Chance = 1f;
         option2Chance = 0.5f;
+        option1Requirement = "경건함 3 이상";
 
         // 선행 충돌 이벤트는 일단 인스펙터에서 드래그드롭으로처리
         //preEvents.Add(InGameManager.Instance.EventManager.GetEventById("E11100"));

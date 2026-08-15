@@ -33,7 +33,7 @@ MonoBehaviour:
   option1: "\uC120\uC6D0\uC744 \uBBFF\uACE0 \uC870\uC0AC\uB97C \uAC15\uB825\uD558\uAC8C
     \uC694\uCCAD\uD55C\uB2E4!"
   option1Chance: 1
-  option1Requirement: 
+  option1Requirement: "경건함 3 이상"
   option1SuccessDescription: "\uBCF8 \uC0AC\uAC74\uC744 \uC655\uB9BD\uD559\uD68C\uC640
     \uAD50\uB2E8 \uACFC\uD559\uC704\uC6D0\uD68C\uC5D0 \uD68C\uBD80\uD558\uC600\uB2E4!"
   option1SuccessResult: 
