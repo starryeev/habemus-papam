@@ -16,6 +16,10 @@ public enum NPCBehaviour
 
 public class GameContext
 {
+    public const int BaseActionPositions = 4;
+    public const int ActionsPerPosition = 2;
+    public const int BasePlayerActions = BaseActionPositions * ActionsPerPosition;
+
     public enum Conclave
     {
         Dawn,
@@ -46,8 +50,12 @@ public class GameContext
     public int CompletedActions => completedActions;
     public int ActionsThisTurn => actionsThisTurn;
     public bool IsEventPhase => isEventPhase;
-    public int TriggerSpan => Mathf.Max(4, actionsThisTurn);
-    public int CurrentActionPosition => Mathf.Clamp(completedActions + 1, 1, TriggerSpan);
+    public int TriggerSpan => Mathf.Max(BaseActionPositions,
+        Mathf.CeilToInt(actionsThisTurn / (float)ActionsPerPosition));
+    public int TotalActionSlots => TriggerSpan * ActionsPerPosition;
+    public int CurrentActionPosition => Mathf.Clamp(
+        completedActions / ActionsPerPosition + 1, 1, TriggerSpan);
+    public bool IsAtActionPositionStart => completedActions % ActionsPerPosition == 0;
     public int DisplayPhase => CurrentActionPosition;
 
     private Event currentEvent;
@@ -98,7 +106,7 @@ public class GameContext
     public void BeginTurn(int actionModifier, bool blockActions)
     {
         completedActions = 0;
-        actionsThisTurn = blockActions ? 0 : Mathf.Max(0, 4 + actionModifier);
+        actionsThisTurn = blockActions ? 0 : Mathf.Max(0, BasePlayerActions + actionModifier);
         isEventPhase = false;
         OnGameContextEvent?.Invoke(GameContextEvent.TurnStart);
     }
@@ -114,12 +122,13 @@ public class GameContext
 
     public bool CompleteUnavailablePosition()
     {
-        if (isEventPhase || completedActions < actionsThisTurn || completedActions >= TriggerSpan) return false;
-        completedActions++;
+        if (isEventPhase || completedActions < actionsThisTurn || completedActions >= TotalActionSlots) return false;
+        int nextPositionStart = (completedActions / ActionsPerPosition + 1) * ActionsPerPosition;
+        completedActions = Mathf.Min(nextPositionStart, TotalActionSlots);
         return true;
     }
 
-    public bool AreActionsComplete() => completedActions >= TriggerSpan;
+    public bool AreActionsComplete() => completedActions >= TotalActionSlots;
 
     public void BlockRemainingPlayerActions() => actionsThisTurn = Mathf.Min(actionsThisTurn, completedActions);
 
@@ -144,7 +153,7 @@ public class GameContext
     {
         currentTurn = (int)currentConclave + 1;
         completedActions = 0;
-        actionsThisTurn = 4;
+        actionsThisTurn = BasePlayerActions;
         isEventPhase = false;
     }
 }
@@ -1416,12 +1425,15 @@ public class InGameManager : MonoBehaviour
 
         while (!gameContext.AreActionsComplete())
         {
-            Event evt = eventManager != null ? eventManager.GetNewEvent() : null;
-            if (evt != null)
+            if (gameContext.IsAtActionPositionStart)
             {
-                OpenEventBeforeActions(evt);
-                SaveTurnPhaseCheckpoint(SaveResumeStep.ReopenPendingEvent);
-                return;
+                Event evt = eventManager != null ? eventManager.GetNewEvent() : null;
+                if (evt != null)
+                {
+                    OpenEventBeforeActions(evt);
+                    SaveTurnPhaseCheckpoint(SaveResumeStep.ReopenPendingEvent);
+                    return;
+                }
             }
 
             if (gameContext.CanPlayerAct())
