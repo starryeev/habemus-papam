@@ -176,12 +176,12 @@ public class TimeUI : MonoBehaviour
                 Dawn.sprite = LightList[1];
                 Morning.sprite = LightList[2];
                 break;
-            case GameContext.Conclave.Afternoon:
+            case GameContext.Conclave.Evening:
                 Dawn.sprite = LightList[1];
                 Morning.sprite = LightList[2];
                 Afternoon.sprite = LightList[3];
                 break;
-            case GameContext.Conclave.Evening:
+            case GameContext.Conclave.Night:
                 Dawn.sprite = LightList[1];
                 Morning.sprite = LightList[2];
                 Afternoon.sprite = LightList[3];

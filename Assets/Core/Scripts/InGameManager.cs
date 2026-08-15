@@ -20,8 +20,8 @@ public class GameContext
     {
         Dawn,
         Morning,
-        Afternoon,
-        Evening
+        Evening,
+        Night
     }
 
     public enum GameContextEvent
@@ -66,7 +66,7 @@ public class GameContext
     {
         currentDay = day;
         currentConclave = conclave;
-        currentTurn = Mathf.Clamp(restoredTurn, 1, 4);
+        currentTurn = (int)currentConclave + 1;
         actionsThisTurn = Mathf.Max(0, restoredActionsThisTurn);
         int maxRestoredProgress = positionProgressVersion > 0 ? TriggerSpan : actionsThisTurn;
         completedActions = Mathf.Clamp(restoredCompletedActions, 0, maxRestoredProgress);
@@ -75,7 +75,7 @@ public class GameContext
 
     public void AdvanceConclave()
     {
-        if (currentConclave == Conclave.Evening)
+        if (currentConclave == Conclave.Night)
         {
             currentConclave = Conclave.Dawn;
             currentDay++;
@@ -131,13 +131,6 @@ public class GameContext
 
     public void SetEventPhase(bool value) => isEventPhase = value;
 
-    public bool AdvanceTurn()
-    {
-        if (currentTurn >= 4) return false;
-        currentTurn++;
-        return true;
-    }
-
     public void StartGame()
     {
         OnGameContextEvent?.Invoke(GameContextEvent.ConclaveStart);
@@ -149,7 +142,7 @@ public class GameContext
 
     private void ResetTurns()
     {
-        currentTurn = 1;
+        currentTurn = (int)currentConclave + 1;
         completedActions = 0;
         actionsThisTurn = 4;
         isEventPhase = false;
@@ -1058,7 +1051,7 @@ public class InGameManager : MonoBehaviour
     {
         int triggerDay = gameContext.CurrentDay;
         GameContext.Conclave triggerConclave = gameContext.CurrentConclave;
-        if (triggerConclave == GameContext.Conclave.Evening)
+        if (triggerConclave == GameContext.Conclave.Night)
         {
             triggerDay++;
             triggerConclave = GameContext.Conclave.Dawn;
@@ -1329,7 +1322,7 @@ public class InGameManager : MonoBehaviour
             return;
         }
 
-        StartNextTurnOrEndConclave();
+        EndCurrentConclave();
     }
 
     public void DebugEndTurn()
@@ -1378,7 +1371,7 @@ public class InGameManager : MonoBehaviour
     {
         ExecuteRemainingNpcBaseActions();
         if (!ApplyTurnEndHealthLoss()) return;
-        StartNextTurnOrEndConclave();
+        EndCurrentConclave();
     }
 
     private bool ApplyTurnEndHealthLoss()
@@ -1407,25 +1400,6 @@ public class InGameManager : MonoBehaviour
 
         foreach (Cardinal candidate in candidates) candidate?.ResolveHpState();
         return player == null || player.Hp > 0f;
-    }
-
-    private void StartNextTurnOrEndConclave()
-    {
-        if (!gameContext.AdvanceTurn())
-        {
-            EndCurrentConclave();
-            return;
-        }
-
-        gameContext.BeginTurn(ConsumeNextTurnActionModifier(), ConsumeNextTurnBlock());
-        BeginCurrentActionPosition();
-
-        if (isTimeRunning && SaveManager.Instance != null)
-        {
-            SaveManager.Instance.SaveCheckpoint(
-                SaveCheckpointType.TurnPhaseAdvanced,
-                awaitingTurnEvent ? SaveResumeStep.ReopenPendingEvent : SaveResumeStep.Gameplay);
-        }
     }
 
     private void SaveTurnPhaseCheckpoint(SaveResumeStep resumeStep)
