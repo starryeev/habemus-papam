@@ -50,10 +50,6 @@ public class I002 : Item
             target.ChangeHp(-damageAmount); 
             
         }
-        else
-        {
-            Debug.Log("[아이템 사용 실패] 공격할 대상이 없습니다.");
-        }
     }
 
     private Cardinal FindWeakestNPC()

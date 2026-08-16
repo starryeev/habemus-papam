@@ -1009,8 +1009,6 @@ public class StateController : MonoBehaviour
         {
             RestoreStateAfterAction();
         }
-
-        Debug.Log("이동 시퀀스 강제 중단됨.");
     }
 
     public void ForceCompletePrayer()
@@ -1290,12 +1288,13 @@ public class StateController : MonoBehaviour
         yield return StartCoroutine(WaitForActionDestination(
             "연설 대기 위치",
             () => !IsHeadingToSpeech,
-            result => reachedSpeechQueuePoint = result));
+            result => reachedSpeechQueuePoint = result,
+            false));
 
         if (!reachedSpeechQueuePoint)
         {
             speechSequenceCoroutine = null;
-            AbortActionSequence("연설 대기 위치 접근이 중단되었거나 실패했습니다.");
+            AbortActionSequence("연설 대기 위치 접근이 중단되었거나 실패했습니다.", false);
             yield break;
         }
 
@@ -1487,9 +1486,6 @@ public class StateController : MonoBehaviour
             {
                 return;
             }
-
-            Debug.Log($"[Scheme] 모략가 {name}가 플레이어를 감지했습니다!");
-
             // 2. 나(NPC)와 상대방(Player)의 Cardinal 컴포넌트를 각각 가져옵니다.
             Cardinal npc = GetComponent<Cardinal>();
             Cardinal player = other.GetComponent<Cardinal>();
@@ -1527,11 +1523,6 @@ public class StateController : MonoBehaviour
         {
             // 시간제 스턴: 지정된 시간 후 자동 해제
             stunCoroutine = StartCoroutine(StunTimerRoutine(duration));
-        }
-        else
-        {
-            // 턴제/무한 스턴: 외부에서 ReleaseStun()을 부를 때까지 대기
-            Debug.Log($"콘클라베 종료 시까지 행동 불가.");
         }
     }
 
@@ -1577,7 +1568,6 @@ public class StateController : MonoBehaviour
 
         // 데이터 정리
         if (stunCoroutine != null) { StopCoroutine(stunCoroutine); stunCoroutine = null; }
-        Debug.Log($"{name} : 스턴 해제 및 복귀.");
     }
 
     // 중복되는 물리 초기화 로직을 하나로 묶음
@@ -1649,7 +1639,11 @@ public class StateController : MonoBehaviour
         agent.obstacleAvoidanceType = actionObstacleAvoidanceType;
     }
 
-    private IEnumerator WaitForActionDestination(string context, System.Func<bool> shouldAbort, System.Action<bool> onComplete)
+    private IEnumerator WaitForActionDestination(
+        string context,
+        System.Func<bool> shouldAbort,
+        System.Action<bool> onComplete,
+        bool logWarning = true)
     {
         if (agent == null || !agent.isOnNavMesh)
         {
@@ -1676,7 +1670,8 @@ public class StateController : MonoBehaviour
 
             if (!agent.pathPending && agent.pathStatus == NavMeshPathStatus.PathInvalid)
             {
-                Debug.LogWarning($"[{name}] {context} 경로가 유효하지 않아 시퀀스를 중단합니다.");
+                if (logWarning)
+                    Debug.LogWarning($"[{name}] {context} 경로가 유효하지 않아 시퀀스를 중단합니다.");
                 onComplete(false);
                 yield break;
             }
@@ -1695,7 +1690,8 @@ public class StateController : MonoBehaviour
             elapsed += Time.deltaTime;
             if (elapsed >= actionMoveTimeout)
             {
-                Debug.LogWarning($"[{name}] {context} 이동이 {actionMoveTimeout:F1}초 안에 끝나지 않아 시퀀스를 중단합니다.");
+                if (logWarning)
+                    Debug.LogWarning($"[{name}] {context} 이동이 {actionMoveTimeout:F1}초 안에 끝나지 않아 시퀀스를 중단합니다.");
                 onComplete(false);
                 yield break;
             }
@@ -1704,9 +1700,10 @@ public class StateController : MonoBehaviour
         }
     }
 
-    private void AbortActionSequence(string reason)
+    private void AbortActionSequence(string reason, bool logWarning = true)
     {
-        Debug.LogWarning($"[{name}] {reason}");
+        if (logWarning)
+            Debug.LogWarning($"[{name}] {reason}");
         ClearActionRequestState();
         ResetAgentMovementState();
 

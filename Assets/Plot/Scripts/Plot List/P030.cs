@@ -86,7 +86,6 @@ public class P030 : Plot
         }
 
         performer.SetMinHpOneEffect(MinHpEffectSource, true);
-        Debug.Log("최소 체력 1 ON");
         context.OnGameContextEvent += OnContextEvent;
 
         yield return new WaitUntil(() => isEnded || performer == null);
@@ -94,7 +93,6 @@ public class P030 : Plot
         if (performer != null)
         {
             performer.SetMinHpOneEffect(MinHpEffectSource, false);
-            Debug.Log("최소 체력 1 OFF");
         }
 
         if (context != null)

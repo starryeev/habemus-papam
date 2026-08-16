@@ -54,11 +54,9 @@ public class SoundManager : MonoBehaviour
             BGM = RuntimeManager.CreateInstance(path);
             BGM.start();
             currentBGM = name;
-            Debug.Log($"BGM {name} newly playing");
         }
         string param = $"{name}State";
-        var result = BGM.setParameterByName(param, state);
-        Debug.Log($"BGM Parameter {param} set to {state}, {result}");
+        BGM.setParameterByName(param, state);
     }
 
     public void StopBGM()
@@ -76,13 +74,11 @@ public class SoundManager : MonoBehaviour
     public void PauseBGM()
     {
         BGM.setPaused(true);
-        Debug.Log("BGM Paused!");
     }
 
     public void ResumeBGM()
     {
         BGM.setPaused(false);
-        Debug.Log("BGM Resumed!");
     }
     /// <summary>
     /// SFX를 재생함.
@@ -94,7 +90,6 @@ public class SoundManager : MonoBehaviour
         var instance = RuntimeManager.CreateInstance("event:/SFX/" + name);
         instance.start();
         instance.release();
-        Debug.Log($"SFX {name} playing!");
     }
 
     /// <summary>
@@ -107,7 +102,6 @@ public class SoundManager : MonoBehaviour
 
         var instance = RuntimeManager.CreateInstance("event:/SFX/" + name);
         instance.start();
-        Debug.Log($"SFX {name} looping!");
         loopsPlaying[name] = instance;
     }
     public void StopLoop(string name)
@@ -117,7 +111,6 @@ public class SoundManager : MonoBehaviour
         instance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
         instance.release();
         loopsPlaying.Remove(name);
-        Debug.Log($"SFX {name} looping stopped!");
     }
     public void SetMasterVolume(float volume)
     {

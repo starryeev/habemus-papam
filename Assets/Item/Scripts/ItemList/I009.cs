@@ -42,9 +42,7 @@ public class I009 : Item
 
     public override void OnPray(Cardinal owner)
     {
-        float beforePiety = owner.Piety;
         owner.ChangePiety(pietyBonus);
-        Debug.Log($"[아이템 효과] 게르마늄 팔찌: 경건함 {beforePiety} -> {owner.Piety}");
     }
 
     public override float PreviewPrayerPiety(float originalDelta, GameBalance balance, bool isSuccess)
@@ -59,8 +57,6 @@ public class I009 : Item
             hasUsedRevive = true; 
 
             owner.ChangeHp(reviveHpAmount); // 체력 30 회복
-
-            Debug.Log($"[아이템 효과 발동!!] 게르마늄의 힘으로 기절을 극복했습니다! 체력 회복: {reviveHpAmount}");
 
             return true; 
         }

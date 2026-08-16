@@ -454,7 +454,6 @@ public class EventManager : MonoBehaviour
     {
         if (evt == null) return null;
         MarkEventAppeared(evt);
-        Debug.Log($"[Event] 이벤트 '{evt.eventID}' 선택");
         return evt;
     }
 

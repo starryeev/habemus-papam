@@ -26,29 +26,15 @@ public class I005 : Item
 
     public override void OnUse()
     {
-        
-        Cardinal player = FindPlayer();
-        if (player != null)
-        {
-            Debug.Log("[아이템 사용] 캬! 태양주를 들이켰습니다. 아우 취한다.");
-        }
     }
 
     public override void OnPray(Cardinal owner)
     {
         owner.ChangeHp(prayerBonusHp);
-        Debug.Log($"[버프 효과] 그냥 태양주의 기운! 기도 추가 회복: +{prayerBonusHp}");
     }
 
     public override float PreviewPrayerHp(float originalDelta, GameBalance balance, bool isSuccess)
     {
         return originalDelta + prayerBonusHp;
     }
-
-    private Cardinal FindPlayer()
-    {
-        if (InventoryManager.Instance != null) return InventoryManager.Instance.Player;
-        return null;
-    }
-
 }

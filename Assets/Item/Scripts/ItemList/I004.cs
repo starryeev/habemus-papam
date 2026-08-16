@@ -23,12 +23,8 @@ public class I004 : Item
 
     public override void OnSpeech(Cardinal owner)
     {
-        float beforeInf = owner.Influence;
-
         // 정치력 증가 적용
         owner.ChangeInfluence(influenceDelta);
-
-        Debug.Log($"[아이템 효과 발동] 금성배 연설: 정치력 {beforeInf} -> {owner.Influence} (변화량: +{influenceDelta})");
     }
 
     public override float PreviewSpeechInfluenceAfterAction(float originalDelta, GameBalance balance, bool isSuccess)

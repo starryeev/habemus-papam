@@ -441,7 +441,6 @@ public class StatsUI : MonoBehaviour
             closeup.gameObject.SetActive(true);
             closeupIndex = idx;
             closeup.SetCardinal(linkedCardinals[idx], closeupIndex);
-            Debug.Log($"Show Closeup for Cardinal Index: {idx}");
         }
     }
 
@@ -455,6 +454,5 @@ public class StatsUI : MonoBehaviour
 
         closeup.gameObject.SetActive(false);
         closeupIndex = -1;
-        Debug.Log("Hide Closeup");
     }
 }

@@ -59,7 +59,6 @@ public class SushiUI : MonoBehaviour
     private IEnumerator SequenceRoutine(System.Action onReady)
     {
         int playerRank = CalculatePlayerRank();
-        Debug.Log($"[SushiUI] 플레이어 순위: {playerRank}등");
 
         totalPanelGroup.alpha = 0.5f;
         yield return new WaitForSeconds(0.5f);

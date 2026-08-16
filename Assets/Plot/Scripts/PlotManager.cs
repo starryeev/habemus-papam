@@ -79,6 +79,11 @@ public class PlotManager : MonoBehaviour
         float playerInfluence = GetPlayerInfluence();
         Plot[] selectedPlots = new Plot[3];
 
+        if (InGameManager.Instance != null && InGameManager.Instance.IsNpcCandidateLeading(2))
+        {
+            Debug.Log($"[NPC 선두 패시브][후보 2] 공작 생성 조건 보정 적용 | 플레이어 정치력 {playerInfluence:0.##}, 모든 공작 정치력 조건 +1");
+        }
+
         for (int slot = 0; slot < selectedPlots.Length; slot++)
         {
             selectedPlots[slot] = PickSlotPlot(
@@ -220,7 +225,18 @@ public class PlotManager : MonoBehaviour
     {
         if (InGameManager.Instance != null && !InGameManager.Instance.CanPerformPlayerAction(performer)) return;
         Plot selectedPlot = AvailPlotSets[plotSet].plots[index];
-        if (!MeetsEffectiveInfluenceCondition(selectedPlot, performer) || !selectedPlot.IsEffectiveCostEnough(performer)) return;
+        bool meetsInfluenceCondition = MeetsEffectiveInfluenceCondition(selectedPlot, performer);
+        if (performer != null && performer.CompareTag("Player") &&
+            InGameManager.Instance != null && InGameManager.Instance.IsNpcCandidateLeading(2))
+        {
+            int baseRequirement = selectedPlot.GetInfluenceRequirement();
+            int effectiveRequirement = GetEffectiveInfluenceRequirement(selectedPlot, performer);
+            Debug.Log(
+                $"[NPC 선두 패시브][후보 2] 공작 정치력 조건 +1 적용 | {selectedPlot.plotID}, " +
+                $"조건 {baseRequirement} -> {effectiveRequirement}, 플레이어 정치력 {performer.Influence:0.##}, " +
+                $"결과 {(meetsInfluenceCondition ? "충족" : "미충족")}");
+        }
+        if (!meetsInfluenceCondition || !selectedPlot.IsEffectiveCostEnough(performer)) return;
         if (InGameManager.Instance != null) InGameManager.Instance.ExecuteNpcActionsBeforePlayerAction(performer);
         selectedPlot.Execute(performer);
         performer?.OnPlotExecuted();

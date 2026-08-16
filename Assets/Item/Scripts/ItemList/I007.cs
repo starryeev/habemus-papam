@@ -43,8 +43,6 @@ public class I007 : Item
 
         owner.ChangeInfluence(plotInfluenceBonus);
         hasTriggeredToday = true;
-
-        Debug.Log($"[아이템 효과] 태양의 은총: 첫 공작 보너스 정치력 +{plotInfluenceBonus}");
     }
 
     public override void OnRemove()
@@ -62,8 +60,6 @@ public class I007 : Item
 
         player.ChangeInfluence(-player.Influence);
         hasTriggeredToday = false;
-
-        Debug.Log("[아이템 효과] 태양의 은총 종료: 정치력을 0으로 초기화");
     }
 
     public override void ResetRuntimeState()

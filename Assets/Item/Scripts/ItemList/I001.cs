@@ -31,7 +31,6 @@ public class I001 : Item
     {
         heldTurns = Mathf.Max(1, heldTurns);
         SubscribeToTurns();
-        Debug.Log("[아이템] 아령 획득: 기도 회복 차단 시작");
     }
 
     public override void OnReapply(Cardinal owner)
@@ -42,7 +41,6 @@ public class I001 : Item
     public override void OnRemove()
     {
         UnsubscribeFromTurns();
-        Debug.Log("[아이템] 아령 제거: 기도 회복 차단 해제");
     }
 
     public override void OnUse()

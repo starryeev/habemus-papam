@@ -135,7 +135,6 @@ public class InventoryManager : MonoBehaviour
     {
         if (inventoryItems.Count >= maxSlots)
         {
-            Debug.Log("[Inventory] No empty slots.");
             return false;
         }
 
@@ -184,7 +183,6 @@ public class InventoryManager : MonoBehaviour
             }
 
             RefreshUI();
-            Debug.Log($"[Inventory] '{item.itemName}' moved to active buffs.");
         }
         else if (item.ConsumeOnUse)
         {
@@ -201,7 +199,6 @@ public class InventoryManager : MonoBehaviour
 
         RemoveItem(item);
         SoundManager.Instance.PlaySFX(ItemDropSfxName);
-        Debug.Log($"[Inventory] Removed item: {item.itemName}");
     }
 
     public void RemoveItem(Item item)

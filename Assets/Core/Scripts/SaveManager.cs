@@ -77,7 +77,6 @@ public class SaveManager : MonoBehaviour
                 return true;
             }
 
-            Debug.Log("[Save] 기존 자동저장 파일을 폐기합니다.");
             DeleteSave();
         }
         catch (Exception exception)
@@ -607,13 +606,6 @@ public class SaveManager : MonoBehaviour
             {
                 File.Move(temporaryPath, SaveFilePath);
             }
-
-            int triggerSpan = Mathf.Max(GameContext.BaseActionPositions,
-                Mathf.CeilToInt(saveModel.gameContext.actionsThisTurn / (float)GameContext.ActionsPerPosition));
-            int phase = Mathf.Clamp(
-                saveModel.gameContext.completedActions / GameContext.ActionsPerPosition + 1, 1, triggerSpan);
-            Debug.Log($"[Save] {saveModel.checkpointType} 완료: Turn " +
-                $"{saveModel.gameContext.currentTurn}-{phase} / {SaveFilePath}");
         }
         catch (Exception exception)
         {

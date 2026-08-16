@@ -113,16 +113,11 @@ public class CheckUI : MonoBehaviour
             RevealFinalResult();
             return;
         }
-        if(animState == AnimState.None)
-        {
-            Debug.Log("투표 화면 오류!");
-        }
         if(animState == AnimState.Enter || animState == AnimState.ElectWait || animState == AnimState.Elect)
         OnElectAnimFinished();
     }
     private void OnVote()
     {
-        Debug.Log("투표함 클릭됨");
         if(animState == AnimState.ElectWait)
         {
             SoundManager.Instance.PlaySFX(VoteOpenSfxName);

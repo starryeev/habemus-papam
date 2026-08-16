@@ -222,8 +222,6 @@ public class CardinalManager : MonoBehaviour
             }
         }
 
-        Debug.Log("모든 입장 완료. 콘클라베 시작.");
-
         foreach (var c in cardinals)
         {
             if (c == null) continue;
@@ -398,8 +396,6 @@ public class CardinalManager : MonoBehaviour
         }
 
         yield return new WaitUntil(() => exitingCardinalCount == 0);
-
-        Debug.Log("All cardinals have exited.");
         if (InGameManager.Instance != null)
         {
             InGameManager.Instance.OnConclaveExitSequenceCompleted();
@@ -605,7 +601,6 @@ public class CardinalManager : MonoBehaviour
             if (sc != null)
             {
                 sc.SetSchemerMode(true);
-                Debug.Log($"NPC {c.name} Scheme 상태 적용");
             }
         }
     }

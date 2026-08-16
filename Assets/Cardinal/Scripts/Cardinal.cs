@@ -104,8 +104,6 @@ public class Cardinal : MonoBehaviour
                 {
                     CardinalManager.Instance.StatsUI.RefreshVisualOrder();
                 }
-
-                Debug.Log($"[{gameObject.name}] 체력이 0이 되어 기절했습니다!");
             }
         }
         else if (hp > 0f)
@@ -499,14 +497,14 @@ public class Cardinal : MonoBehaviour
         ResolvePrayer(InGameManager.Instance.Balance.PraySuccessChance, CompareTag("Player"));
     }
 
-    public void PerformNpcPrayer(float successChance)
+    public bool PerformNpcPrayer(float successChance)
     {
-        ResolvePrayer(Mathf.Clamp01(successChance), false);
+        return ResolvePrayer(Mathf.Clamp01(successChance), false);
     }
 
-    private void ResolvePrayer(float successChance, bool completePlayerAction)
+    private bool ResolvePrayer(float successChance, bool completePlayerAction)
     {
-        if (InGameManager.Instance == null) return;
+        if (InGameManager.Instance == null) return false;
 
         GameBalance balance = InGameManager.Instance.Balance;
         bool guaranteedSuccess = completePlayerAction && InGameManager.Instance.EventManager != null &&
@@ -552,6 +550,8 @@ public class Cardinal : MonoBehaviour
             GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
             InGameManager.Instance.CompletePlayerAction(this);
         }
+
+        return success;
     }
 
     public void Speech()
@@ -565,14 +565,14 @@ public class Cardinal : MonoBehaviour
         ResolveSpeech(InGameManager.Instance.GetSpeechSuccessChance(this), CompareTag("Player"));
     }
 
-    public void PerformNpcSpeech(float successChance)
+    public bool PerformNpcSpeech(float successChance)
     {
-        ResolveSpeech(Mathf.Clamp01(successChance), false);
+        return ResolveSpeech(Mathf.Clamp01(successChance), false);
     }
 
-    private void ResolveSpeech(float successChance, bool completePlayerAction)
+    private bool ResolveSpeech(float successChance, bool completePlayerAction)
     {
-        if (InGameManager.Instance == null) return;
+        if (InGameManager.Instance == null) return false;
 
         GameBalance balance = InGameManager.Instance.Balance;
         bool guaranteedSuccess = completePlayerAction && InGameManager.Instance.EventManager != null &&
@@ -655,6 +655,8 @@ public class Cardinal : MonoBehaviour
             GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
             InGameManager.Instance.CompletePlayerAction(this);
         }
+
+        return success;
     }
 
     public void OnPlotExecuted()

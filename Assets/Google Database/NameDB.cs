@@ -26,11 +26,6 @@ public class NameDB : MonoBehaviour
             return instance;
         }
     }
-    void Start()
-    {
-        Debug.Log($"UGS Database 내 교주 이름 {PopeName.PopeNameList.Count}개 로딩됨!");
-    }
-
     void RefreshDB()
     {
         PopeList.Clear();

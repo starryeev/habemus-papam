@@ -313,14 +313,12 @@ public class InGameManager : MonoBehaviour
 
         if (isFirstStart)
         {
-            Debug.Log(">>> 게임 최초 시작");
             isFirstStart = false;
             gameContext.StartGame();
         }
         else
         {
             isSushiOn = true;
-            Debug.Log(">>> 다음 콘클라베 진행");
             gameContext.AdvanceConclave();
         }
     }
@@ -337,7 +335,6 @@ public class InGameManager : MonoBehaviour
         endConclaveAfterEvent = false;
         blockRemainingCurrentTurn = false;
         gameContext.BeginTurn(ConsumeNextTurnActionModifier(), ConsumeNextTurnBlock());
-        Debug.Log("턴 진행 시작");
 
         if (inventoryUIPanel != null)
         {
@@ -355,8 +352,6 @@ public class InGameManager : MonoBehaviour
 
     public void OnExitSequenceFinished()
     {
-        Debug.Log("퇴장 완료.");
-
         ConfigureStartButton(true, true);
 
         if (ElectionManager.Instance != null)
@@ -400,7 +395,6 @@ public class InGameManager : MonoBehaviour
         {
             case GameContext.GameContextEvent.ConclaveStart:
                 isConclaveExitInProgress = false;
-                Debug.Log($"[InGameManager] 콘클라베 시작: {gameContext.CurrentConclave}");
 
                 if (ActionRecordManager.Instance != null)
                 {
@@ -420,7 +414,6 @@ public class InGameManager : MonoBehaviour
                 isConclaveExitInProgress = true;
                 prayerBlockedCandidateNumbers.Clear();
                 GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
-                Debug.Log("[InGameManager] 콘클라베 종료 (Turn Complete)");
 
                 if (inventoryUIPanel != null)
                 {
@@ -818,8 +811,6 @@ public class InGameManager : MonoBehaviour
 
         player.ChangeHp(5f - player.Hp);
         shouldRevivePlayerOnNextConclave = false;
-
-        Debug.Log("[Player HP] Player revived to 5 HP for the next conclave.");
     }
 
     private Cardinal FindPlayerCardinal()
@@ -867,7 +858,6 @@ public class InGameManager : MonoBehaviour
             if (cardinal != null && cardinal.CompareTag("Player"))
             {
                 cardinal.ChangeHp(3f - cardinal.Hp);
-                Debug.Log($"[Debug] Player HP set to {cardinal.Hp}.");
                 return;
             }
         }
@@ -949,7 +939,7 @@ public class InGameManager : MonoBehaviour
 
             Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
             if (candidate == null || candidate.Hp <= 0f || candidate.IsKnockedOut) continue;
-            ExecuteNpcBehaviour(candidate, npcTurnBehaviours[candidateIndex, actionIndex]);
+            ExecuteNpcBehaviour(candidate, npcTurnBehaviours[candidateIndex, actionIndex], actionIndex);
         }
 
         // 플레이어 행동이 1회뿐인 턴도 NPC의 기본 2행동은 플레이어 효과보다 먼저 끝낸다.
@@ -963,7 +953,7 @@ public class InGameManager : MonoBehaviour
 
                 Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
                 if (candidate == null || candidate.Hp <= 0f || candidate.IsKnockedOut) continue;
-                ExecuteNpcBehaviour(candidate, npcTurnBehaviours[candidateIndex, 1]);
+                ExecuteNpcBehaviour(candidate, npcTurnBehaviours[candidateIndex, 1], 1);
             }
         }
     }
@@ -972,7 +962,12 @@ public class InGameManager : MonoBehaviour
     {
         float chance = GetNpcCandidateNumber(actor) == 1 ? 0.9f : balance.SpeechSuccessChance;
         Cardinal leader = GetLeadingCandidate();
-        if (GetNpcCandidateNumber(leader) == 1 && actor != leader) chance -= 0.1f;
+        if (GetNpcCandidateNumber(leader) == 1 && actor != leader)
+        {
+            float originalChance = chance;
+            chance = Mathf.Clamp01(chance - 0.1f);
+            Debug.Log($"[NPC 선두 패시브][후보 1] 다른 후보 연설 성공률 감소 | {actor.name}: {originalChance:P0} -> {chance:P0}");
+        }
         return Mathf.Clamp01(chance);
     }
 
@@ -1056,20 +1051,26 @@ public class InGameManager : MonoBehaviour
                 npcTurnActionsExecuted[candidateIndex, actionIndex] = true;
                 Cardinal candidate = GetRepresentativeCandidate(candidateIndex + 1);
                 if (candidate == null || candidate.Hp <= 0f || candidate.IsKnockedOut) continue;
-                ExecuteNpcBehaviour(candidate, npcTurnBehaviours[candidateIndex, actionIndex]);
+                ExecuteNpcBehaviour(candidate, npcTurnBehaviours[candidateIndex, actionIndex], actionIndex);
             }
         }
     }
 
-    private void ExecuteNpcBehaviour(Cardinal candidate, NPCBehaviour behaviour)
+    private void ExecuteNpcBehaviour(Cardinal candidate, NPCBehaviour behaviour, int actionIndex)
     {
+        int candidateNumber = GetNpcCandidateNumber(candidate);
+        float hpBefore = candidate.Hp;
+        float pietyBefore = candidate.Piety;
+        float influenceBefore = candidate.Influence;
+        bool? succeeded = null;
+
         switch (behaviour)
         {
             case NPCBehaviour.Pray:
-                candidate.PerformNpcPrayer(balance.PraySuccessChance);
+                succeeded = candidate.PerformNpcPrayer(balance.PraySuccessChance);
                 break;
             case NPCBehaviour.Speech:
-                candidate.PerformNpcSpeech(GetSpeechSuccessChance(candidate));
+                succeeded = candidate.PerformNpcSpeech(GetSpeechSuccessChance(candidate));
                 break;
             case NPCBehaviour.None:
             case NPCBehaviour.ActionBlocked:
@@ -1080,6 +1081,21 @@ public class InGameManager : MonoBehaviour
         }
 
         candidate.ResolveHpState();
+
+        string behaviourName = behaviour switch
+        {
+            NPCBehaviour.Pray => "기도",
+            NPCBehaviour.Speech => "연설",
+            NPCBehaviour.None => "행동 없음",
+            NPCBehaviour.ActionBlocked => "행동 불가",
+            _ => behaviour.ToString()
+        };
+        string result = succeeded.HasValue ? (succeeded.Value ? "성공" : "실패") : "패널티 판정";
+        Debug.Log(
+            $"[NPC 행동][후보 {candidateNumber}: {candidate.name}][행동 {actionIndex + 1}] {behaviourName} ({result}) [실행 방식: 즉시 효과] | " +
+            $"체력 {hpBefore:0.##} -> {candidate.Hp:0.##} ({candidate.Hp - hpBefore:+0.##;-0.##;0}), " +
+            $"경건함 {pietyBefore:0.##} -> {candidate.Piety:0.##} ({candidate.Piety - pietyBefore:+0.##;-0.##;0}), " +
+            $"정치력 {influenceBefore:0.##} -> {candidate.Influence:0.##} ({candidate.Influence - influenceBefore:+0.##;-0.##;0})");
     }
 
     private void PrepareNpcPassives()
@@ -1469,8 +1485,17 @@ public class InGameManager : MonoBehaviour
             candidate.ChangeHp(-1f);
         }
 
-        if (candidate3 != null && candidate3.Hp > 0f && candidate3WasLeading && UnityEngine.Random.value < 0.3f)
-            candidate3.ChangeHp(-1f);
+        if (candidate3 != null && candidate3.Hp > 0f && candidate3WasLeading)
+        {
+            float hpBeforePassive = candidate3.Hp;
+            float roll = UnityEngine.Random.value;
+            bool triggered = roll < 0.3f;
+            if (triggered) candidate3.ChangeHp(-1f);
+            Debug.Log(
+                $"[NPC 선두 패시브][후보 3] 추가 체력 감소 30% 판정 | " +
+                $"주사위 {roll:0.000}, 결과 {(triggered ? "발동" : "미발동")}, " +
+                $"체력 {hpBeforePassive:0.##} -> {candidate3.Hp:0.##} ({candidate3.Hp - hpBeforePassive:+0.##;-0.##;0})");
+        }
 
         foreach (Cardinal candidate in candidates) candidate?.ResolveHpState();
         return player == null || player.Hp > 0f;

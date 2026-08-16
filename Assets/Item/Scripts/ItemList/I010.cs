@@ -25,8 +25,6 @@ public class I010 : Item
     {
         float fixedInfluence = balance.SpeechSuccessDeltaInfluenceMin;
 
-        Debug.Log($"[아이템 효과] 교황청 주보: 원래 변동될 정치력({originalDelta})을 강제로 ({fixedInfluence})로 고정합니다.");
-
         return fixedInfluence;
     }
 
@@ -37,10 +35,6 @@ public class I010 : Item
 
     public override void OnSpeech(Cardinal owner)
     {
-        float beforePiety = owner.Piety;
-
         owner.ChangePiety(pietyBonus);
-
-        Debug.Log($"[아이템 효과] 교황청 주보: 경건함 {beforePiety} -> {owner.Piety} (+{pietyBonus})");
     }
 }

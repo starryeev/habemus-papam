@@ -40,7 +40,6 @@ public class DebugUI : MonoBehaviour
     public void EnableHereticWarGameOverFlag()
     {
         isHereticWarGameOverFlag = true;
-        Debug.Log("[Ending Debug] E31201/E31202 game-over flag enabled.");
     }
 
     public void TriggerGreatSage()
@@ -87,7 +86,6 @@ public class DebugUI : MonoBehaviour
         }
 
         player.ChangeHp(1f - player.Hp);
-        Debug.Log($"[Ending Debug] Player HP set to {player.Hp}.");
 
         yield return new WaitForSecondsRealtime(3f);
 
@@ -98,7 +96,6 @@ public class DebugUI : MonoBehaviour
         }
 
         player.ChangeHp(-1f);
-        Debug.Log($"[Ending Debug] Player HP reduced to {player.Hp}.");
         gameOverRoutine = null;
 
         if (!isHereticWarGameOverFlag)
