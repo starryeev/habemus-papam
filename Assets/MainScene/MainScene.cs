@@ -404,7 +404,7 @@ public class MainScene : MonoBehaviour
         SetText(loadPlayerHpText, FormatStatValue(preview.playerHp));
         SetText(loadPlayerInfluenceText, FormatStatValue(preview.playerInfluence));
         SetText(loadPlayerPietyText, FormatStatValue(preview.playerPiety));
-        SetText(loadDayText, preview.day.ToString());
+        SetText(loadDayText, (((Mathf.Max(1, preview.day) - 1) * 4) + Mathf.Clamp(preview.conclave, 0, 3) + 1).ToString());
         SetText(loadConclaveText, preview.conclaveName);
     }
 

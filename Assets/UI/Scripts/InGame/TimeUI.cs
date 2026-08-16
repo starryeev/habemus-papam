@@ -53,8 +53,7 @@ public class TimeUI : MonoBehaviour
         if (InGameManager.Instance.IsTimeRunning)
         {
             int turn = InGameManager.Instance.GetCurrentTurn();
-            int phase = InGameManager.Instance.GetCurrentTurnPhase();
-            RightText2.text = $"Turn {turn}-{phase}";
+            RightText2.text = FormatActionProgress(InGameManager.Instance.Context);
             ClockHand.transform.rotation = Quaternion.Euler(0, 0, -90f * (turn - 1));
         }
     }
@@ -85,7 +84,7 @@ public class TimeUI : MonoBehaviour
         var currentDay = InGameManager.Instance.GetCurrentDay();
         var currentCon = InGameManager.Instance.GetCurrentConclave();
 
-        LeftText1.text = $"Day {currentDay}";
+        LeftText1.text = $"Day {(currentDay - 1) * 4 + (int)currentCon + 1}";
         LeftText2.text = $"{currentCon}";
         RightText1.text = "턴";
 
@@ -94,9 +93,10 @@ public class TimeUI : MonoBehaviour
 
     public void EndConclaveUI()
     {
-        int turn = InGameManager.Instance != null ? InGameManager.Instance.GetCurrentTurn() : 4;
-        int phase = InGameManager.Instance != null ? InGameManager.Instance.GetCurrentTurnPhase() : 4;
-        RightText2.text = $"Turn {turn}-{phase}";
+        if (InGameManager.Instance != null)
+        {
+            RightText2.text = FormatActionProgress(InGameManager.Instance.Context);
+        }
         ClockHand.transform.rotation = Quaternion.identity;
 
         Dawn.sprite = LightList[0];
@@ -183,12 +183,26 @@ public class TimeUI : MonoBehaviour
                 Morning.sprite = LightList[2];
                 Afternoon.sprite = LightList[3];
                 break;
-            case GameContext.Conclave.Night:
+            case GameContext.Conclave.Afternoon:
                 Dawn.sprite = LightList[1];
                 Morning.sprite = LightList[2];
                 Afternoon.sprite = LightList[3];
                 Evening.sprite = LightList[4];
                 break;
         }
+    }
+
+    private static string FormatActionProgress(GameContext context)
+    {
+        int total = context.ActionsThisTurn;
+        int current = total > 0 ? Mathf.Clamp(context.CompletedActions + 1, 1, total) : 0;
+        int modifier = total - GameContext.BasePlayerActions;
+        string denominator = modifier switch
+        {
+            > 0 => $"({GameContext.BasePlayerActions} + {modifier})",
+            < 0 => $"({GameContext.BasePlayerActions} - {-modifier})",
+            _ => GameContext.BasePlayerActions.ToString()
+        };
+        return $"{current} / {denominator}";
     }
 }

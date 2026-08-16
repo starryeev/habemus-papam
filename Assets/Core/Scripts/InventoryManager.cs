@@ -66,7 +66,7 @@ public class InventoryManager : MonoBehaviour
             return;
         }
 
-        bool isEndOfDay = InGameManager.Instance.GetCurrentConclave() == GameContext.Conclave.Night;
+        bool isEndOfDay = InGameManager.Instance.GetCurrentConclave() == GameContext.Conclave.Afternoon;
 
         RemoveExpiredFromList(inventoryItems, isEndOfDay, true);
         RemoveExpiredFromList(activeBuffs, isEndOfDay, false);

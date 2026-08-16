@@ -25,7 +25,7 @@ public class GameContext
         Dawn,
         Morning,
         Evening,
-        Night
+        Afternoon
     }
 
     public enum GameContextEvent
@@ -88,7 +88,7 @@ public class GameContext
 
     public void AdvanceConclave()
     {
-        if (currentConclave == Conclave.Night)
+        if (currentConclave == Conclave.Afternoon)
         {
             currentConclave = Conclave.Dawn;
             currentDay++;
@@ -196,11 +196,11 @@ public class GameContext
         Debug.Assert(clock.CurrentConclave == Conclave.Evening && clock.CurrentTurn == 3,
             "Evening과 X=3 동기화가 손상됐습니다.");
         clock.AdvanceConclave();
-        Debug.Assert(clock.CurrentConclave == Conclave.Night && clock.CurrentTurn == 4,
-            "Night와 X=4 동기화가 손상됐습니다.");
+        Debug.Assert(clock.CurrentConclave == Conclave.Afternoon && clock.CurrentTurn == 4,
+            "Afternoon과 X=4 동기화가 손상됐습니다.");
         clock.AdvanceConclave();
         Debug.Assert(clock.CurrentConclave == Conclave.Dawn && clock.CurrentTurn == 1 && clock.CurrentDay == 2,
-            "Night 종료 후 다음 Day 전환 규칙이 손상됐습니다.");
+            "Afternoon 종료 후 다음 Day 전환 규칙이 손상됐습니다.");
 
         GameContext restored = new GameContext();
         restored.RestoreState(2, Conclave.Morning, 1, 4, false, 1);
@@ -1141,7 +1141,7 @@ public class InGameManager : MonoBehaviour
     {
         int triggerDay = gameContext.CurrentDay;
         GameContext.Conclave triggerConclave = gameContext.CurrentConclave;
-        if (triggerConclave == GameContext.Conclave.Night)
+        if (triggerConclave == GameContext.Conclave.Afternoon)
         {
             triggerDay++;
             triggerConclave = GameContext.Conclave.Dawn;
