@@ -23,8 +23,8 @@ public class E40000 : Event
 
         option2 = "돌다리는 나약한 자나 두들겨 보는 것이다.\n그냥 가자.";
         option2Chance = 1f;
-        option2SuccessDescription = "미끄러져 물에 빠지고 몸이 무거워졌다.\n\n체력 1 감소!\n다음 턴 행동 횟수 1회 감소!";
-        option2SuccessResult = "체력 -1\n다음 턴 행동 횟수 -1";
+        option2SuccessDescription = "미끄러져 물에 빠지고 몸이 무거워졌다.\n\n체력 1 감소!\n현재 턴 행동 횟수 1회 감소!";
+        option2SuccessResult = "체력 -1\n현재 턴 행동 횟수 -1";
     }
 
     public override bool CanChoiceOption1(Cardinal performer)
@@ -59,7 +59,7 @@ public class E40000 : Event
         if(Random.value <= option2Chance)
         {
             performer.ChangeHp(-1f);
-            InGameManager.Instance.QueueNextTurnActionDelta(-1);
+            InGameManager.Instance.ChangeCurrentTurnActions(-1);
             return true;
         }
 

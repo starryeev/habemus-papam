@@ -45,8 +45,8 @@ MonoBehaviour:
   option2: "\uC774\uB7F0 \uC88B\uC740 \uBCA0\uAC1C\uAC00? \uC11C\uB958 \uB354\uBBF8\uB97C
     \uBCA0\uACE0 \uB0AE\uC7A0\uC774\uB098 \uC794\uB2E4."
   option2Chance: 0.5
-  option2SuccessDescription: "푹 잤더니 체력이 회복되었다! 태양만세 미사? 알 게 뭐람?\n\n체력 3 증가!\n다음 턴 행동 횟수 1회 감소!"
-  option2SuccessResult: "체력 +3\n다음 턴 행동 횟수 -1"
+  option2SuccessDescription: "푹 잤더니 체력이 회복되었다! 태양만세 미사? 알 게 뭐람?\n\n체력 3 증가!\n현재 턴 행동 횟수 1회 감소!"
+  option2SuccessResult: "체력 +3\n현재 턴 행동 횟수 -1"
   option2FailDescription: "\uB108\uBB34 \uD479 \uC7A4\uB098? \uC790\uACE0 \uC77C\uC5B4\uB098
     \uBCF4\uB2C8 \uD68C\uC758\uAC00 \uC804\uBD80 \uB05D\uB098 \uC788\uC5C8\uB2E4!"
   option2FailResult: "이번 썬ㅡ클라베 즉시 종료"

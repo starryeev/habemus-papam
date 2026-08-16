@@ -54,7 +54,7 @@ public class E30000 : Event
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
             performer.ChangeHp(3);
-            InGameManager.Instance.QueueNextTurnActionDelta(-1);
+            InGameManager.Instance.ChangeCurrentTurnActions(-1);
 
             return FinishChoice(2, true);
         }

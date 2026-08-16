@@ -23,8 +23,8 @@ public class E40200 : Event
         option2Chance = 0.5f;
         option2SuccessDescription = "문이 열렸다. 씨름한 보람이 있네!\n\n정치력 1 감소!";
         option2SuccessResult = "정치력 -1";
-        option2FailDescription = "꿈쩍도 안 하네. 애를 쓴 덕분인지 다음에는 몸이 더 가볍다.\n\n다음 턴 행동 횟수 1회 증가!";
-        option2FailResult = "다음 턴 행동 횟수 +1";
+        option2FailDescription = "꿈쩍도 안 하네. 애를 쓴 덕분인지 몸이 더 가벼워졌다.\n\n현재 턴 행동 횟수 1회 증가!";
+        option2FailResult = "현재 턴 행동 횟수 +1";
     }
 
     public override bool CanChoiceOption1(Cardinal performer)
@@ -56,8 +56,7 @@ public class E40200 : Event
             return true;
         }
 
-        // 이벤트는 행동 2회 뒤에 열리므로 "이번 턴 1회 감소"는 다음 플레이 가능 턴에 적용한다.
-        InGameManager.Instance.QueueNextTurnActionDelta(1);
+        InGameManager.Instance.ChangeCurrentTurnActions(1);
         return false;
     }
 }

@@ -36,7 +36,7 @@ MonoBehaviour:
   option2: "\uD760, \uB4E3\uACE0 \uBCF4\uB2C8 \uB9DE\uB294 \uB9D0\uC774\uAD70. \uBC18\uBC15\uD560
     \uC218\uAC00 \uC5C6\uB2E4."
   option2Chance: 1
-  option2SuccessDescription: "역사는 반복되고 사람은 끊임없이 멍청한 짓을 한다.\n\n체력 2 감소!\n다음 턴 행동 횟수 1회 감소!"
-  option2SuccessResult: "체력 -2\n다음 턴 행동 횟수 -1"
+  option2SuccessDescription: "역사는 반복되고 사람은 끊임없이 멍청한 짓을 한다.\n\n체력 2 감소!\n현재 턴 행동 횟수 1회 감소!"
+  option2SuccessResult: "체력 -2\n현재 턴 행동 횟수 -1"
   option2FailDescription: 
   option2FailResult: 

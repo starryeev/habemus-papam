@@ -16,7 +16,7 @@ public class I002 : Item
 
         itemName = "나무지팡이";
         itemDescription = "걷기가 편해진다. 마음에 안 드는 사람을 위협할 수도 있다!";
-        itemEffectDescription = "획득 시 다음 턴 행동 횟수가 <color=#66CCFF>+1</color>회 증가한다. 사용 시 <color=#5BD65B>체력</color>이 가장 낮은 후보 NPC의 <color=#5BD65B>체력</color>을 <color=#FF4D4D>-4</color> 감소시킨다.";
+        itemEffectDescription = "획득 시 현재 턴 행동 횟수가 <color=#66CCFF>+1</color>회 증가한다. 사용 시 <color=#5BD65B>체력</color>이 가장 낮은 후보 NPC의 <color=#5BD65B>체력</color>을 <color=#FF4D4D>-4</color> 감소시킨다.";
 
         damageAmount = 4;
     }
@@ -26,18 +26,18 @@ public class I002 : Item
         Cardinal player = FindPlayer();
         if (player != null && InGameManager.Instance != null)
         {
-            InGameManager.Instance.QueueNextTurnActionDelta(1);
+            InGameManager.Instance.ChangeCurrentTurnActions(1);
         }
     }
 
     public override void OnReapply(Cardinal owner)
     {
-        // 획득 시의 일회성 행동 보너스는 GameContext 저장값에서 복원한다.
+        // 획득 시의 일회성 행동 보너스는 GameContext의 현재 턴 저장값에서 복원한다.
     }
 
     public override void OnRemove()
     {
-        // 예약된 행동 보너스는 다른 효과와 섞일 수 있어 제거 시 역보정을 하지 않는다.
+        // 이미 적용된 행동 보너스는 제거 시 역보정하지 않는다.
     }
 
     public override void OnUse()

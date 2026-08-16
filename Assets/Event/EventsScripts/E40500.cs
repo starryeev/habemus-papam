@@ -23,8 +23,8 @@ public class E40500 : Event
 
         option2 = "뭐 손 쓸 수단이 없다.\n이 일을 마치고 빨리 가보는 수밖에.";
         option2Chance = 0.8f;
-        option2SuccessDescription = "와장창!\n집중력이 흐트러진 나머지 실수를 해버렸다!\n\n다음 턴 행동 횟수 1회 증가!";
-        option2SuccessResult = "다음 턴 행동 횟수 +1";
+        option2SuccessDescription = "와장창!\n집중력이 흐트러진 나머지 실수를 해버렸다!\n\n현재 턴 행동 횟수 1회 증가!";
+        option2SuccessResult = "현재 턴 행동 횟수 +1";
         option2FailDescription = "어지러웠지만 신심으로 마음을 가라앉혔다. 당신의 정신력은 많은 추기경의 귀감이 되었다.\n\n정치력 1 증가!";
         option2FailResult = "정치력 +1";
     }
@@ -60,8 +60,7 @@ public class E40500 : Event
 
         if(Random.value <= option2Chance)
         {
-            // 이벤트 단계에서는 현재 턴의 행동이 이미 끝났으므로 다음 플레이 가능 턴에 이월한다.
-            InGameManager.Instance.QueueNextTurnActionDelta(1);
+            InGameManager.Instance.ChangeCurrentTurnActions(1);
             return true;
         }
 

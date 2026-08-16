@@ -38,7 +38,7 @@ MonoBehaviour:
   option2: "\uB3CC\uB2E4\uB9AC\uB294 \uB098\uC57D\uD55C \uC790\uB098 \uB450\uB4E4\uACA8
     \uBCF4\uB294 \uAC83\uC774\uB2E4.\n\uADF8\uB0E5 \uAC00\uC790."
   option2Chance: 1
-  option2SuccessDescription: "미끄러져 체력 1 감소! 다음 턴 행동 횟수 1회 감소!"
-  option2SuccessResult: "체력 -1\n다음 턴 행동 횟수 -1"
+  option2SuccessDescription: "미끄러져 체력 1 감소! 현재 턴 행동 횟수 1회 감소!"
+  option2SuccessResult: "체력 -1\n현재 턴 행동 횟수 -1"
   option2FailDescription: 
   option2FailResult: 

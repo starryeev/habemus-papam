@@ -21,8 +21,8 @@ public class E40700 : Event
 
         option2 = "흠, 듣고 보니 맞는 말이군. 반박할 수가 없다.";
         option2Chance = 1f;
-        option2SuccessDescription = "역사는 반복되고 사람은 끊임없이 멍청한 짓을 한다.\n\n체력 2 감소!\n다음 턴 행동 횟수 1회 감소!";
-        option2SuccessResult = "체력 -2\n다음 턴 행동 횟수 -1";
+        option2SuccessDescription = "역사는 반복되고 사람은 끊임없이 멍청한 짓을 한다.\n\n체력 2 감소!\n현재 턴 행동 횟수 1회 감소!";
+        option2SuccessResult = "체력 -2\n현재 턴 행동 횟수 -1";
     }
 
     public override bool CanChoiceOption1(Cardinal performer)
@@ -47,7 +47,7 @@ public class E40700 : Event
     {
         if(!CanChoiceOption2(performer)) return false;
         performer.ChangeHp(-2f);
-        InGameManager.Instance.QueueNextTurnActionDelta(-1);
+        InGameManager.Instance.ChangeCurrentTurnActions(-1);
         return true;
     }
 }

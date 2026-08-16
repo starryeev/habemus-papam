@@ -49,14 +49,14 @@ public class E12200 : Event
         if(Random.value <= option2Chance)
         {
             performer.ChangeHp(-1f);
-            InGameManager.Instance.QueueNextTurnActionDelta(1);
+            InGameManager.Instance.ChangeCurrentTurnActions(1);
 
             return FinishChoice(2, true);
         }
         else
         {
             performer.ChangeHp(-1f);
-            InGameManager.Instance.QueueNextTurnActionDelta(-1);
+            InGameManager.Instance.ChangeCurrentTurnActions(-1);
             return FinishChoice(2, false);
         }
     }

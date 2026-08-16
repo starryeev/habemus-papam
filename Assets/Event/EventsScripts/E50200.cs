@@ -16,8 +16,8 @@ public class E50200 : Event
         option1 = "주스를 마신다.";
         option1Chance = 0.5f;
         option1Requirement = "-";
-        option1SuccessDescription = "푸룬 주스였다! 남은 일을 해치우려 했지만 배가 심상치 않다.\n\n체력 1 감소!\n다음 턴 행동 횟수 1회 감소!";
-        option1SuccessResult = "체력 -1\n다음 턴 행동 횟수 -1";
+        option1SuccessDescription = "푸룬 주스였다! 남은 일을 해치우려 했지만 배가 심상치 않다.\n\n체력 1 감소!\n현재 턴 행동 횟수 1회 감소!";
+        option1SuccessResult = "체력 -1\n현재 턴 행동 횟수 -1";
         option1FailDescription = "푸룬 주스였다! 당신은 뱃속이 심상치 않음을 느끼고 화장실로 직행한다.\n\n체력 1 증가!\n해당 콘클라베 즉시 종료!";
         option1FailResult = "체력 +1\n콘클라베 즉시 종료, 교주 판정으로 직행";
         option2 = "";
@@ -40,8 +40,7 @@ public class E50200 : Event
         if(Random.value <= option1Chance)
         {
             performer.ChangeHp(-1f);
-            // 이벤트 단계에서는 현재 턴 행동이 끝난 상태라 다음 플레이 가능 턴에 적용한다.
-            InGameManager.Instance.QueueNextTurnActionDelta(-1);
+            InGameManager.Instance.ChangeCurrentTurnActions(-1);
             return FinishChoice(1, true);
         }
 

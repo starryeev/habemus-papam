@@ -15,7 +15,7 @@ MonoBehaviour:
   plotID: P007
   plotName: "\uB4DC\uB78D \uB354 \uBE44\uD2B8"
   plotDescription: "\uC0C8\uAE34\uB2E4! \uD0DC\uC591\uC758 \uBE44\uD2B8!"
-  plotEffect: "모든 후보의 다음 턴 행동 횟수 1회 감소"
+  plotEffect: "플레이어의 현재 턴 행동 횟수 1회 감소, 모든 NPC의 다음 턴 행동 1회 차단"
   plotCondiText: <sprite name=influence>4<sprite name=up>
   plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}

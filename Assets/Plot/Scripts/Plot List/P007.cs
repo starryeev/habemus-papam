@@ -27,7 +27,7 @@ public class P007 : Plot
         // 텍스트 기본값
         plotName = "드랍 더 비트";
         plotDescription = "새긴다! 태양의 비트!";
-        plotEffect = "모든 후보의 다음 턴 행동 횟수 1회 감소";
+        plotEffect = "플레이어의 현재 턴 행동 횟수 1회 감소, 모든 NPC의 다음 턴 행동 1회 차단";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
 
@@ -51,7 +51,7 @@ public class P007 : Plot
 
         if (performer != null && performer.CompareTag("Player"))
         {
-            InGameManager.Instance.QueueNextTurnActionDelta(-1);
+            InGameManager.Instance.ChangeCurrentTurnActions(-1);
             for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
             {
                 InGameManager.Instance.BlockNpcNextTurnAction(candidateNumber);

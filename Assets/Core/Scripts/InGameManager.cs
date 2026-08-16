@@ -139,8 +139,13 @@ public class GameContext
 
     public void AddCurrentTurnActions(int count)
     {
-        if (isEventPhase || count <= 0) return;
-        actionsThisTurn = Mathf.Max(completedActions, actionsThisTurn + count);
+        if (count > 0) ChangeCurrentTurnActions(count);
+    }
+
+    public void ChangeCurrentTurnActions(int delta)
+    {
+        if (delta == 0) return;
+        actionsThisTurn = Mathf.Max(completedActions, actionsThisTurn + delta);
     }
 
     public void SetEventPhase(bool value) => isEventPhase = value;
@@ -184,6 +189,17 @@ public class GameContext
         Debug.Assert(test.CurrentActionPosition == 4 && !test.CanPlayerAct() &&
             test.CompleteUnavailablePosition() && test.AreActionsComplete(),
             "행동 감소 위치 검사 규칙이 손상됐습니다.");
+
+        GameContext currentTurnDelta = new GameContext
+        {
+            completedActions = 2,
+            actionsThisTurn = BasePlayerActions,
+            isEventPhase = true
+        };
+        currentTurnDelta.ChangeCurrentTurnActions(-2);
+        currentTurnDelta.ChangeCurrentTurnActions(1);
+        Debug.Assert(currentTurnDelta.ActionsThisTurn == BasePlayerActions - 1,
+            "이벤트의 행동 횟수 증감이 현재 턴에 반영되지 않습니다.");
 
         GameContext clock = new GameContext();
         clock.currentDay = 1;
@@ -258,7 +274,6 @@ public class InGameManager : MonoBehaviour
     private bool isHandlingFinalPlayerHpZero = false;
     private bool isEndingConclaveAfterPlayerHpZero = false;
     private bool isConclaveExitInProgress = false;
-    private int nextTurnActionModifier;
     private bool blockNextTurn;
     private bool blockRemainingCurrentTurn;
     private bool awaitingTurnEvent;
@@ -353,7 +368,7 @@ public class InGameManager : MonoBehaviour
         awaitingTurnEvent = false;
         endConclaveAfterEvent = false;
         blockRemainingCurrentTurn = false;
-        gameContext.BeginTurn(ConsumeNextTurnActionModifier(), ConsumeNextTurnBlock());
+        gameContext.BeginTurn(0, ConsumeNextTurnBlock());
 
         if (inventoryUIPanel != null)
         {
@@ -390,7 +405,6 @@ public class InGameManager : MonoBehaviour
         isFirstStart = true;
         isSushiOn = false;
         isConclaveExitInProgress = false;
-        nextTurnActionModifier = 0;
         blockNextTurn = false;
         blockRemainingCurrentTurn = false;
         awaitingTurnEvent = false;
@@ -648,7 +662,7 @@ public class InGameManager : MonoBehaviour
             actionsThisTurn = gameContext.ActionsThisTurn,
             positionProgressVersion = 2,
             isEventPhase = gameContext.IsEventPhase,
-            nextTurnActionModifier = nextTurnActionModifier,
+            nextTurnActionModifier = 0,
             blockNextTurn = blockNextTurn,
             blockRemainingCurrentTurn = blockRemainingCurrentTurn,
             awaitingTurnEvent = awaitingTurnEvent,
@@ -700,10 +714,10 @@ public class InGameManager : MonoBehaviour
 
         gameContext.RestoreState(saveData.day, conclave, saveData.completedActions,
             saveData.actionsThisTurn, saveData.isEventPhase, saveData.positionProgressVersion);
+        gameContext.ChangeCurrentTurnActions(saveData.nextTurnActionModifier);
         isTimeRunning = saveData.isTimeRunning;
         isFirstStart = saveData.isFirstStart;
         isSushiOn = saveData.isSushiOn;
-        nextTurnActionModifier = saveData.nextTurnActionModifier;
         blockNextTurn = saveData.blockNextTurn;
         blockRemainingCurrentTurn = saveData.blockRemainingCurrentTurn;
         awaitingTurnEvent = saveData.awaitingTurnEvent;
@@ -1424,9 +1438,9 @@ public class InGameManager : MonoBehaviour
             UIManager.Instance.Ingame.Event.UISetEvent();
     }
 
-    public void QueueNextTurnActionDelta(int delta)
+    public void ChangeCurrentTurnActions(int delta)
     {
-        nextTurnActionModifier += delta;
+        gameContext.ChangeCurrentTurnActions(delta);
     }
 
     public void AddCurrentTurnActions(int count)
@@ -1607,13 +1621,6 @@ public class InGameManager : MonoBehaviour
     {
         if (gameContext.AreActionsComplete()) ResolveCompletedTurn();
         else BeginCurrentActionPosition();
-    }
-
-    private int ConsumeNextTurnActionModifier()
-    {
-        int modifier = nextTurnActionModifier;
-        nextTurnActionModifier = 0;
-        return modifier;
     }
 
     private bool ConsumeNextTurnBlock()
