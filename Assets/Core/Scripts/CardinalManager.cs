@@ -52,6 +52,7 @@ public class CardinalManager : MonoBehaviour
     private EventSystem blockedEventSystem;
     private InputSystemUIInputModule blockedInputModule;
     private Coroutine enableInputCoroutine;
+    private bool schemersAssignedThisConclave;
 
     [SerializeField] private StatsUI statsUI;
     public StatsUI StatsUI => statsUI;
@@ -150,6 +151,7 @@ public class CardinalManager : MonoBehaviour
 
     private IEnumerator ResetAndEnterSequence()
     {
+        schemersAssignedThisConclave = false;
         ConclavePathData leftPath = conclavePaths.Find(p => p.groupName.Contains("Left"));
         ConclavePathData rightPath = conclavePaths.Find(p => p.groupName.Contains("Right"));
         ConclavePathData playerPath = conclavePaths.Find(p => p.groupName.Contains("Player"));
@@ -234,7 +236,10 @@ public class CardinalManager : MonoBehaviour
         }
 
         //공작
-        AssignRandomSchemers();
+        if (InGameManager.Instance == null || !InGameManager.Instance.IsInitialTutorialLocked)
+        {
+            AssignRandomSchemers();
+        }
 
         //스탯 연동과 타이머 연동
         if (statsUI != null)
@@ -603,6 +608,33 @@ public class CardinalManager : MonoBehaviour
                 sc.SetSchemerMode(true);
             }
         }
+
+        schemersAssignedThisConclave = true;
+    }
+
+    public void SetInitialTutorialSchemeLock(bool locked)
+    {
+        if (locked)
+        {
+            foreach (Cardinal cardinal in cardinals)
+            {
+                StateController state = cardinal != null ? cardinal.GetComponent<StateController>() : null;
+                if (state != null && state.IsSchemer) state.SetSchemerMode(false);
+            }
+
+            schemersAssignedThisConclave = false;
+            return;
+        }
+
+        if (IsConclaveTransitionInProgress || schemersAssignedThisConclave) return;
+        if (cardinals.Any(cardinal => cardinal != null &&
+            cardinal.GetComponent<StateController>()?.IsSchemer == true))
+        {
+            schemersAssignedThisConclave = true;
+            return;
+        }
+
+        AssignRandomSchemers();
     }
 
     public int GetCurrentChatMasterCount()

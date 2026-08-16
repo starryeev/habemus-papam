@@ -278,6 +278,24 @@ public class InGameManager : MonoBehaviour
     public bool IsSushiOn => isSushiOn;
     public bool IsConclaveExitInProgress => isConclaveExitInProgress;
     public bool IsAwaitingTurnEvent => awaitingTurnEvent;
+    public NPCBehaviour InitialTutorialRequiredAction
+    {
+        get
+        {
+            if (!IsInitialTutorialContext || eventManager == null || !eventManager.HasAppeared("E11200"))
+                return NPCBehaviour.None;
+
+            bool speechInProgress = GetPlayerStateController()?.IsPerformingSpeechAction == true;
+            return ResolveInitialTutorialAction(
+                eventManager.HasAppeared("E11300"), gameContext.CompletedActions, speechInProgress);
+        }
+    }
+    public bool IsInitialTutorialLocked => IsInitialTutorialContext &&
+        (eventManager == null || !eventManager.HasAppeared("E11200") ||
+         InitialTutorialRequiredAction != NPCBehaviour.None);
+
+    private bool IsInitialTutorialContext => gameContext != null &&
+        gameContext.CurrentDay == 1 && gameContext.CurrentConclave == GameContext.Conclave.Dawn;
 
     void Awake()
     {
@@ -290,6 +308,7 @@ public class InGameManager : MonoBehaviour
         Instance = this;
 
         GameContext.ValidateActionRules();
+        ValidateInitialTutorialRules();
         gameContext = new GameContext();
         gameContext.OnGameContextEvent += HandleGameContextEvent;
 
@@ -1330,7 +1349,7 @@ public class InGameManager : MonoBehaviour
         npcNextTurnActionBlocked[candidateNumber - 1] = true;
     }
 
-    public void CompletePlayerAction(Cardinal performer)
+    public void CompletePlayerAction(Cardinal performer, NPCBehaviour completedAction = NPCBehaviour.None)
     {
         if (performer == null || !performer.CompareTag("Player") || !CanPerformPlayerAction(performer)) return;
         if (!gameContext.CompleteAction()) return;
@@ -1339,6 +1358,7 @@ public class InGameManager : MonoBehaviour
             blockRemainingCurrentTurn = false;
             gameContext.BlockRemainingPlayerActions();
         }
+        if (completedAction == NPCBehaviour.Pray && TryOpenSpeechTutorialAfterPrayer()) return;
         if (gameContext.AreActionsComplete())
         {
             ResolveCompletedTurn();
@@ -1346,6 +1366,51 @@ public class InGameManager : MonoBehaviour
         }
 
         BeginCurrentActionPosition();
+    }
+
+    public bool CanStartPlayerWorldAction(NPCBehaviour action, StateController playerState)
+    {
+        if (playerState == null || !playerState.CompareTag("Player") ||
+            !playerState.CanAcceptManualInteraction()) return false;
+
+        return !IsInitialTutorialLocked || InitialTutorialRequiredAction == action;
+    }
+
+    private bool TryOpenSpeechTutorialAfterPrayer()
+    {
+        if (!IsInitialTutorialContext || gameContext.CompletedActions != 1 || eventManager == null ||
+            !eventManager.HasAppeared("E11200")) return false;
+
+        Event speechTutorial = eventManager.TakeEventOnce("E11300");
+        if (speechTutorial == null) return false;
+
+        OpenEventBeforeActions(speechTutorial);
+        SaveTurnPhaseCheckpoint(SaveResumeStep.ReopenPendingEvent);
+        return true;
+    }
+
+    private StateController GetPlayerStateController()
+    {
+        return CardinalManager.Instance != null && CardinalManager.Instance.PlayerTransform != null
+            ? CardinalManager.Instance.PlayerTransform.GetComponent<StateController>()
+            : null;
+    }
+
+    private static NPCBehaviour ResolveInitialTutorialAction(
+        bool speechTutorialAppeared, int completedActions, bool speechInProgress)
+    {
+        if (!speechTutorialAppeared) return NPCBehaviour.Pray;
+        return completedActions < 2 || speechInProgress ? NPCBehaviour.Speech : NPCBehaviour.None;
+    }
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private static void ValidateInitialTutorialRules()
+    {
+        Debug.Assert(ResolveInitialTutorialAction(false, 0, false) == NPCBehaviour.Pray &&
+            ResolveInitialTutorialAction(true, 1, false) == NPCBehaviour.Speech &&
+            ResolveInitialTutorialAction(true, 2, true) == NPCBehaviour.Speech &&
+            ResolveInitialTutorialAction(true, 2, false) == NPCBehaviour.None,
+            "초기 기도/연설 튜토리얼 잠금 규칙이 손상됐습니다.");
     }
 
     private void OpenEventBeforeActions(Event evt)

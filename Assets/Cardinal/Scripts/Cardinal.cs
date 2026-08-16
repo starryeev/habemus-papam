@@ -548,7 +548,7 @@ public class Cardinal : MonoBehaviour
         if (completePlayerAction)
         {
             GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
-            InGameManager.Instance.CompletePlayerAction(this);
+            InGameManager.Instance.CompletePlayerAction(this, NPCBehaviour.Pray);
         }
 
         return success;
@@ -653,7 +653,7 @@ public class Cardinal : MonoBehaviour
         if (completePlayerAction)
         {
             GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
-            InGameManager.Instance.CompletePlayerAction(this);
+            InGameManager.Instance.CompletePlayerAction(this, NPCBehaviour.Speech);
         }
 
         return success;

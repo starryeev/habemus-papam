@@ -88,6 +88,8 @@ public class Gamsil : MonoBehaviour
     {
         if (prayerList.Contains(playerSC) || currentPrayerNPC == playerSC || overflowPlayer == playerSC) return;
         if (playerSC == null || !playerSC.CanAcceptManualInteraction()) return;
+        if (InGameManager.Instance != null &&
+            !InGameManager.Instance.CanStartPlayerWorldAction(NPCBehaviour.Pray, playerSC)) return;
 
         if (CanPlayerGoDirectlyToPrayer(playerSC))
         {
@@ -125,6 +127,8 @@ public class Gamsil : MonoBehaviour
         {
             return false;
         }
+        if (InGameManager.Instance != null &&
+            !InGameManager.Instance.CanStartPlayerWorldAction(NPCBehaviour.Pray, playerSC)) return false;
 
         CancelPlayerRegistration(playerSC);
 

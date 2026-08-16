@@ -142,6 +142,11 @@ public class EventManager : MonoBehaviour
         return allEvents.FirstOrDefault(evt => evt != null && evt.eventID == eventId);
     }
 
+    public Event TakeEventOnce(string eventId)
+    {
+        return HasAppeared(eventId) ? null : SelectEvent(GetEventById(eventId));
+    }
+
     public void InitEventManager()
     {
         appeared.Clear();

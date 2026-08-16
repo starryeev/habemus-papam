@@ -1481,6 +1481,8 @@ public class StateController : MonoBehaviour
         // 플레이어와 충돌
         if (currentState == CardinalState.Scheme && other.CompareTag("Player"))
         {
+            if (InGameManager.Instance != null && InGameManager.Instance.IsInitialTutorialLocked) return;
+
             BoxCollider2D bodyCollider = GetComponent<BoxCollider2D>();
             if (bodyCollider == null || !bodyCollider.Distance(other).isOverlapped)
             {

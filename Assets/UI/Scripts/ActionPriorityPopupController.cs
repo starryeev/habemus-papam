@@ -9,6 +9,9 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
     private const string HpColor = "#5BD65B";
     private const string PietyColor = "#FFD84D";
     private const string InfluenceColor = "#4488FF";
+    private const float TutorialArrowMinY = 0.65f;
+    private const float TutorialArrowMaxY = 1f;
+    private const float TutorialArrowTravelDuration = 0.5f;
 
     private enum ActionType
     {
@@ -23,8 +26,11 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
     private Lecture lecture;
     private BoxCollider2D prayerClickCollider;
     private BoxCollider2D speechClickCollider;
+    private Transform prayerTutorialArrow;
+    private Transform speechTutorialArrow;
     private ActionType pendingAction;
     private bool isConfirming;
+    private bool? tutorialSchemeLocked;
 
     public static void Attach(GameObject host)
     {
@@ -53,8 +59,12 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
         ConfigurePopup(speechPopup);
         prayerClickCollider = ConfigureWorldClickCollider("gamsil_0");
         speechClickCollider = ConfigureWorldClickCollider("lecturn_0");
+        prayerTutorialArrow = FindTutorialArrow("gamsil_0");
+        speechTutorialArrow = FindTutorialArrow("lecturn_0");
 
         CloseAllPopups();
+        SetTutorialArrow(prayerTutorialArrow, false);
+        SetTutorialArrow(speechTutorialArrow, false);
     }
 
     private void ConfigurePopup(GameObject popup)
@@ -91,6 +101,8 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
 
     private void Update()
     {
+        UpdateInitialTutorialGuidance();
+
         if (isConfirming || IsAnyPopupOpen() ||
             CardinalManager.Instance != null && CardinalManager.Instance.IsConclaveTransitionInProgress)
         {
@@ -117,7 +129,7 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
 
     private void OpenPopup(ActionType actionType)
     {
-        if (isConfirming)
+        if (isConfirming || !CanUseAction(actionType))
         {
             return;
         }
@@ -189,8 +201,9 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
 
         Transform playerTransform = CardinalManager.Instance != null ? CardinalManager.Instance.PlayerTransform : null;
         StateController playerState = playerTransform != null ? playerTransform.GetComponent<StateController>() : null;
-        if (playerState == null)
+        if (playerState == null || !CanUseAction(pendingAction, playerState))
         {
+            CloseAllPopups();
             return;
         }
 
@@ -206,6 +219,74 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
         }
 
         isConfirming = false;
+    }
+
+    private void UpdateInitialTutorialGuidance()
+    {
+        InGameManager manager = InGameManager.Instance;
+        NPCBehaviour requiredAction = manager != null
+            ? manager.InitialTutorialRequiredAction
+            : NPCBehaviour.None;
+        Transform playerTransform = CardinalManager.Instance != null
+            ? CardinalManager.Instance.PlayerTransform
+            : null;
+        StateController playerState = playerTransform != null
+            ? playerTransform.GetComponent<StateController>()
+            : null;
+
+        SetTutorialArrow(prayerTutorialArrow, requiredAction == NPCBehaviour.Pray &&
+            playerState?.IsPerformingPrayerAction != true);
+        SetTutorialArrow(speechTutorialArrow, requiredAction == NPCBehaviour.Speech &&
+            playerState?.IsPerformingSpeechAction != true);
+
+        bool schemeLocked = manager != null && manager.IsInitialTutorialLocked;
+        if (tutorialSchemeLocked == schemeLocked) return;
+
+        tutorialSchemeLocked = schemeLocked;
+        CardinalManager.Instance?.SetInitialTutorialSchemeLock(schemeLocked);
+    }
+
+    private bool CanUseAction(ActionType actionType, StateController playerState = null)
+    {
+        if (actionType == ActionType.None) return false;
+        if (playerState == null)
+        {
+            Transform playerTransform = CardinalManager.Instance != null
+                ? CardinalManager.Instance.PlayerTransform
+                : null;
+            playerState = playerTransform != null ? playerTransform.GetComponent<StateController>() : null;
+        }
+
+        if (playerState == null) return false;
+        NPCBehaviour action = actionType == ActionType.Prayer ? NPCBehaviour.Pray : NPCBehaviour.Speech;
+        return InGameManager.Instance == null
+            ? playerState.CanAcceptManualInteraction()
+            : InGameManager.Instance.CanStartPlayerWorldAction(action, playerState);
+    }
+
+    private static Transform FindTutorialArrow(string parentName)
+    {
+        GameObject parent = FindSceneObjectIncludingInactive(parentName);
+        return parent != null ? FindDeepChild(parent.transform, "Arrow") : null;
+    }
+
+    private static void SetTutorialArrow(Transform arrow, bool active)
+    {
+        if (arrow == null) return;
+
+        arrow.gameObject.SetActive(active);
+        Vector3 position = arrow.localPosition;
+        if (active)
+        {
+            float phase = Mathf.PingPong(Time.unscaledTime / TutorialArrowTravelDuration, 1f);
+            float wave = (1f - Mathf.Cos(Mathf.PI * phase)) * 0.5f;
+            position.y = Mathf.Lerp(TutorialArrowMinY, TutorialArrowMaxY, wave);
+        }
+        else
+        {
+            position.y = TutorialArrowMinY;
+        }
+        arrow.localPosition = position;
     }
 
     private void CloseAllPopups()
