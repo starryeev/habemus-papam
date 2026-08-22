@@ -9,7 +9,7 @@ using UnityEngine.UI;
 하위 오브젝트
 - 좌측 텍스트 : 콘클라베 일자와 시간(새벽/아침/저녁/밤)을 텍스트로 표시
 - 우측 텍스트 : 남은 시간을 0:00.00으로 표시
-- 시계 : 남은 시간을 비율로 표기 (콘클라베 1회 동안 1바퀴 돌아감)
+- 시계 : 시간대별 시작 시각에서 행동 완료마다 1시간씩 시침이 이동
 - 표시등 4개 : '꺼짐' 상태로 있다가 콘클라베가 시작되면 시간에 맞도록 켜짐
 */
 public class TimeUI : MonoBehaviour
@@ -35,6 +35,7 @@ public class TimeUI : MonoBehaviour
 
     private void Awake()
     {
+        ValidateClockHandRules();
         HideForConclaveEntrance();
     }
 
@@ -52,9 +53,9 @@ public class TimeUI : MonoBehaviour
 
         if (InGameManager.Instance.IsTimeRunning)
         {
-            int turn = InGameManager.Instance.GetCurrentTurn();
-            RightText2.text = FormatActionProgress(InGameManager.Instance.Context);
-            ClockHand.transform.rotation = Quaternion.Euler(0, 0, -90f * (turn - 1));
+            GameContext context = InGameManager.Instance.Context;
+            RightText2.text = FormatActionProgress(context);
+            UpdateClockHand(context);
         }
     }
 
@@ -89,15 +90,17 @@ public class TimeUI : MonoBehaviour
         RightText1.text = "Action";
 
         UpdateLights(currentCon);
+        UpdateClockHand(InGameManager.Instance.Context);
     }
 
     public void EndConclaveUI()
     {
         if (InGameManager.Instance != null)
         {
-            RightText2.text = FormatActionProgress(InGameManager.Instance.Context);
+            GameContext context = InGameManager.Instance.Context;
+            RightText2.text = FormatActionProgress(context);
+            UpdateClockHand(context);
         }
-        ClockHand.transform.rotation = Quaternion.identity;
 
         Dawn.sprite = LightList[0];
         Morning.sprite = LightList[0];
@@ -204,5 +207,41 @@ public class TimeUI : MonoBehaviour
             _ => GameContext.ActionsPerPosition.ToString()
         };
         return $"{current} / {denominator}";
+    }
+
+    private void UpdateClockHand(GameContext context)
+    {
+        if (ClockHand == null || context == null) return;
+        int hour = GetClockHour(context.CurrentConclave, context.CompletedActions);
+        ClockHand.rotation = Quaternion.Euler(0f, 0f, -30f * (hour % 12));
+    }
+
+    private static int GetClockHour(GameContext.Conclave conclave, int completedActions)
+    {
+        (int startHour, int maxAdvance) = conclave switch
+        {
+            GameContext.Conclave.Dawn => (4, 4),
+            GameContext.Conclave.Morning => (9, 3),
+            GameContext.Conclave.Afternoon => (1, 5),
+            GameContext.Conclave.Evening => (7, 8),
+            _ => (12, 0)
+        };
+        int hour = startHour + Mathf.Clamp(completedActions, 0, maxAdvance);
+        return (hour - 1) % 12 + 1;
+    }
+
+    [System.Diagnostics.Conditional("UNITY_EDITOR")]
+    private static void ValidateClockHandRules()
+    {
+        Debug.Assert(
+            GetClockHour(GameContext.Conclave.Dawn, 0) == 4 &&
+            GetClockHour(GameContext.Conclave.Dawn, 99) == 8 &&
+            GetClockHour(GameContext.Conclave.Morning, 0) == 9 &&
+            GetClockHour(GameContext.Conclave.Morning, 99) == 12 &&
+            GetClockHour(GameContext.Conclave.Afternoon, 0) == 1 &&
+            GetClockHour(GameContext.Conclave.Afternoon, 99) == 6 &&
+            GetClockHour(GameContext.Conclave.Evening, 0) == 7 &&
+            GetClockHour(GameContext.Conclave.Evening, 99) == 3,
+            "시간대별 시침 시작/종료 규칙이 손상됐습니다.");
     }
 }
