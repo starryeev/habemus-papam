@@ -79,7 +79,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 974e35ca22ec4971b4d7da88afa6efd6, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpeechTriggerSfx
 --- !u!1 &7455590352920837333
 GameObject:

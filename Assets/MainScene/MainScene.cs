@@ -10,6 +10,8 @@ using UnityEngine.UI;
 public class MainScene : MonoBehaviour
 {
     private const string PopeListNavigationButtonName = "PopeList";
+    private const string DoorNavigationButtonName = "Door";
+    private const string DoorSfxName = "Door";
     private const float PopeListNavigationIdleAlpha = 143f / 255f;
 
     private const string IntroNewspaperSceneName = "IntroNewspaperScene";
@@ -61,6 +63,11 @@ public class MainScene : MonoBehaviour
     private readonly Dictionary<Image, Color> navigationButtonImageColors = new();
     private readonly Dictionary<Button, Vector2Int> navigationButtonCoordinates = new();
     private readonly HashSet<Button> navigationPointerBoundButtons = new();
+    private GameObject gameStopPopup;
+    private Button gameStopYesButton;
+    private Button gameStopNoButton;
+    private Button gameStopSelectedButton;
+    private Button doorButton;
     private static readonly string[] navigationImageButtonNames =
     {
         "GameStartBtn",
@@ -70,6 +77,7 @@ public class MainScene : MonoBehaviour
         "ResetData",
         "Dict",
         "PopeList",
+        DoorNavigationButtonName,
     };
     private static readonly Dictionary<string, Vector2Int> navigationCoordinatesByButtonName = new()
     {
@@ -79,6 +87,7 @@ public class MainScene : MonoBehaviour
         { "ResetData", new Vector2Int(1, 0) },
         { "Dict", new Vector2Int(2, 0) },
         { "PopeList", new Vector2Int(2, 1) },
+        { DoorNavigationButtonName, new Vector2Int(3, 0) },
     };
     private static readonly Dictionary<string, string> navigationSfxByButtonName = new()
     {
@@ -88,6 +97,7 @@ public class MainScene : MonoBehaviour
         { "ResetData", "Bottle" },
         { "Dict", "Compass" },
         { "PopeList", "Frame" },
+        { DoorNavigationButtonName, DoorSfxName },
     };
     private readonly Dictionary<Selectable, bool> popeListSelectableInteractableStates = new();
     private readonly List<Sprite> resolvedPopeListCreditSprites = new();
@@ -117,6 +127,7 @@ public class MainScene : MonoBehaviour
         ResolveNameSelectionReferences();
         ResolveDictionaryPopupReferences();
         ResolveResetDataReferences();
+        ResolveGameStopReferences();
         InitializePopeListRuntimeBindings();
         SetNavigationButtonImagesVisible(null);
         SetStartGameWarningPopup(false);
@@ -126,6 +137,7 @@ public class MainScene : MonoBehaviour
         SetDictPopup(false);
         SetResetDataPopup(false);
         SetPopeListPopup(false);
+        SetGameStopPopup(false);
     }
 
     private void Start()
@@ -141,6 +153,12 @@ public class MainScene : MonoBehaviour
         RefreshNavigation(false);
         if (IsSettingsInputCaptured())
         {
+            return;
+        }
+
+        if (IsPopupOpen(gameStopPopup))
+        {
+            HandleGameStopPopupInput();
             return;
         }
 
@@ -161,6 +179,31 @@ public class MainScene : MonoBehaviour
     {
         SoundManager.Instance.PlaySFX("NewGame");
         SetStartGameWarningPopup(true);
+    }
+
+    public void OnClickOpenGameStopPopup()
+    {
+        if (IsPopupOpen(gameStopPopup))
+        {
+            return;
+        }
+
+        SetGameStopPopup(true);
+    }
+
+    public void OnClickConfirmGameStop()
+    {
+        Time.timeScale = 1f;
+        Application.Quit();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+    }
+
+    public void OnClickCancelGameStop()
+    {
+        SetGameStopPopup(false);
     }
 
     public void OnClickConfirmStartGame()
@@ -520,6 +563,30 @@ public class MainScene : MonoBehaviour
         }
     }
 
+    private void HandleGameStopPopupInput()
+    {
+        if (WasMoveLeftPressed() || WasMoveUpPressed())
+        {
+            SelectGameStopButton(gameStopYesButton);
+        }
+        else if (WasMoveRightPressed() || WasMoveDownPressed())
+        {
+            SelectGameStopButton(gameStopNoButton);
+        }
+        else if (WasSubmitPressed())
+        {
+            gameStopSelectedButton?.onClick.Invoke();
+            return;
+        }
+        else if (WasCancelPressed())
+        {
+            OnClickCancelGameStop();
+            return;
+        }
+
+        UpdateSelectionVisual(gameStopSelectedButton);
+    }
+
     private void MoveSelection(Vector2Int direction)
     {
         if (direction == Vector2Int.zero || navigationButtons == null || navigationButtons.Count == 0)
@@ -715,7 +782,11 @@ public class MainScene : MonoBehaviour
 
     private void UpdateSelectionVisual()
     {
-        Button currentButton = GetCurrentNavigationButton();
+        UpdateSelectionVisual(GetCurrentNavigationButton());
+    }
+
+    private void UpdateSelectionVisual(Button currentButton)
+    {
         if (currentButton == null)
         {
             ClearSelectionHighlight();
@@ -793,13 +864,20 @@ public class MainScene : MonoBehaviour
             return;
         }
 
-        image.enabled = true;
         if (!navigationButtonImageColors.TryGetValue(image, out Color baseColor))
         {
             baseColor = image.color;
             navigationButtonImageColors[image] = baseColor;
         }
 
+        if (button != null && button.name == DoorNavigationButtonName)
+        {
+            image.enabled = isVisible;
+            image.color = baseColor;
+            return;
+        }
+
+        image.enabled = true;
         Color color = baseColor;
         if (button != null && button.name == PopeListNavigationButtonName)
         {
@@ -837,7 +915,7 @@ public class MainScene : MonoBehaviour
 
         foreach (string buttonName in navigationImageButtonNames)
         {
-            Transform buttonTransform = mainScreenTransform.Find(buttonName);
+            Transform buttonTransform = FindDeepChild(mainScreenTransform, buttonName);
             if (buttonTransform == null)
             {
                 continue;
@@ -957,7 +1035,8 @@ public class MainScene : MonoBehaviour
             || IsPopupOpen(selectNamePopup)
             || IsPopupOpen(dictPopup)
             || IsPopupOpen(resetDataPopup)
-            || IsPopupOpen(popeListPopup);
+            || IsPopupOpen(popeListPopup)
+            || IsPopupOpen(gameStopPopup);
     }
 
     private static bool IsSettingsInputCaptured()
@@ -1048,6 +1127,105 @@ public class MainScene : MonoBehaviour
             resetDataButton.onClick.RemoveListener(OnClickOpenResetDataPopup);
             resetDataButton.onClick.AddListener(OnClickOpenResetDataPopup);
         }
+    }
+
+    private void ResolveGameStopReferences()
+    {
+        gameStopPopup ??= FindSceneObjectByNameIncludingInactive("GameStopPopUP");
+
+        if (doorButton == null)
+        {
+            GameObject doorObject = FindSceneObjectByNameIncludingInactive(DoorNavigationButtonName);
+            doorButton = doorObject != null ? doorObject.GetComponent<Button>() : null;
+        }
+
+        if (gameStopPopup != null)
+        {
+            Transform yesTransform = FindDeepChild(gameStopPopup.transform, "Yes");
+            Transform noTransform = FindDeepChild(gameStopPopup.transform, "No");
+            gameStopYesButton = yesTransform != null ? yesTransform.GetComponent<Button>() : null;
+            gameStopNoButton = noTransform != null ? noTransform.GetComponent<Button>() : null;
+        }
+
+        if (doorButton != null)
+        {
+            Image doorImage = doorButton.GetComponent<Image>();
+            if (doorImage != null)
+            {
+                ConfigureDoorHitArea(doorImage);
+                doorImage.enabled = false;
+            }
+
+            doorButton.onClick.RemoveListener(OnClickOpenGameStopPopup);
+            doorButton.onClick.AddListener(OnClickOpenGameStopPopup);
+        }
+    }
+
+    private void ConfigureDoorHitArea(Image doorImage)
+    {
+        Transform hitAreaTransform = doorButton.transform.Find("DoorHitArea");
+        Image hitAreaImage;
+
+        if (hitAreaTransform == null)
+        {
+            GameObject hitAreaObject = new GameObject(
+                "DoorHitArea",
+                typeof(RectTransform),
+                typeof(CanvasRenderer),
+                typeof(Image));
+            hitAreaTransform = hitAreaObject.transform;
+            hitAreaTransform.SetParent(doorButton.transform, false);
+            hitAreaImage = hitAreaObject.GetComponent<Image>();
+        }
+        else
+        {
+            hitAreaImage = hitAreaTransform.GetComponent<Image>();
+        }
+
+        RectTransform hitAreaRect = (RectTransform)hitAreaTransform;
+        hitAreaRect.anchorMin = Vector2.zero;
+        hitAreaRect.anchorMax = Vector2.one;
+        hitAreaRect.offsetMin = Vector2.zero;
+        hitAreaRect.offsetMax = Vector2.zero;
+
+        hitAreaImage.sprite = doorImage.sprite;
+        hitAreaImage.color = Color.clear;
+        hitAreaImage.raycastTarget = true;
+        hitAreaImage.maskable = false;
+        hitAreaImage.alphaHitTestMinimumThreshold = 0.1f;
+    }
+
+    private void SetGameStopPopup(bool isActive)
+    {
+        if (gameStopPopup == null)
+        {
+            return;
+        }
+
+        gameStopPopup.SetActive(isActive);
+        gameStopSelectedButton = isActive
+            ? (gameStopNoButton != null ? gameStopNoButton : gameStopYesButton)
+            : null;
+
+        if (isActive)
+        {
+            SelectGameStopButton(gameStopSelectedButton);
+        }
+        else
+        {
+            RefreshNavigation(false);
+        }
+    }
+
+    private void SelectGameStopButton(Button button)
+    {
+        if (button == null || !button.gameObject.activeInHierarchy || !button.interactable)
+        {
+            return;
+        }
+
+        gameStopSelectedButton = button;
+        UpdateSelectionVisual(button);
     }
     private void SetDictPopup(bool isActive)
     {
