@@ -597,8 +597,11 @@ public class CardinalManager : MonoBehaviour
     // ========================================================================
     private void AssignRandomSchemers()
     {
-        var candidates = cardinals.Where(c => c != null && !c.CompareTag("Player")).ToList();
+        var candidates = cardinals.Where(c => c != null &&
+            c.gameObject.activeSelf &&
+            !c.CompareTag("Player")).ToList();
         var selectedSchemers = candidates.OrderBy(x => Random.value).Take(2).ToList();
+        int assignedCount = 0;
 
         foreach (var c in selectedSchemers)
         {
@@ -606,10 +609,29 @@ public class CardinalManager : MonoBehaviour
             if (sc != null)
             {
                 sc.SetSchemerMode(true);
+                assignedCount++;
             }
         }
 
-        schemersAssignedThisConclave = true;
+        schemersAssignedThisConclave = assignedCount > 0;
+    }
+
+    public void EnsureSchemerAssignmentAfterLoad()
+    {
+        if (InGameManager.Instance != null && InGameManager.Instance.IsInitialTutorialLocked)
+        {
+            schemersAssignedThisConclave = false;
+            return;
+        }
+
+        schemersAssignedThisConclave = cardinals.Any(cardinal => cardinal != null &&
+            cardinal.gameObject.activeSelf &&
+            cardinal.GetComponent<StateController>()?.IsSchemer == true);
+
+        if (!schemersAssignedThisConclave)
+        {
+            AssignRandomSchemers();
+        }
     }
 
     public void SetInitialTutorialSchemeLock(bool locked)
@@ -628,6 +650,7 @@ public class CardinalManager : MonoBehaviour
 
         if (IsConclaveTransitionInProgress || schemersAssignedThisConclave) return;
         if (cardinals.Any(cardinal => cardinal != null &&
+            cardinal.gameObject.activeSelf &&
             cardinal.GetComponent<StateController>()?.IsSchemer == true))
         {
             schemersAssignedThisConclave = true;

@@ -195,21 +195,27 @@ public class PlotManager : MonoBehaviour
         usedPlots.Clear();
     }
 
-    // 콘클라베 시작 시 새로운 공작 Set 생성
+    // 첫 콘클라베 시작 시 공작 Set을 생성하고, 이후에는 퇴장 시 새로 고친 Set을 유지한다.
     private void OnGameContextChanged(GameContext.GameContextEvent eventType)
     {
         if (eventType == GameContext.GameContextEvent.ConclaveStart)
         {
             int currentDay = InGameManager.Instance.Context.CurrentDay;
-            if (activePlotDay == currentDay && availPlotSets.All(plotSet => plotSet != null)) return;
+            activePlotDay = currentDay;
+            if (availPlotSets.All(plotSet => plotSet != null)) return;
 
             HashSet<Plot> previousDayPlots = new HashSet<Plot>(availPlotSets
                 .Where(plotSet => plotSet != null)
                 .SelectMany(plotSet => plotSet.plots)
                 .Where(plot => plot != null));
-            activePlotDay = currentDay;
-            availPlotSets[0] = GeneratePlotSet(previousDayPlots);
-            availPlotSets[1] = GeneratePlotSet(previousDayPlots);
+            for (int i = 0; i < availPlotSets.Length; i++)
+            {
+                if (availPlotSets[i] == null) availPlotSets[i] = GeneratePlotSet(previousDayPlots);
+            }
+        }
+        else if (eventType == GameContext.GameContextEvent.ConclaveEnd)
+        {
+            for (int i = 0; i < availPlotSets.Length; i++) RerollPlotSet(i);
         }
     }
 
@@ -240,13 +246,18 @@ public class PlotManager : MonoBehaviour
         if (InGameManager.Instance != null) InGameManager.Instance.ExecuteNpcActionsBeforePlayerAction(performer);
         selectedPlot.Execute(performer);
         performer?.OnPlotExecuted();
-        AvailPlotSets[plotSet].use(index);
+        PlotSet usedPlotSet = AvailPlotSets[plotSet];
+        usedPlotSet.use(index);
 
         if (ActionRecordManager.Instance != null)
         {
             ActionRecordManager.Instance.RecordPlot(performer);
         }
         if (InGameManager.Instance != null) InGameManager.Instance.CompletePlayerAction(performer);
+        if (usedPlotSet.isAllUsed() && ReferenceEquals(AvailPlotSets[plotSet], usedPlotSet))
+        {
+            RerollPlotSet(plotSet);
+        }
     }
 
     public void RerollPlotSet(int plotSet = 0)

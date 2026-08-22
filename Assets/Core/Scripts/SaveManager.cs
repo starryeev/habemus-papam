@@ -386,6 +386,16 @@ public class SaveManager : MonoBehaviour
             ActionRecordManager.Instance.RestoreCurrentRunStats(saveModel.actionStats);
         }
 
+        if (CardinalManager.Instance != null)
+        {
+            CardinalManager.Instance.EnsureSchemerAssignmentAfterLoad();
+        }
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayBGM("DummyBGM", 0);
+        }
+
         RefreshSceneUi(saveModel);
     }
 

@@ -59,9 +59,6 @@ public class StateController : MonoBehaviour
     [Tooltip("연설(Speeching) 상태일 때 표시될 말풍선 프리팹")]
     [SerializeField] private GameObject SpeechingBubblePrefab;
 
-    [Tooltip("캐릭터 위치를 기준으로 말풍선이 생성될 오프셋 (높이 조절)")]
-    [SerializeField] private Vector3 bubbleOffset = new Vector3(0, 2.5f, 0);
-
     [Header("Pray 설정")]
     [Tooltip("기도 상태를 유지할 시간 (초)")]
     [SerializeField] private float prayDuration = 3.0f;
@@ -287,7 +284,7 @@ public class StateController : MonoBehaviour
                 if (chatSequenceCoroutine != null) StopCoroutine(chatSequenceCoroutine);
                 chatSequenceCoroutine = StartCoroutine(ProcessChatSequence());
 
-                ShowBubble(masterBubblePrefab); // 말풍선
+                ShowBubble(listenerBubblePrefab); // 말풍선
                 break;
 
             case CardinalState.Chatting:
@@ -391,6 +388,7 @@ public class StateController : MonoBehaviour
                 {
                     aiWanderCoroutine = StartCoroutine(AIWanderRoutine());
                 }
+                ShowBubble(masterBubblePrefab);
                 break;
         }
     }
@@ -499,6 +497,7 @@ public class StateController : MonoBehaviour
                     aiWanderCoroutine = null;
                 }
                 if (agent != null && agent.isOnNavMesh) agent.ResetPath();
+                HideBubble();
                 break;
         }
     }
@@ -806,7 +805,7 @@ public class StateController : MonoBehaviour
 
         if (prefab != null)
         {
-            currentBubbleInstance = Instantiate(prefab, transform.position + bubbleOffset, Quaternion.identity, transform);
+            currentBubbleInstance = Instantiate(prefab, transform, false);
         }
     }
 
@@ -943,13 +942,6 @@ public class StateController : MonoBehaviour
 
                     // 말풍선 교체
                     if (masterAlertBubblePrefab != null) ShowBubble(masterAlertBubblePrefab);
-
-                    // 정치력 감소
-                    Cardinal playerCardinal = playerObj.GetComponent<Cardinal>();
-                    if (playerCardinal != null)
-                    {
-                        playerCardinal.ChangeInfluence(-3f);
-                    }
                 }
             }
 
@@ -1413,7 +1405,7 @@ public class StateController : MonoBehaviour
 
         if (active)
         {
-            if (spriteRenderer != null) spriteRenderer.color = Color.blue;
+            if (spriteRenderer != null) spriteRenderer.color = new Color32(164, 164, 164, 255);
 
             if (currentState == CardinalState.Idle || currentState == CardinalState.Chatting)
             {

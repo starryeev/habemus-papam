@@ -258,6 +258,9 @@ public class GameContextSaveData
     public int completedActions;
     public int actionsThisTurn = 8;
     public int positionProgressVersion;
+    public List<int> actionCountsByPosition = new List<int>();
+    public int currentActionPosition;
+    public int completedActionsInPosition;
     public bool isEventPhase;
     public int nextTurnActionModifier;
     public bool blockNextTurn;

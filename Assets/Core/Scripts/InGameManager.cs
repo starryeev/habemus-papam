@@ -39,7 +39,9 @@ public class GameContext
     Conclave currentConclave;
     int currentTurn;
     int completedActions;
-    int actionsThisTurn;
+    readonly int[] actionCountsByPosition = new int[BaseActionPositions];
+    int currentActionPositionIndex;
+    int completedActionsInPosition;
     bool isEventPhase;
 
     public event Action<GameContextEvent> OnGameContextEvent;
@@ -48,14 +50,29 @@ public class GameContext
     public Conclave CurrentConclave => currentConclave;
     public int CurrentTurn => currentTurn;
     public int CompletedActions => completedActions;
-    public int ActionsThisTurn => actionsThisTurn;
+    public int ActionsThisTurn
+    {
+        get
+        {
+            int total = 0;
+            for (int i = 0; i < actionCountsByPosition.Length; i++) total += actionCountsByPosition[i];
+            return total;
+        }
+    }
     public bool IsEventPhase => isEventPhase;
-    public int TriggerSpan => Mathf.Max(BaseActionPositions,
-        Mathf.CeilToInt(actionsThisTurn / (float)ActionsPerPosition));
-    public int TotalActionSlots => TriggerSpan * ActionsPerPosition;
-    public int CurrentActionPosition => Mathf.Clamp(
-        completedActions / ActionsPerPosition + 1, 1, TriggerSpan);
-    public bool IsAtActionPositionStart => completedActions % ActionsPerPosition == 0;
+    public int TriggerSpan => BaseActionPositions;
+    public int TotalActionSlots => ActionsThisTurn;
+    public int CurrentActionPositionIndex => currentActionPositionIndex;
+    public int CompletedActionsInPosition => completedActionsInPosition;
+    public int CurrentActionPosition => Mathf.Clamp(currentActionPositionIndex + 1, 1, BaseActionPositions);
+    public int CurrentPositionActionCount => GetActionCountForPosition(
+        currentActionPositionIndex < BaseActionPositions ? currentActionPositionIndex : BaseActionPositions - 1);
+    public int CurrentActionNumber => AreActionsComplete()
+        ? CurrentPositionActionCount
+        : CurrentPositionActionCount > 0
+            ? Mathf.Clamp(completedActionsInPosition + 1, 1, CurrentPositionActionCount)
+            : 0;
+    public bool IsAtActionPositionStart => completedActionsInPosition == 0;
     public int DisplayPhase => CurrentActionPosition;
 
     private Event currentEvent;
@@ -70,19 +87,32 @@ public class GameContext
     }
 
     public void RestoreState(int day, Conclave conclave, int restoredCompletedActions,
-        int restoredActionsThisTurn, bool restoredEventPhase, int positionProgressVersion)
+        int restoredActionsThisTurn, bool restoredEventPhase, int positionProgressVersion,
+        List<int> restoredActionCounts = null, int restoredActionPosition = 0,
+        int restoredActionsInPosition = 0)
     {
         currentDay = day;
         currentConclave = conclave;
         currentTurn = (int)currentConclave + 1;
-        bool usedOneActionPerPosition = positionProgressVersion == 1;
-        actionsThisTurn = Mathf.Max(0, usedOneActionPerPosition
-            ? restoredActionsThisTurn * ActionsPerPosition
-            : restoredActionsThisTurn);
-        int restoredProgress = usedOneActionPerPosition
-            ? restoredCompletedActions * ActionsPerPosition
-            : restoredCompletedActions;
-        completedActions = Mathf.Clamp(restoredProgress, 0, TotalActionSlots);
+
+        if (positionProgressVersion >= 3 && restoredActionCounts != null &&
+            restoredActionCounts.Count >= BaseActionPositions)
+        {
+            for (int i = 0; i < BaseActionPositions; i++)
+                actionCountsByPosition[i] = Mathf.Max(0, restoredActionCounts[i]);
+
+            completedActions = Mathf.Clamp(restoredCompletedActions, 0, ActionsThisTurn);
+            currentActionPositionIndex = Mathf.Clamp(restoredActionPosition, 0, BaseActionPositions);
+            completedActionsInPosition = currentActionPositionIndex < BaseActionPositions
+                ? Mathf.Clamp(restoredActionsInPosition, 0, actionCountsByPosition[currentActionPositionIndex])
+                : 0;
+        }
+        else
+        {
+            RestoreLegacyActionProgress(restoredCompletedActions, restoredActionsThisTurn,
+                positionProgressVersion == 1);
+        }
+
         isEventPhase = restoredEventPhase;
     }
 
@@ -99,7 +129,6 @@ public class GameContext
         }
 
         ResetTurns();
-
         OnGameContextEvent?.Invoke(GameContextEvent.ConclaveStart);
     }
 
@@ -111,7 +140,10 @@ public class GameContext
     public void BeginTurn(int actionModifier, bool blockActions)
     {
         completedActions = 0;
-        actionsThisTurn = blockActions ? 0 : Mathf.Max(0, BasePlayerActions + actionModifier);
+        currentActionPositionIndex = 0;
+        completedActionsInPosition = 0;
+        ResetActionCounts(blockActions ? 0 : ActionsPerPosition);
+        if (!blockActions) ChangeCurrentTurnActions(actionModifier);
         isEventPhase = false;
         OnGameContextEvent?.Invoke(GameContextEvent.TurnStart);
     }
@@ -120,22 +152,35 @@ public class GameContext
     {
         if (!CanPlayerAct()) return false;
         completedActions++;
+        completedActionsInPosition++;
+        if (completedActionsInPosition >= CurrentPositionActionCount)
+        {
+            currentActionPositionIndex++;
+            completedActionsInPosition = 0;
+        }
         return true;
     }
 
-    public bool CanPlayerAct() => !isEventPhase && completedActions < actionsThisTurn;
+    public bool CanPlayerAct() => !isEventPhase && !AreActionsComplete() &&
+        completedActionsInPosition < CurrentPositionActionCount;
 
     public bool CompleteUnavailablePosition()
     {
-        if (isEventPhase || completedActions < actionsThisTurn || completedActions >= TotalActionSlots) return false;
-        int nextPositionStart = (completedActions / ActionsPerPosition + 1) * ActionsPerPosition;
-        completedActions = Mathf.Min(nextPositionStart, TotalActionSlots);
+        if (isEventPhase || CanPlayerAct() || AreActionsComplete()) return false;
+        currentActionPositionIndex++;
+        completedActionsInPosition = 0;
         return true;
     }
 
-    public bool AreActionsComplete() => completedActions >= TotalActionSlots;
+    public bool AreActionsComplete() => currentActionPositionIndex >= BaseActionPositions;
 
-    public void BlockRemainingPlayerActions() => actionsThisTurn = Mathf.Min(actionsThisTurn, completedActions);
+    public void BlockRemainingPlayerActions()
+    {
+        if (AreActionsComplete()) return;
+        actionCountsByPosition[currentActionPositionIndex] = completedActionsInPosition;
+        for (int i = currentActionPositionIndex + 1; i < BaseActionPositions; i++)
+            actionCountsByPosition[i] = 0;
+    }
 
     public void AddCurrentTurnActions(int count)
     {
@@ -144,8 +189,36 @@ public class GameContext
 
     public void ChangeCurrentTurnActions(int delta)
     {
-        if (delta == 0) return;
-        actionsThisTurn = Mathf.Max(completedActions, actionsThisTurn + delta);
+        if (delta == 0 || AreActionsComplete()) return;
+
+        if (delta > 0)
+        {
+            actionCountsByPosition[currentActionPositionIndex] += delta;
+            return;
+        }
+
+        int remainingReduction = -delta;
+        int currentReduction = Mathf.Min(remainingReduction, Mathf.Min(
+            ActionsPerPosition,
+            actionCountsByPosition[currentActionPositionIndex] - completedActionsInPosition));
+        actionCountsByPosition[currentActionPositionIndex] -= currentReduction;
+        remainingReduction -= currentReduction;
+
+        for (int i = currentActionPositionIndex + 1;
+            i < BaseActionPositions && remainingReduction > 0;
+            i++)
+        {
+            if (actionCountsByPosition[i] <= 0) continue;
+            actionCountsByPosition[i]--;
+            remainingReduction--;
+        }
+    }
+
+    public int GetActionCountForPosition(int positionIndex)
+    {
+        return positionIndex >= 0 && positionIndex < BaseActionPositions
+            ? actionCountsByPosition[positionIndex]
+            : 0;
     }
 
     public void SetEventPhase(bool value) => isEventPhase = value;
@@ -154,6 +227,7 @@ public class GameContext
     {
         OnGameContextEvent?.Invoke(GameContextEvent.ConclaveStart);
     }
+
     public void SetEvent(Event evt)
     {
         currentEvent = evt;
@@ -162,44 +236,43 @@ public class GameContext
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     public static void ValidateActionRules()
     {
-        GameContext test = new GameContext
-        {
-            currentConclave = Conclave.Dawn,
-            currentTurn = 1,
-            completedActions = 0,
-            actionsThisTurn = BasePlayerActions
-        };
-
-        Debug.Assert(test.TriggerSpan == 4 && test.CurrentActionPosition == 1,
-            "기본 행동 위치 규칙이 손상됐습니다.");
+        GameContext test = new GameContext();
+        test.BeginTurn(0, false);
+        Debug.Assert(test.TriggerSpan == 4 && test.CurrentActionPosition == 1 &&
+            test.CurrentActionNumber == 1 && test.CurrentPositionActionCount == 2,
+            "기본 Action 표시 규칙이 손상됐습니다.");
         test.CompleteAction();
-        Debug.Assert(test.CurrentActionPosition == 1 && !test.IsAtActionPositionStart,
-            "첫 행동 후 같은 Y를 유지하지 않습니다.");
+        Debug.Assert(test.CurrentActionPosition == 1 && test.CurrentActionNumber == 2,
+            "Action 2/2 진행 규칙이 손상됐습니다.");
         test.CompleteAction();
-        Debug.Assert(test.CurrentActionPosition == 2 && test.IsAtActionPositionStart,
-            "두 행동 후 다음 Y로 이동하지 않습니다.");
+        Debug.Assert(test.CurrentActionPosition == 2 && test.CurrentActionNumber == 1,
+            "다음 Action 구간 초기화 규칙이 손상됐습니다.");
 
-        test.actionsThisTurn = BasePlayerActions + 1;
-        test.completedActions = BasePlayerActions;
-        Debug.Assert(test.TriggerSpan == 5 && test.CurrentActionPosition == 5 && test.CanPlayerAct(),
-            "홀수 행동 증가 규칙이 손상됐습니다.");
+        GameContext increased = new GameContext();
+        increased.BeginTurn(0, false);
+        increased.ChangeCurrentTurnActions(1);
+        Debug.Assert(increased.TriggerSpan == 4 && increased.CurrentPositionActionCount == 3 &&
+            increased.ActionsThisTurn == BasePlayerActions + 1,
+            "현재 Action 행동 증가 규칙이 손상됐습니다.");
 
-        test.actionsThisTurn = BasePlayerActions - 2;
-        test.completedActions = BasePlayerActions - 2;
-        Debug.Assert(test.CurrentActionPosition == 4 && !test.CanPlayerAct() &&
-            test.CompleteUnavailablePosition() && test.AreActionsComplete(),
-            "행동 감소 위치 검사 규칙이 손상됐습니다.");
+        GameContext reduced = new GameContext();
+        reduced.BeginTurn(0, false);
+        reduced.ChangeCurrentTurnActions(-3);
+        Debug.Assert(reduced.GetActionCountForPosition(0) == 0 &&
+            reduced.GetActionCountForPosition(1) == 1 &&
+            reduced.GetActionCountForPosition(2) == 2 &&
+            reduced.CompleteUnavailablePosition() &&
+            reduced.CurrentActionPosition == 2 && reduced.CurrentActionNumber == 1,
+            "-2 초과 감소분의 다음 Action 분배 규칙이 손상됐습니다.");
 
-        GameContext currentTurnDelta = new GameContext
-        {
-            completedActions = 2,
-            actionsThisTurn = BasePlayerActions,
-            isEventPhase = true
-        };
-        currentTurnDelta.ChangeCurrentTurnActions(-2);
-        currentTurnDelta.ChangeCurrentTurnActions(1);
-        Debug.Assert(currentTurnDelta.ActionsThisTurn == BasePlayerActions - 1,
-            "이벤트의 행동 횟수 증감이 현재 턴에 반영되지 않습니다.");
+        GameContext fullyDistributed = new GameContext();
+        fullyDistributed.BeginTurn(0, false);
+        fullyDistributed.ChangeCurrentTurnActions(-5);
+        Debug.Assert(fullyDistributed.GetActionCountForPosition(0) == 0 &&
+            fullyDistributed.GetActionCountForPosition(1) == 1 &&
+            fullyDistributed.GetActionCountForPosition(2) == 1 &&
+            fullyDistributed.GetActionCountForPosition(3) == 1,
+            "연속 Action 감소분 분배 규칙이 손상됐습니다.");
 
         GameContext clock = new GameContext();
         clock.currentDay = 1;
@@ -223,18 +296,63 @@ public class GameContext
         Debug.Assert(restored.CurrentTurn == 2 && restored.CompletedActions == 2 &&
             restored.ActionsThisTurn == 8 && restored.CurrentActionPosition == 2,
             "위치 진행 버전 1 저장 변환이 손상됐습니다.");
-        restored.RestoreState(2, Conclave.Evening, 1, 2, false, 0);
-        Debug.Assert(restored.CurrentTurn == 3 && restored.CompletedActions == 1 &&
-            restored.ActionsThisTurn == 2 && restored.CurrentActionPosition == 1,
-            "구버전 저장의 Conclave 우선 변환이 손상됐습니다.");
+        restored.RestoreState(2, Conclave.Evening, 3, 8, false, 3,
+            new List<int> { 3, 1, 2, 2 }, 1, 0);
+        Debug.Assert(restored.CompletedActions == 3 && restored.CurrentActionPosition == 2 &&
+            restored.CurrentPositionActionCount == 1,
+            "구간별 Action 저장 복원이 손상됐습니다.");
     }
 
     private void ResetTurns()
     {
         currentTurn = (int)currentConclave + 1;
         completedActions = 0;
-        actionsThisTurn = BasePlayerActions;
+        currentActionPositionIndex = 0;
+        completedActionsInPosition = 0;
+        ResetActionCounts(ActionsPerPosition);
         isEventPhase = false;
+    }
+
+    private void ResetActionCounts(int count)
+    {
+        for (int i = 0; i < BaseActionPositions; i++) actionCountsByPosition[i] = count;
+    }
+
+    private void RestoreLegacyActionProgress(int restoredCompletedActions,
+        int restoredActionsThisTurn, bool usedOneActionPerPosition)
+    {
+        int legacyActionCount = Mathf.Max(0, usedOneActionPerPosition
+            ? restoredActionsThisTurn * ActionsPerPosition
+            : restoredActionsThisTurn);
+        int restoredProgress = Mathf.Max(0, usedOneActionPerPosition
+            ? restoredCompletedActions * ActionsPerPosition
+            : restoredCompletedActions);
+
+        ResetActionCounts(0);
+        int remainingActions = legacyActionCount;
+        for (int i = 0; i < BaseActionPositions; i++)
+        {
+            actionCountsByPosition[i] = Mathf.Min(ActionsPerPosition, remainingActions);
+            remainingActions -= actionCountsByPosition[i];
+        }
+        if (remainingActions > 0) actionCountsByPosition[BaseActionPositions - 1] += remainingActions;
+
+        completedActions = Mathf.Clamp(restoredProgress, 0, ActionsThisTurn);
+        if (restoredProgress >= BasePlayerActions && restoredProgress >= legacyActionCount)
+        {
+            currentActionPositionIndex = BaseActionPositions;
+            completedActionsInPosition = 0;
+            return;
+        }
+
+        currentActionPositionIndex = Mathf.Clamp(
+            restoredProgress / ActionsPerPosition, 0, BaseActionPositions - 1);
+        int completedBeforePosition = 0;
+        for (int i = 0; i < currentActionPositionIndex; i++)
+            completedBeforePosition += actionCountsByPosition[i];
+        completedActionsInPosition = Mathf.Clamp(
+            restoredProgress - completedBeforePosition, 0,
+            actionCountsByPosition[currentActionPositionIndex]);
     }
 }
 
@@ -300,9 +418,11 @@ public class InGameManager : MonoBehaviour
             if (!IsInitialTutorialContext || eventManager == null || !eventManager.HasAppeared("E11200"))
                 return NPCBehaviour.None;
 
-            bool speechInProgress = GetPlayerStateController()?.IsPerformingSpeechAction == true;
+            int completedSpeechCount = ActionRecordManager.Instance != null
+                ? ActionRecordManager.Instance.GetCurrentSpeechCount()
+                : 0;
             return ResolveInitialTutorialAction(
-                eventManager.HasAppeared("E11300"), gameContext.CompletedActions, speechInProgress);
+                eventManager.HasAppeared("E11300"), completedSpeechCount);
         }
     }
     public bool IsInitialTutorialLocked => IsInitialTutorialContext &&
@@ -660,7 +780,9 @@ public class InGameManager : MonoBehaviour
             currentTurn = gameContext.CurrentTurn,
             completedActions = gameContext.CompletedActions,
             actionsThisTurn = gameContext.ActionsThisTurn,
-            positionProgressVersion = 2,
+            positionProgressVersion = 3,
+            currentActionPosition = gameContext.CurrentActionPositionIndex,
+            completedActionsInPosition = gameContext.CompletedActionsInPosition,
             isEventPhase = gameContext.IsEventPhase,
             nextTurnActionModifier = 0,
             blockNextTurn = blockNextTurn,
@@ -678,6 +800,9 @@ public class InGameManager : MonoBehaviour
             hasHandledFirstPlayerHpZero = hasHandledFirstPlayerHpZero,
             shouldRevivePlayerOnNextConclave = shouldRevivePlayerOnNextConclave
         };
+
+        for (int position = 0; position < GameContext.BaseActionPositions; position++)
+            saveData.actionCountsByPosition.Add(gameContext.GetActionCountForPosition(position));
 
         for (int candidate = 0; candidate < 3; candidate++)
         {
@@ -713,7 +838,9 @@ public class InGameManager : MonoBehaviour
         GameContext.Conclave conclave = (GameContext.Conclave)Mathf.Clamp(saveData.conclave, 0, Enum.GetValues(typeof(GameContext.Conclave)).Length - 1);
 
         gameContext.RestoreState(saveData.day, conclave, saveData.completedActions,
-            saveData.actionsThisTurn, saveData.isEventPhase, saveData.positionProgressVersion);
+            saveData.actionsThisTurn, saveData.isEventPhase, saveData.positionProgressVersion,
+            saveData.actionCountsByPosition, saveData.currentActionPosition,
+            saveData.completedActionsInPosition);
         gameContext.ChangeCurrentTurnActions(saveData.nextTurnActionModifier);
         isTimeRunning = saveData.isTimeRunning;
         isFirstStart = saveData.isFirstStart;
@@ -1403,27 +1530,20 @@ public class InGameManager : MonoBehaviour
         return true;
     }
 
-    private StateController GetPlayerStateController()
-    {
-        return CardinalManager.Instance != null && CardinalManager.Instance.PlayerTransform != null
-            ? CardinalManager.Instance.PlayerTransform.GetComponent<StateController>()
-            : null;
-    }
-
     private static NPCBehaviour ResolveInitialTutorialAction(
-        bool speechTutorialAppeared, int completedActions, bool speechInProgress)
+        bool speechTutorialAppeared, int completedSpeechCount)
     {
         if (!speechTutorialAppeared) return NPCBehaviour.Pray;
-        return completedActions < 2 || speechInProgress ? NPCBehaviour.Speech : NPCBehaviour.None;
+        return completedSpeechCount == 0 ? NPCBehaviour.Speech : NPCBehaviour.None;
     }
 
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     private static void ValidateInitialTutorialRules()
     {
-        Debug.Assert(ResolveInitialTutorialAction(false, 0, false) == NPCBehaviour.Pray &&
-            ResolveInitialTutorialAction(true, 1, false) == NPCBehaviour.Speech &&
-            ResolveInitialTutorialAction(true, 2, true) == NPCBehaviour.Speech &&
-            ResolveInitialTutorialAction(true, 2, false) == NPCBehaviour.None,
+        Debug.Assert(ResolveInitialTutorialAction(false, 0) == NPCBehaviour.Pray &&
+            ResolveInitialTutorialAction(true, 0) == NPCBehaviour.Speech &&
+            ResolveInitialTutorialAction(true, 1) == NPCBehaviour.None &&
+            ResolveInitialTutorialAction(true, 2) == NPCBehaviour.None,
             "초기 기도/연설 튜토리얼 잠금 규칙이 손상됐습니다.");
     }
 

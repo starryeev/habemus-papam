@@ -86,7 +86,7 @@ public class TimeUI : MonoBehaviour
 
         LeftText1.text = $"Day {(currentDay - 1) * 4 + (int)currentCon + 1}";
         LeftText2.text = $"{currentCon}";
-        RightText1.text = "턴";
+        RightText1.text = "Action";
 
         UpdateLights(currentCon);
     }
@@ -194,14 +194,14 @@ public class TimeUI : MonoBehaviour
 
     private static string FormatActionProgress(GameContext context)
     {
-        int total = context.ActionsThisTurn;
-        int current = total > 0 ? Mathf.Clamp(context.CompletedActions + 1, 1, total) : 0;
-        int modifier = total - GameContext.BasePlayerActions;
+        int total = context.CurrentPositionActionCount;
+        int current = context.CurrentActionNumber;
+        int modifier = total - GameContext.ActionsPerPosition;
         string denominator = modifier switch
         {
-            > 0 => $"({GameContext.BasePlayerActions} + {modifier})",
-            < 0 => $"({GameContext.BasePlayerActions} - {-modifier})",
-            _ => GameContext.BasePlayerActions.ToString()
+            > 0 => $"({GameContext.ActionsPerPosition} + {modifier})",
+            < 0 => $"({GameContext.ActionsPerPosition} - {-modifier})",
+            _ => GameContext.ActionsPerPosition.ToString()
         };
         return $"{current} / {denominator}";
     }
