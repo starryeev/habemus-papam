@@ -51,7 +51,9 @@ public class P007 : Plot
 
         if (performer != null && performer.CompareTag("Player"))
         {
-            InGameManager.Instance.ChangeCurrentTurnActions(-1);
+            InGameManager.Instance.ChangeCurrentTurnActions(-1,
+                PlayerActionEffectSourceType.Plot, plotID, plotName,
+                PlayerActionEffectPersistence.CurrentDay, true);
             for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
             {
                 InGameManager.Instance.BlockNpcNextTurnAction(candidateNumber);

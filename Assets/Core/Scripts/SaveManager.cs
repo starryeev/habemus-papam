@@ -403,6 +403,10 @@ public class SaveManager : MonoBehaviour
     {
         switch (saveModel.resumeStep)
         {
+            case SaveResumeStep.Gameplay:
+                InGameManager.Instance.ResumePlayerActionFlow();
+                break;
+
             case SaveResumeStep.ReopenPendingEvent:
                 InGameManager.Instance.RestorePendingTurnEventUI();
                 break;

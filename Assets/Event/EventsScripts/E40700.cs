@@ -47,7 +47,8 @@ public class E40700 : Event
     {
         if(!CanChoiceOption2(performer)) return false;
         performer.ChangeHp(-2f);
-        InGameManager.Instance.ChangeCurrentTurnActions(-1);
+        InGameManager.Instance.ChangeCurrentTurnActions(-1,
+            PlayerActionEffectSourceType.Event, eventID, eventName);
         return true;
     }
 }

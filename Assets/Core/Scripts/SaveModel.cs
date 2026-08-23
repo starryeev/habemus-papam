@@ -259,14 +259,20 @@ public class GameContextSaveData
     public int actionsThisTurn = 8;
     public int positionProgressVersion;
     public List<int> actionCountsByPosition = new List<int>();
+    public List<int> unavailableActionCountsByPosition = new List<int>();
     public int currentActionPosition;
     public int completedActionsInPosition;
+    public int performedActionsInPosition;
+    public int completedUnavailableActions;
+    public int actionEffectVersion;
+    public List<PlayerActionEffectData> playerActionEffects = new List<PlayerActionEffectData>();
     public bool isEventPhase;
     public int nextTurnActionModifier;
     public bool blockNextTurn;
     public bool blockRemainingCurrentTurn;
     public bool awaitingTurnEvent;
     public bool eventBeforeActions;
+    public int lastEventCheckedActionPosition = -1;
     public bool endConclaveAfterEvent;
     public string currentEventId = string.Empty;
     public bool isTimeRunning;
@@ -280,6 +286,7 @@ public class GameContextSaveData
     public List<int> npcTurnBehaviours = new List<int>();
     public List<bool> npcTurnActionsExecuted = new List<bool>();
     public List<bool> npcNextTurnActionBlocked = new List<bool>();
+    public List<int> npcNextTurnBlockedActionCounts = new List<int>();
     public List<int> prayerBlockedCandidateNumbers = new List<int>();
     public List<PendingEffectSaveData> pendingEffects = new List<PendingEffectSaveData>();
 }

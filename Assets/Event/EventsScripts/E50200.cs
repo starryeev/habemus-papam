@@ -40,7 +40,8 @@ public class E50200 : Event
         if(Random.value <= option1Chance)
         {
             performer.ChangeHp(-1f);
-            InGameManager.Instance.ChangeCurrentTurnActions(-1);
+            InGameManager.Instance.ChangeCurrentTurnActions(-1,
+                PlayerActionEffectSourceType.Event, eventID, eventName);
             return FinishChoice(1, true);
         }
 

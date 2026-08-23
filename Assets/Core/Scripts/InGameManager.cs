@@ -39,9 +39,12 @@ public class GameContext
     Conclave currentConclave;
     int currentTurn;
     int completedActions;
+    int completedUnavailableActions;
     readonly int[] actionCountsByPosition = new int[BaseActionPositions];
+    readonly int[] unavailableActionCountsByPosition = new int[BaseActionPositions];
     int currentActionPositionIndex;
     int completedActionsInPosition;
+    int performedActionsInPosition;
     bool isEventPhase;
 
     public event Action<GameContextEvent> OnGameContextEvent;
@@ -61,18 +64,40 @@ public class GameContext
     }
     public bool IsEventPhase => isEventPhase;
     public int TriggerSpan => BaseActionPositions;
-    public int TotalActionSlots => ActionsThisTurn;
+    public int TotalActionSlots
+    {
+        get
+        {
+            int total = ActionsThisTurn;
+            total += completedUnavailableActions;
+            for (int i = 0; i < unavailableActionCountsByPosition.Length; i++)
+                total += unavailableActionCountsByPosition[i];
+            return total;
+        }
+    }
     public int CurrentActionPositionIndex => currentActionPositionIndex;
     public int CompletedActionsInPosition => completedActionsInPosition;
+    public int PerformedActionsInPosition => performedActionsInPosition;
+    public int CompletedUnavailableActions => completedUnavailableActions;
     public int CurrentActionPosition => Mathf.Clamp(currentActionPositionIndex + 1, 1, BaseActionPositions);
     public int CurrentPositionActionCount => GetActionCountForPosition(
         currentActionPositionIndex < BaseActionPositions ? currentActionPositionIndex : BaseActionPositions - 1);
     public int CurrentActionNumber => AreActionsComplete()
         ? CurrentPositionActionCount
         : CurrentPositionActionCount > 0
-            ? Mathf.Clamp(completedActionsInPosition + 1, 1, CurrentPositionActionCount)
+            ? Mathf.Clamp(performedActionsInPosition + 1, 1, CurrentPositionActionCount)
             : 0;
     public bool IsAtActionPositionStart => completedActionsInPosition == 0;
+    public int UnavailableActionsInCurrentPosition => currentActionPositionIndex < BaseActionPositions
+        ? unavailableActionCountsByPosition[currentActionPositionIndex]
+        : 0;
+    public bool HasUnavailableAction => !isEventPhase && !AreActionsComplete() &&
+        UnavailableActionsInCurrentPosition > 0;
+    public bool HasFuturePlayerActionInCurrentPosition => !AreActionsComplete() &&
+        performedActionsInPosition < CurrentPositionActionCount;
+    public bool IsCurrentActionPositionResolved => !AreActionsComplete() &&
+        performedActionsInPosition >= CurrentPositionActionCount &&
+        UnavailableActionsInCurrentPosition == 0;
     public int DisplayPhase => CurrentActionPosition;
 
     private Event currentEvent;
@@ -89,22 +114,39 @@ public class GameContext
     public void RestoreState(int day, Conclave conclave, int restoredCompletedActions,
         int restoredActionsThisTurn, bool restoredEventPhase, int positionProgressVersion,
         List<int> restoredActionCounts = null, int restoredActionPosition = 0,
-        int restoredActionsInPosition = 0)
+        int restoredActionsInPosition = 0, List<int> restoredUnavailableActionCounts = null,
+        int restoredPerformedActionsInPosition = 0, int restoredCompletedUnavailableActions = 0)
     {
         currentDay = day;
         currentConclave = conclave;
         currentTurn = (int)currentConclave + 1;
+        completedUnavailableActions = 0;
 
         if (positionProgressVersion >= 3 && restoredActionCounts != null &&
             restoredActionCounts.Count >= BaseActionPositions)
         {
             for (int i = 0; i < BaseActionPositions; i++)
+            {
                 actionCountsByPosition[i] = Mathf.Max(0, restoredActionCounts[i]);
+                unavailableActionCountsByPosition[i] = positionProgressVersion >= 4 &&
+                    restoredUnavailableActionCounts != null && restoredUnavailableActionCounts.Count > i
+                        ? Mathf.Max(0, restoredUnavailableActionCounts[i])
+                        : 0;
+            }
 
-            completedActions = Mathf.Clamp(restoredCompletedActions, 0, ActionsThisTurn);
+            completedUnavailableActions = positionProgressVersion >= 4
+                ? Mathf.Max(0, restoredCompletedUnavailableActions)
+                : 0;
+            completedActions = Mathf.Clamp(restoredCompletedActions, 0, TotalActionSlots);
             currentActionPositionIndex = Mathf.Clamp(restoredActionPosition, 0, BaseActionPositions);
             completedActionsInPosition = currentActionPositionIndex < BaseActionPositions
-                ? Mathf.Clamp(restoredActionsInPosition, 0, actionCountsByPosition[currentActionPositionIndex])
+                ? Mathf.Clamp(restoredActionsInPosition, 0,
+                    actionCountsByPosition[currentActionPositionIndex] +
+                    unavailableActionCountsByPosition[currentActionPositionIndex])
+                : 0;
+            performedActionsInPosition = currentActionPositionIndex < BaseActionPositions
+                ? Mathf.Clamp(positionProgressVersion >= 4 ? restoredPerformedActionsInPosition :
+                    restoredActionsInPosition, 0, actionCountsByPosition[currentActionPositionIndex])
                 : 0;
         }
         else
@@ -140,8 +182,10 @@ public class GameContext
     public void BeginTurn(int actionModifier, bool blockActions)
     {
         completedActions = 0;
+        completedUnavailableActions = 0;
         currentActionPositionIndex = 0;
         completedActionsInPosition = 0;
+        performedActionsInPosition = 0;
         ResetActionCounts(blockActions ? 0 : ActionsPerPosition);
         if (!blockActions) ChangeCurrentTurnActions(actionModifier);
         isEventPhase = false;
@@ -151,35 +195,61 @@ public class GameContext
     public bool CompleteAction()
     {
         if (!CanPlayerAct()) return false;
+        return CompleteCommittedAction();
+    }
+
+    public bool CompleteCommittedAction()
+    {
+        if (isEventPhase || AreActionsComplete() ||
+            performedActionsInPosition >= CurrentPositionActionCount) return false;
         completedActions++;
         completedActionsInPosition++;
-        if (completedActionsInPosition >= CurrentPositionActionCount)
-        {
-            currentActionPositionIndex++;
-            completedActionsInPosition = 0;
-        }
+        performedActionsInPosition++;
         return true;
     }
 
     public bool CanPlayerAct() => !isEventPhase && !AreActionsComplete() &&
-        completedActionsInPosition < CurrentPositionActionCount;
+        !HasUnavailableAction && performedActionsInPosition < CurrentPositionActionCount;
+
+    public bool CompleteUnavailableAction()
+    {
+        if (!HasUnavailableAction) return false;
+        unavailableActionCountsByPosition[currentActionPositionIndex]--;
+        completedActions++;
+        completedUnavailableActions++;
+        completedActionsInPosition++;
+        return true;
+    }
+
+    public bool AdvanceCurrentActionPosition()
+    {
+        if (isEventPhase || !IsCurrentActionPositionResolved) return false;
+        currentActionPositionIndex++;
+        completedActionsInPosition = 0;
+        performedActionsInPosition = 0;
+        return true;
+    }
 
     public bool CompleteUnavailablePosition()
     {
-        if (isEventPhase || CanPlayerAct() || AreActionsComplete()) return false;
-        currentActionPositionIndex++;
-        completedActionsInPosition = 0;
-        return true;
+        return AdvanceCurrentActionPosition();
     }
 
     public bool AreActionsComplete() => currentActionPositionIndex >= BaseActionPositions;
 
-    public void BlockRemainingPlayerActions()
+    public int BlockRemainingPlayerActions()
     {
-        if (AreActionsComplete()) return;
-        actionCountsByPosition[currentActionPositionIndex] = completedActionsInPosition;
-        for (int i = currentActionPositionIndex + 1; i < BaseActionPositions; i++)
-            actionCountsByPosition[i] = 0;
+        if (AreActionsComplete()) return 0;
+        int blockedCount = 0;
+        for (int i = currentActionPositionIndex; i < BaseActionPositions; i++)
+        {
+            int performed = i == currentActionPositionIndex ? performedActionsInPosition : 0;
+            int count = Mathf.Max(0, actionCountsByPosition[i] - performed);
+            actionCountsByPosition[i] -= count;
+            unavailableActionCountsByPosition[i] += count;
+            blockedCount += count;
+        }
+        return blockedCount;
     }
 
     public void AddCurrentTurnActions(int count)
@@ -187,21 +257,25 @@ public class GameContext
         if (count > 0) ChangeCurrentTurnActions(count);
     }
 
-    public void ChangeCurrentTurnActions(int delta)
+    public int ChangeCurrentTurnActions(int delta, bool preserveCurrentAction = false)
     {
-        if (delta == 0 || AreActionsComplete()) return;
+        if (delta == 0 || AreActionsComplete()) return 0;
 
         if (delta > 0)
         {
             actionCountsByPosition[currentActionPositionIndex] += delta;
-            return;
+            return delta;
         }
 
         int remainingReduction = -delta;
+        int reservedActionCount = preserveCurrentAction &&
+            performedActionsInPosition < actionCountsByPosition[currentActionPositionIndex] ? 1 : 0;
         int currentReduction = Mathf.Min(remainingReduction, Mathf.Min(
             ActionsPerPosition,
-            actionCountsByPosition[currentActionPositionIndex] - completedActionsInPosition));
+            actionCountsByPosition[currentActionPositionIndex] - performedActionsInPosition -
+            reservedActionCount));
         actionCountsByPosition[currentActionPositionIndex] -= currentReduction;
+        unavailableActionCountsByPosition[currentActionPositionIndex] += currentReduction;
         remainingReduction -= currentReduction;
 
         for (int i = currentActionPositionIndex + 1;
@@ -210,8 +284,10 @@ public class GameContext
         {
             if (actionCountsByPosition[i] <= 0) continue;
             actionCountsByPosition[i]--;
+            unavailableActionCountsByPosition[i]++;
             remainingReduction--;
         }
+        return -((-delta) - remainingReduction);
     }
 
     public int GetActionCountForPosition(int positionIndex)
@@ -219,6 +295,28 @@ public class GameContext
         return positionIndex >= 0 && positionIndex < BaseActionPositions
             ? actionCountsByPosition[positionIndex]
             : 0;
+    }
+
+    public int GetUnavailableActionCountForPosition(int positionIndex)
+    {
+        return positionIndex >= 0 && positionIndex < BaseActionPositions
+            ? unavailableActionCountsByPosition[positionIndex]
+            : 0;
+    }
+
+    public int CancelUnavailableActions(int count)
+    {
+        int remaining = Mathf.Max(0, count);
+        int cancelled = 0;
+        for (int i = currentActionPositionIndex; i < BaseActionPositions && remaining > 0; i++)
+        {
+            int amount = Mathf.Min(remaining, unavailableActionCountsByPosition[i]);
+            unavailableActionCountsByPosition[i] -= amount;
+            actionCountsByPosition[i] += amount;
+            remaining -= amount;
+            cancelled += amount;
+        }
+        return cancelled;
     }
 
     public void SetEventPhase(bool value) => isEventPhase = value;
@@ -245,7 +343,9 @@ public class GameContext
         Debug.Assert(test.CurrentActionPosition == 1 && test.CurrentActionNumber == 2,
             "Action 2/2 진행 규칙이 손상됐습니다.");
         test.CompleteAction();
-        Debug.Assert(test.CurrentActionPosition == 2 && test.CurrentActionNumber == 1,
+        Debug.Assert(test.IsCurrentActionPositionResolved && test.CurrentActionPosition == 1 &&
+            test.AdvanceCurrentActionPosition() && test.CurrentActionPosition == 2 &&
+            test.CurrentActionNumber == 1,
             "다음 Action 구간 초기화 규칙이 손상됐습니다.");
 
         GameContext increased = new GameContext();
@@ -261,8 +361,10 @@ public class GameContext
         Debug.Assert(reduced.GetActionCountForPosition(0) == 0 &&
             reduced.GetActionCountForPosition(1) == 1 &&
             reduced.GetActionCountForPosition(2) == 2 &&
-            reduced.CompleteUnavailablePosition() &&
-            reduced.CurrentActionPosition == 2 && reduced.CurrentActionNumber == 1,
+            reduced.GetUnavailableActionCountForPosition(0) == 2 &&
+            reduced.CompleteUnavailableAction() && reduced.CompleteUnavailableAction() &&
+            reduced.AdvanceCurrentActionPosition() && reduced.CurrentActionPosition == 2 &&
+            reduced.CurrentActionNumber == 1,
             "-2 초과 감소분의 다음 Action 분배 규칙이 손상됐습니다.");
 
         GameContext fullyDistributed = new GameContext();
@@ -271,8 +373,37 @@ public class GameContext
         Debug.Assert(fullyDistributed.GetActionCountForPosition(0) == 0 &&
             fullyDistributed.GetActionCountForPosition(1) == 1 &&
             fullyDistributed.GetActionCountForPosition(2) == 1 &&
-            fullyDistributed.GetActionCountForPosition(3) == 1,
+            fullyDistributed.GetActionCountForPosition(3) == 1 &&
+            fullyDistributed.GetUnavailableActionCountForPosition(0) == 2 &&
+            fullyDistributed.GetUnavailableActionCountForPosition(1) == 1,
             "연속 Action 감소분 분배 규칙이 손상됐습니다.");
+
+        GameContext committedReduction = new GameContext();
+        committedReduction.BeginTurn(0, false);
+        committedReduction.ChangeCurrentTurnActions(-1, true);
+        Debug.Assert(committedReduction.GetActionCountForPosition(0) == 1 &&
+            committedReduction.GetUnavailableActionCountForPosition(0) == 1 &&
+            committedReduction.CompleteCommittedAction() &&
+            committedReduction.CompleteUnavailableAction() &&
+            committedReduction.AdvanceCurrentActionPosition() &&
+            committedReduction.CurrentActionPosition == 2,
+            "효과를 발생시킨 현재 행동을 보존하는 감소 규칙이 손상됐습니다.");
+
+        GameContext extended = new GameContext();
+        extended.BeginTurn(0, false);
+        extended.CompleteAction();
+        extended.CompleteAction();
+        Debug.Assert(extended.IsCurrentActionPositionResolved &&
+            extended.ChangeCurrentTurnActions(2) == 2 &&
+            !extended.IsCurrentActionPositionResolved &&
+            extended.CurrentActionPosition == 1 && extended.CurrentActionNumber == 3 &&
+            extended.CurrentPositionActionCount == 4,
+            "Action 소진 시 현재 구간 연장 규칙이 손상됐습니다.");
+        extended.CompleteAction();
+        extended.CompleteAction();
+        Debug.Assert(extended.IsCurrentActionPositionResolved &&
+            extended.AdvanceCurrentActionPosition() && extended.CurrentActionPosition == 2,
+            "연장 Action 완료 후 다음 구간 진입 규칙이 손상됐습니다.");
 
         GameContext clock = new GameContext();
         clock.currentDay = 1;
@@ -307,15 +438,21 @@ public class GameContext
     {
         currentTurn = (int)currentConclave + 1;
         completedActions = 0;
+        completedUnavailableActions = 0;
         currentActionPositionIndex = 0;
         completedActionsInPosition = 0;
+        performedActionsInPosition = 0;
         ResetActionCounts(ActionsPerPosition);
         isEventPhase = false;
     }
 
     private void ResetActionCounts(int count)
     {
-        for (int i = 0; i < BaseActionPositions; i++) actionCountsByPosition[i] = count;
+        for (int i = 0; i < BaseActionPositions; i++)
+        {
+            actionCountsByPosition[i] = count;
+            unavailableActionCountsByPosition[i] = 0;
+        }
     }
 
     private void RestoreLegacyActionProgress(int restoredCompletedActions,
@@ -353,6 +490,7 @@ public class GameContext
         completedActionsInPosition = Mathf.Clamp(
             restoredProgress - completedBeforePosition, 0,
             actionCountsByPosition[currentActionPositionIndex]);
+        performedActionsInPosition = completedActionsInPosition;
     }
 }
 
@@ -396,10 +534,13 @@ public class InGameManager : MonoBehaviour
     private bool blockRemainingCurrentTurn;
     private bool awaitingTurnEvent;
     private bool eventBeforeActions;
+    private int lastEventCheckedActionPosition = -1;
     private bool endConclaveAfterEvent;
+    private bool isResolvingPlayerActionNotice;
+    private readonly PlayerActionEffectQueue playerActionEffects = new PlayerActionEffectQueue();
     private readonly NPCBehaviour[,] npcTurnBehaviours = new NPCBehaviour[3, 4];
     private readonly bool[,] npcTurnActionsExecuted = new bool[3, 4];
-    private readonly bool[] npcNextTurnActionBlocked = new bool[3];
+    private readonly int[] npcNextTurnBlockedActionCounts = new int[3];
     private readonly HashSet<int> prayerBlockedCandidateNumbers = new HashSet<int>();
     private readonly List<PendingEffectSaveData> pendingEffects = new List<PendingEffectSaveData>();
 
@@ -411,6 +552,7 @@ public class InGameManager : MonoBehaviour
     public bool IsSushiOn => isSushiOn;
     public bool IsConclaveExitInProgress => isConclaveExitInProgress;
     public bool IsAwaitingTurnEvent => awaitingTurnEvent;
+    public bool IsResolvingPlayerActionNotice => isResolvingPlayerActionNotice;
     public NPCBehaviour InitialTutorialRequiredAction
     {
         get
@@ -473,7 +615,9 @@ public class InGameManager : MonoBehaviour
         else
         {
             isSushiOn = true;
+            int previousDay = gameContext.CurrentDay;
             gameContext.AdvanceConclave();
+            if (gameContext.CurrentDay != previousDay) RemoveExpiredPlayerActionEffects();
         }
     }
 
@@ -489,6 +633,8 @@ public class InGameManager : MonoBehaviour
         endConclaveAfterEvent = false;
         blockRemainingCurrentTurn = false;
         gameContext.BeginTurn(0, ConsumeNextTurnBlock());
+        lastEventCheckedActionPosition = -1;
+        ActivateDeferredPlayerActionEffects();
 
         if (inventoryUIPanel != null)
         {
@@ -529,9 +675,12 @@ public class InGameManager : MonoBehaviour
         blockRemainingCurrentTurn = false;
         awaitingTurnEvent = false;
         eventBeforeActions = false;
+        lastEventCheckedActionPosition = -1;
         endConclaveAfterEvent = false;
         prayerBlockedCandidateNumbers.Clear();
         pendingEffects.Clear();
+        playerActionEffects.Clear();
+        isResolvingPlayerActionNotice = false;
 
         gameContext.InitGameContext();
         ConfigureStartButton(true, true);
@@ -780,15 +929,19 @@ public class InGameManager : MonoBehaviour
             currentTurn = gameContext.CurrentTurn,
             completedActions = gameContext.CompletedActions,
             actionsThisTurn = gameContext.ActionsThisTurn,
-            positionProgressVersion = 3,
+            positionProgressVersion = 4,
             currentActionPosition = gameContext.CurrentActionPositionIndex,
             completedActionsInPosition = gameContext.CompletedActionsInPosition,
+            performedActionsInPosition = gameContext.PerformedActionsInPosition,
+            completedUnavailableActions = gameContext.CompletedUnavailableActions,
+            actionEffectVersion = 1,
             isEventPhase = gameContext.IsEventPhase,
             nextTurnActionModifier = 0,
             blockNextTurn = blockNextTurn,
             blockRemainingCurrentTurn = blockRemainingCurrentTurn,
             awaitingTurnEvent = awaitingTurnEvent,
             eventBeforeActions = eventBeforeActions,
+            lastEventCheckedActionPosition = lastEventCheckedActionPosition,
             endConclaveAfterEvent = endConclaveAfterEvent,
             currentEventId = gameContext.CurrentEvent != null ? gameContext.CurrentEvent.eventID : string.Empty,
             isTimeRunning = isTimeRunning,
@@ -802,7 +955,13 @@ public class InGameManager : MonoBehaviour
         };
 
         for (int position = 0; position < GameContext.BaseActionPositions; position++)
+        {
             saveData.actionCountsByPosition.Add(gameContext.GetActionCountForPosition(position));
+            saveData.unavailableActionCountsByPosition.Add(
+                gameContext.GetUnavailableActionCountForPosition(position));
+        }
+
+        saveData.playerActionEffects = playerActionEffects.Capture();
 
         for (int candidate = 0; candidate < 3; candidate++)
         {
@@ -811,7 +970,8 @@ public class InGameManager : MonoBehaviour
                 saveData.npcTurnBehaviours.Add((int)npcTurnBehaviours[candidate, action]);
                 saveData.npcTurnActionsExecuted.Add(npcTurnActionsExecuted[candidate, action]);
             }
-            saveData.npcNextTurnActionBlocked.Add(npcNextTurnActionBlocked[candidate]);
+            saveData.npcNextTurnActionBlocked.Add(npcNextTurnBlockedActionCounts[candidate] > 0);
+            saveData.npcNextTurnBlockedActionCounts.Add(npcNextTurnBlockedActionCounts[candidate]);
         }
 
         foreach (PendingEffectSaveData effect in pendingEffects)
@@ -840,7 +1000,8 @@ public class InGameManager : MonoBehaviour
         gameContext.RestoreState(saveData.day, conclave, saveData.completedActions,
             saveData.actionsThisTurn, saveData.isEventPhase, saveData.positionProgressVersion,
             saveData.actionCountsByPosition, saveData.currentActionPosition,
-            saveData.completedActionsInPosition);
+            saveData.completedActionsInPosition, saveData.unavailableActionCountsByPosition,
+            saveData.performedActionsInPosition, saveData.completedUnavailableActions);
         gameContext.ChangeCurrentTurnActions(saveData.nextTurnActionModifier);
         isTimeRunning = saveData.isTimeRunning;
         isFirstStart = saveData.isFirstStart;
@@ -849,6 +1010,7 @@ public class InGameManager : MonoBehaviour
         blockRemainingCurrentTurn = saveData.blockRemainingCurrentTurn;
         awaitingTurnEvent = saveData.awaitingTurnEvent;
         eventBeforeActions = saveData.eventBeforeActions;
+        lastEventCheckedActionPosition = saveData.lastEventCheckedActionPosition;
         endConclaveAfterEvent = saveData.endConclaveAfterEvent;
         hasHandledFirstPlayerHpZero = saveData.hasHandledFirstPlayerHpZero;
         shouldRevivePlayerOnNextConclave = saveData.shouldRevivePlayerOnNextConclave;
@@ -858,6 +1020,8 @@ public class InGameManager : MonoBehaviour
         RestoreNpcTurnPlan(saveData);
         RestorePrayerBlocks(saveData.prayerBlockedCandidateNumbers);
         RestorePendingEffects(saveData.pendingEffects);
+        playerActionEffects.Restore(saveData.playerActionEffects);
+        isResolvingPlayerActionNotice = false;
         if (!string.IsNullOrWhiteSpace(saveData.currentEventId) && eventManager != null)
         {
             Event restoredEvent = eventManager.GetEventById(saveData.currentEventId);
@@ -1044,7 +1208,8 @@ public class InGameManager : MonoBehaviour
     public bool CanPerformPlayerAction(Cardinal performer)
     {
         return performer == null || !performer.CompareTag("Player") ||
-            (isTimeRunning && !awaitingTurnEvent && gameContext.CanPlayerAct());
+            (isTimeRunning && !awaitingTurnEvent && !isResolvingPlayerActionNotice &&
+             PlayerActionNoticePopupController.Instance?.IsOpen != true && gameContext.CanPlayerAct());
     }
 
     public bool CanPerformPrayer(Cardinal performer, out string alertTitle, out string alertMessage)
@@ -1118,6 +1283,32 @@ public class InGameManager : MonoBehaviour
         }
     }
 
+    private List<NpcActionResult> ExecuteNpcActionsForUnavailablePlayerAction()
+    {
+        List<NpcActionResult> results = new List<NpcActionResult>(3);
+        int baseActionIndex = gameContext.CompletedActions % GameContext.ActionsPerPosition;
+        for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+        {
+            int candidateIndex = candidateNumber - 1;
+            Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
+            if (candidate == null || candidate.Hp <= 0f || candidate.IsKnockedOut) continue;
+
+            NPCBehaviour behaviour;
+            if (baseActionIndex < 2 && !npcTurnActionsExecuted[candidateIndex, baseActionIndex])
+            {
+                npcTurnActionsExecuted[candidateIndex, baseActionIndex] = true;
+                behaviour = npcTurnBehaviours[candidateIndex, baseActionIndex];
+            }
+            else
+            {
+                behaviour = RollNpcBehaviour(candidateNumber, candidate.Hp);
+            }
+
+            results.Add(ExecuteNpcBehaviour(candidate, behaviour, baseActionIndex));
+        }
+        return results;
+    }
+
     public float GetSpeechSuccessChance(Cardinal actor)
     {
         float chance = GetNpcCandidateNumber(actor) == 1 ? 0.9f : balance.SpeechSuccessChance;
@@ -1152,8 +1343,9 @@ public class InGameManager : MonoBehaviour
         for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
         {
             Cardinal candidate = GetRepresentativeCandidate(candidateNumber);
-            bool actionBlocked = npcNextTurnActionBlocked[candidateNumber - 1];
-            npcNextTurnActionBlocked[candidateNumber - 1] = false;
+            int blockedActionCount = Mathf.Clamp(
+                npcNextTurnBlockedActionCounts[candidateNumber - 1], 0, 2);
+            npcNextTurnBlockedActionCounts[candidateNumber - 1] = 0;
 
             for (int actionIndex = 0; actionIndex < 4; actionIndex++)
             {
@@ -1162,7 +1354,8 @@ public class InGameManager : MonoBehaviour
 
                 if (isBaseNpcAction)
                 {
-                    npcTurnBehaviours[candidateNumber - 1, actionIndex] = actionBlocked && actionIndex == 1
+                    npcTurnBehaviours[candidateNumber - 1, actionIndex] =
+                        blockedActionCount > 0 && actionIndex >= 2 - blockedActionCount
                         ? NPCBehaviour.ActionBlocked
                         : candidate != null ? RollNpcBehaviour(candidateNumber, candidate.Hp) : NPCBehaviour.None;
                 }
@@ -1216,12 +1409,13 @@ public class InGameManager : MonoBehaviour
         }
     }
 
-    private void ExecuteNpcBehaviour(Cardinal candidate, NPCBehaviour behaviour, int actionIndex)
+    private NpcActionResult ExecuteNpcBehaviour(Cardinal candidate, NPCBehaviour behaviour, int actionIndex)
     {
         int candidateNumber = GetNpcCandidateNumber(candidate);
         float hpBefore = candidate.Hp;
         float pietyBefore = candidate.Piety;
         float influenceBefore = candidate.Influence;
+        bool wasKnockedOut = candidate.IsKnockedOut;
         bool? succeeded = null;
 
         switch (behaviour)
@@ -1256,6 +1450,12 @@ public class InGameManager : MonoBehaviour
             $"체력 {hpBefore:0.##} -> {candidate.Hp:0.##} ({candidate.Hp - hpBefore:+0.##;-0.##;0}), " +
             $"경건함 {pietyBefore:0.##} -> {candidate.Piety:0.##} ({candidate.Piety - pietyBefore:+0.##;-0.##;0}), " +
             $"정치력 {influenceBefore:0.##} -> {candidate.Influence:0.##} ({candidate.Influence - influenceBefore:+0.##;-0.##;0})");
+        NpcActionOutcomeState outcomeState = !wasKnockedOut && candidate.IsKnockedOut
+            ? NpcActionOutcomeState.KnockedOut
+            : NpcActionOutcomeState.None;
+        StatsUI statsUI = CardinalManager.Instance != null ? CardinalManager.Instance.StatsUI : null;
+        string candidateName = statsUI != null ? statsUI.GetDisplayName(candidateNumber) : candidate.name;
+        return new NpcActionResult(candidateName, behaviour, succeeded, outcomeState);
     }
 
     private void PrepareNpcPassives()
@@ -1469,8 +1669,12 @@ public class InGameManager : MonoBehaviour
     {
         for (int candidate = 0; candidate < 3; candidate++)
         {
-            npcNextTurnActionBlocked[candidate] = saveData.npcNextTurnActionBlocked != null &&
-                candidate < saveData.npcNextTurnActionBlocked.Count && saveData.npcNextTurnActionBlocked[candidate];
+            npcNextTurnBlockedActionCounts[candidate] = saveData.npcNextTurnBlockedActionCounts != null &&
+                candidate < saveData.npcNextTurnBlockedActionCounts.Count
+                    ? Mathf.Clamp(saveData.npcNextTurnBlockedActionCounts[candidate], 0, 2)
+                    : saveData.npcNextTurnActionBlocked != null &&
+                      candidate < saveData.npcNextTurnActionBlocked.Count &&
+                      saveData.npcNextTurnActionBlocked[candidate] ? 1 : 0;
             for (int action = 0; action < 4; action++)
             {
                 int index = candidate * 4 + action;
@@ -1486,26 +1690,37 @@ public class InGameManager : MonoBehaviour
 
     public void BlockNpcNextTurnAction(int candidateNumber)
     {
-        if (candidateNumber < 1 || candidateNumber > 3) return;
-        npcNextTurnActionBlocked[candidateNumber - 1] = true;
+        BlockNpcNextTurnActions(candidateNumber, 1);
+    }
+
+    public void BlockNpcNextTurnActions(int candidateNumber, int count)
+    {
+        if (candidateNumber < 1 || candidateNumber > 3 || count <= 0) return;
+        int index = candidateNumber - 1;
+        npcNextTurnBlockedActionCounts[index] = Mathf.Clamp(
+            npcNextTurnBlockedActionCounts[index] + count, 0, 2);
     }
 
     public void CompletePlayerAction(Cardinal performer, NPCBehaviour completedAction = NPCBehaviour.None)
     {
-        if (performer == null || !performer.CompareTag("Player") || !CanPerformPlayerAction(performer)) return;
-        if (!gameContext.CompleteAction()) return;
+        if (performer == null || !performer.CompareTag("Player") || !isTimeRunning ||
+            awaitingTurnEvent || gameContext.IsEventPhase) return;
+        if (!gameContext.CompleteCommittedAction()) return;
         if (blockRemainingCurrentTurn)
         {
             blockRemainingCurrentTurn = false;
-            gameContext.BlockRemainingPlayerActions();
+            int blockedCount = gameContext.BlockRemainingPlayerActions();
+            if (blockedCount > 0)
+            {
+                PlayerActionEffectData legacyEffect = CreatePlayerActionEffect(
+                    PlayerActionEffectType.Unavailable, PlayerActionEffectSourceType.Legacy,
+                    string.Empty, "기존 효과", blockedCount, PlayerActionEffectPersistence.CurrentDay);
+                legacyEffect.remainingCount = blockedCount;
+                legacyEffect.isNoticePending = true;
+                playerActionEffects.Enqueue(legacyEffect);
+            }
         }
         if (completedAction == NPCBehaviour.Pray && TryOpenSpeechTutorialAfterPrayer()) return;
-        if (gameContext.AreActionsComplete())
-        {
-            ResolveCompletedTurn();
-            return;
-        }
-
         BeginCurrentActionPosition();
     }
 
@@ -1513,6 +1728,10 @@ public class InGameManager : MonoBehaviour
     {
         if (playerState == null || !playerState.CompareTag("Player") ||
             !playerState.CanAcceptManualInteraction()) return false;
+
+        if (!isTimeRunning || awaitingTurnEvent || isResolvingPlayerActionNotice ||
+            PlayerActionNoticePopupController.Instance?.IsOpen == true || !gameContext.CanPlayerAct())
+            return false;
 
         return !IsInitialTutorialLocked || InitialTutorialRequiredAction == action;
     }
@@ -1560,18 +1779,79 @@ public class InGameManager : MonoBehaviour
 
     public void ChangeCurrentTurnActions(int delta)
     {
-        gameContext.ChangeCurrentTurnActions(delta);
+        ChangeCurrentTurnActions(delta, PlayerActionEffectSourceType.Legacy,
+            string.Empty, "기존 효과");
     }
 
     public void AddCurrentTurnActions(int count)
     {
-        gameContext.AddCurrentTurnActions(count);
+        ChangeCurrentTurnActions(Mathf.Max(0, count), PlayerActionEffectSourceType.Legacy,
+            string.Empty, "기존 효과");
+    }
+
+    public void ChangeCurrentTurnActions(int delta, PlayerActionEffectSourceType sourceType,
+        string sourceId, string sourceName,
+        PlayerActionEffectPersistence persistence = PlayerActionEffectPersistence.CurrentDay,
+        bool preserveCurrentAction = false)
+    {
+        if (gameContext == null || delta == 0) return;
+        if (delta > 0)
+        {
+            if (gameContext.AreActionsComplete()) return;
+            PlayerActionEffectData additionalEffect = CreatePlayerActionEffect(
+                PlayerActionEffectType.Additional, sourceType, sourceId, sourceName, delta, persistence);
+            additionalEffect.targetPositionIndex = gameContext.CurrentActionPositionIndex;
+            additionalEffect.isNoticePending = true;
+            additionalEffect.isDeferred = true;
+            playerActionEffects.Enqueue(additionalEffect);
+            return;
+        }
+
+        int appliedDelta = gameContext.ChangeCurrentTurnActions(delta, preserveCurrentAction);
+        if (appliedDelta == 0) return;
+
+        PlayerActionEffectData unavailableEffect = CreatePlayerActionEffect(
+            PlayerActionEffectType.Unavailable, sourceType, sourceId, sourceName,
+            -appliedDelta, persistence);
+        unavailableEffect.targetPositionIndex = gameContext.CurrentActionPositionIndex;
+        unavailableEffect.remainingCount = -appliedDelta;
+        unavailableEffect.isNoticePending = true;
+        playerActionEffects.Enqueue(unavailableEffect);
+    }
+
+    public void AddCurrentTurnActions(int count, PlayerActionEffectSourceType sourceType,
+        string sourceId, string sourceName,
+        PlayerActionEffectPersistence persistence = PlayerActionEffectPersistence.CurrentDay)
+    {
+        if (count <= 0) return;
+        ChangeCurrentTurnActions(count, sourceType, sourceId, sourceName, persistence);
+    }
+
+    public void BlockPlayerActions(int count, PlayerActionEffectSourceType sourceType,
+        string sourceId, string sourceName,
+        PlayerActionEffectPersistence persistence = PlayerActionEffectPersistence.CurrentDay,
+        bool preserveCurrentAction = false)
+    {
+        if (count <= 0 || gameContext == null) return;
+        if (awaitingTurnEvent || gameContext.IsEventPhase)
+        {
+            PlayerActionEffectData deferred = CreatePlayerActionEffect(
+                PlayerActionEffectType.Unavailable, sourceType, sourceId, sourceName, count, persistence);
+            deferred.remainingCount = count;
+            deferred.isNoticePending = true;
+            deferred.isDeferred = true;
+            playerActionEffects.Enqueue(deferred);
+            return;
+        }
+
+        ChangeCurrentTurnActions(-count, sourceType, sourceId, sourceName, persistence,
+            preserveCurrentAction);
     }
 
     public void BlockPlayerTurnActions()
     {
-        if (awaitingTurnEvent || gameContext.IsEventPhase) blockNextTurn = true;
-        else blockRemainingCurrentTurn = true;
+        BlockPlayerActions(2, PlayerActionEffectSourceType.Legacy, string.Empty, "기존 효과",
+            PlayerActionEffectPersistence.CurrentDay, true);
     }
 
     public void OnTurnEventClosed()
@@ -1599,15 +1879,7 @@ public class InGameManager : MonoBehaviour
         if (eventBeforeActions)
         {
             eventBeforeActions = false;
-            if (gameContext.CanPlayerAct())
-            {
-                SaveTurnPhaseCheckpoint(SaveResumeStep.Gameplay);
-            }
-            else
-            {
-                gameContext.CompleteUnavailablePosition();
-                ContinueAfterPositionCompleted();
-            }
+            BeginCurrentActionPosition();
             return;
         }
 
@@ -1654,6 +1926,11 @@ public class InGameManager : MonoBehaviour
     public void ResumeAfterResolvedEvent()
     {
         OnTurnEventClosed();
+    }
+
+    public void ResumePlayerActionFlow()
+    {
+        BeginCurrentActionPosition();
     }
 
     private void ResolveCompletedTurn()
@@ -1710,12 +1987,24 @@ public class InGameManager : MonoBehaviour
 
     private void BeginCurrentActionPosition()
     {
-        if (!isTimeRunning || isConclaveExitInProgress || awaitingTurnEvent) return;
+        if (!isTimeRunning || isConclaveExitInProgress || awaitingTurnEvent ||
+            isResolvingPlayerActionNotice) return;
 
         while (!gameContext.AreActionsComplete())
         {
-            if (gameContext.IsAtActionPositionStart)
+            if (TryShowPendingUnavailableNotice()) return;
+
+            if (gameContext.IsCurrentActionPositionResolved)
             {
+                if (ActivatePendingAdditionalActionsForCurrentPosition()) continue;
+                if (!gameContext.AdvanceCurrentActionPosition()) break;
+                continue;
+            }
+
+            if (gameContext.IsAtActionPositionStart &&
+                lastEventCheckedActionPosition != gameContext.CurrentActionPositionIndex)
+            {
+                lastEventCheckedActionPosition = gameContext.CurrentActionPositionIndex;
                 Event evt = eventManager != null ? eventManager.GetNewEvent() : null;
                 if (evt != null)
                 {
@@ -1725,22 +2014,186 @@ public class InGameManager : MonoBehaviour
                 }
             }
 
+            if (TryShowAdditionalActionNotice()) return;
+
+            if (gameContext.HasUnavailableAction)
+            {
+                BeginUnavailableActionResolution();
+                return;
+            }
+
             if (gameContext.CanPlayerAct())
             {
                 SaveTurnPhaseCheckpoint(SaveResumeStep.Gameplay);
                 return;
             }
 
-            if (!gameContext.CompleteUnavailablePosition()) break;
+            break;
         }
 
         if (gameContext.AreActionsComplete()) ResolveCompletedTurn();
     }
 
-    private void ContinueAfterPositionCompleted()
+    private bool TryShowAdditionalActionNotice()
     {
-        if (gameContext.AreActionsComplete()) ResolveCompletedTurn();
-        else BeginCurrentActionPosition();
+        PlayerActionEffectData effect = playerActionEffects.FindPendingAdditionalNotice(
+            gameContext.CurrentActionPositionIndex);
+        if (effect == null) return false;
+
+        isResolvingPlayerActionNotice = true;
+        PlayerActionNoticePopupController controller = PlayerActionNoticePopupController.Instance;
+        if (controller == null)
+        {
+            playerActionEffects.CompleteNotice(effect);
+            isResolvingPlayerActionNotice = false;
+            return false;
+        }
+
+        controller.ShowAdditional(effect, () =>
+        {
+            playerActionEffects.CompleteNotice(effect);
+            isResolvingPlayerActionNotice = false;
+            BeginCurrentActionPosition();
+        });
+        return true;
+    }
+
+    private bool TryShowPendingUnavailableNotice()
+    {
+        PlayerActionEffectData effect = playerActionEffects.FindPendingUnavailableNotice();
+        if (effect == null) return false;
+
+        bool hasFuturePlayerAction = gameContext.HasFuturePlayerActionInCurrentPosition ||
+            playerActionEffects.HasDeferredAdditionalForPosition(
+                gameContext.CurrentActionPositionIndex);
+        isResolvingPlayerActionNotice = true;
+        PlayerActionNoticePopupController controller = PlayerActionNoticePopupController.Instance;
+        if (controller == null)
+        {
+            playerActionEffects.CompleteNotice(effect);
+            isResolvingPlayerActionNotice = false;
+            return false;
+        }
+
+        controller.ShowUnavailable(effect, hasFuturePlayerAction, () =>
+        {
+            playerActionEffects.CompleteNotice(effect);
+            isResolvingPlayerActionNotice = false;
+            BeginCurrentActionPosition();
+        });
+        return true;
+    }
+
+    private bool ActivatePendingAdditionalActionsForCurrentPosition()
+    {
+        bool hasActivatedEffect = false;
+        int positionIndex = gameContext.CurrentActionPositionIndex;
+        IReadOnlyList<PlayerActionEffectData> effects = playerActionEffects.Effects;
+        for (int i = 0; i < effects.Count; i++)
+        {
+            PlayerActionEffectData effect = effects[i];
+            if (effect == null || effect.EffectType != PlayerActionEffectType.Additional ||
+                !effect.isDeferred || effect.targetPositionIndex != positionIndex) continue;
+
+            int appliedCount = gameContext.ChangeCurrentTurnActions(effect.totalCount);
+            effect.isDeferred = false;
+            effect.totalCount = appliedCount;
+            effect.isNoticePending = appliedCount > 0;
+            if (appliedCount > 0) hasActivatedEffect = true;
+        }
+
+        return hasActivatedEffect;
+    }
+
+    private void BeginUnavailableActionResolution()
+    {
+        PlayerActionEffectData effect = playerActionEffects.PeekUnavailable();
+        if (effect == null)
+        {
+            effect = CreatePlayerActionEffect(PlayerActionEffectType.Unavailable,
+                PlayerActionEffectSourceType.Legacy, string.Empty, "기존 효과", 1,
+                PlayerActionEffectPersistence.CurrentDay);
+            effect.remainingCount = 1;
+            playerActionEffects.Enqueue(effect);
+        }
+
+        isResolvingPlayerActionNotice = true;
+        List<NpcActionResult> results = ExecuteNpcActionsForUnavailablePlayerAction();
+        PlayerActionNoticePopupController controller = PlayerActionNoticePopupController.Instance;
+        if (controller == null)
+        {
+            CompleteUnavailableActionResolution(effect);
+            return;
+        }
+
+        controller.ShowNpcResults(results, () => CompleteUnavailableActionResolution(effect));
+    }
+
+    private void CompleteUnavailableActionResolution(PlayerActionEffectData effect)
+    {
+        if (!gameContext.CompleteUnavailableAction())
+        {
+            isResolvingPlayerActionNotice = false;
+            return;
+        }
+
+        playerActionEffects.ConsumeUnavailable(effect);
+        isResolvingPlayerActionNotice = false;
+        BeginCurrentActionPosition();
+    }
+
+    private PlayerActionEffectData CreatePlayerActionEffect(PlayerActionEffectType effectType,
+        PlayerActionEffectSourceType sourceType, string sourceId, string sourceName, int count,
+        PlayerActionEffectPersistence persistence)
+    {
+        return new PlayerActionEffectData
+        {
+            id = Guid.NewGuid().ToString("N"),
+            effectType = (int)effectType,
+            sourceType = (int)sourceType,
+            sourceId = sourceId ?? string.Empty,
+            sourceName = sourceName ?? string.Empty,
+            totalCount = Mathf.Max(0, count),
+            createdDay = gameContext != null ? gameContext.CurrentDay : 1,
+            persistence = (int)persistence
+        };
+    }
+
+    private void ActivateDeferredPlayerActionEffects()
+    {
+        IReadOnlyList<PlayerActionEffectData> effects = playerActionEffects.Effects;
+        for (int i = effects.Count - 1; i >= 0; i--)
+        {
+            PlayerActionEffectData effect = effects[i];
+            if (effect == null || effect.EffectType != PlayerActionEffectType.Unavailable ||
+                !effect.isDeferred) continue;
+
+            int appliedCount = -gameContext.ChangeCurrentTurnActions(-effect.remainingCount);
+            effect.isDeferred = false;
+            effect.targetPositionIndex = gameContext.CurrentActionPositionIndex;
+            effect.totalCount = appliedCount;
+            effect.remainingCount = appliedCount;
+            if (appliedCount <= 0) playerActionEffects.Remove(effect);
+        }
+    }
+
+    private void RemoveExpiredPlayerActionEffects()
+    {
+        playerActionEffects.RemoveExpired(gameContext.CurrentDay,
+            sourceId => InventoryManager.Instance != null &&
+                InventoryManager.Instance.GetItemByID(sourceId) != null);
+
+        IReadOnlyList<PlayerActionEffectData> effects = playerActionEffects.Effects;
+        for (int i = 0; i < effects.Count; i++)
+        {
+            PlayerActionEffectData effect = effects[i];
+            if (effect == null || effect.EffectType != PlayerActionEffectType.Unavailable ||
+                effect.Persistence != PlayerActionEffectPersistence.WhileItemOwned) continue;
+            effect.createdDay = gameContext.CurrentDay;
+            effect.targetPositionIndex = -1;
+            effect.isNoticePending = true;
+            effect.isDeferred = true;
+        }
     }
 
     private bool ConsumeNextTurnBlock()

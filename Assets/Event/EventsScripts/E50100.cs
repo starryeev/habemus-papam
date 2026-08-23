@@ -40,7 +40,8 @@ public class E50100 : Event
 
         if(Random.value <= option1Chance)
         {
-            InGameManager.Instance.ChangeCurrentTurnActions(-1);
+            InGameManager.Instance.ChangeCurrentTurnActions(-1,
+                PlayerActionEffectSourceType.Event, eventID, eventName);
             return true;
         }
 
