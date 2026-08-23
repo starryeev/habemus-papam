@@ -26,7 +26,8 @@ public class I002 : Item
         Cardinal player = FindPlayer();
         if (player != null && InGameManager.Instance != null)
         {
-            InGameManager.Instance.ChangeCurrentTurnActions(1);
+            InGameManager.Instance.ChangeCurrentTurnActions(1,
+                PlayerActionEffectSourceType.Item, itemID, itemName);
         }
     }
 

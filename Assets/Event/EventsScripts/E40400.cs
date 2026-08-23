@@ -39,7 +39,8 @@ public class E40400 : Event
         {
             cardinal.ChangeHp(2f);
         }
-        InGameManager.Instance.ChangeCurrentTurnActions(1);
+        InGameManager.Instance.ChangeCurrentTurnActions(1,
+            PlayerActionEffectSourceType.Event, eventID, eventName);
 
         return true;
     }

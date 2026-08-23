@@ -48,24 +48,13 @@ public class P019 : Plot
 
         PayCost(performer);
 
-        var cm = CardinalManager.Instance;
-
-        int highestHpCardinal = 0;
-
-        for (int i = 1; i < 3; i++)
+        if (InGameManager.Instance != null)
         {
-            if (cm.Cardinals[highestHpCardinal].Hp < cm.Cardinals[i].Hp)
-            {
-                highestHpCardinal = i;
-            }
-        }
-
-
-        Cardinal target = cm.Cardinals[highestHpCardinal];
-
-        if (target != null)
-        {
-            if (target.CompareTag("Player")) InGameManager.Instance.BlockPlayerTurnActions();
+            InGameManager.Instance.BlockPlayerActions(2,
+                PlayerActionEffectSourceType.Plot, plotID, plotName,
+                PlayerActionEffectPersistence.CurrentDay, true);
+            for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+                InGameManager.Instance.BlockNpcNextTurnActions(candidateNumber, 2);
         }
     }
 
