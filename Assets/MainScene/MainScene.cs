@@ -33,8 +33,11 @@ public class MainScene : MonoBehaviour
     [SerializeField] private Component loadDayText;
     [SerializeField] private Component loadConclaveText;
     [SerializeField] private GameObject popeListPopup;
+    [SerializeField] private TMP_Text popeNameText;
     [SerializeField] private Image popeListCreditImage;
     [SerializeField] private GameObject popeListCreditObject;
+    [SerializeField] private GameObject popeListCreditLeftObject;
+    [SerializeField] private GameObject popeListCreditRightObject;
     [SerializeField] private List<Sprite> popeListCreditSprites = new();
     [SerializeField] private List<Button> popeListFrameButtons = new();
     [SerializeField] private Button popeListLeftArrowButton;
@@ -105,6 +108,7 @@ public class MainScene : MonoBehaviour
     private bool popeListRuntimeBindingsInitialized;
     private bool popeListFrameButtonListenersRegistered;
     private bool popeListArrowButtonListenersRegistered;
+    private bool popeListCreditNavigationListenersRegistered;
     private bool popeListHistoryPresenterInitialized;
     private PopeListHistoryPresenter popeListHistoryPresenter;
     private bool isViewingSubCamera;
@@ -408,6 +412,7 @@ public class MainScene : MonoBehaviour
             InitializePopeListRuntimeBindings();
             popeListHistoryPresenter?.ResetToLatest();
             SyncPopeListNavigationSprite();
+            RefreshLatestPopeNameText();
             popeListHistoryPresenter?.ExitBrowseMode();
             ApplyPopeListMouseOnlyMode(true);
         }
@@ -428,9 +433,12 @@ public class MainScene : MonoBehaviour
             popeListCreditObject.SetActive(isActive);
         }
 
+        SetPopeListCreditNavigationObjectsVisible(isActive);
+
         if (isActive)
         {
             ConfigurePopeListRaycasts();
+            RefreshPopeCreditSprite();
         }
 
         RefreshNavigation(false);
@@ -885,7 +893,7 @@ public class MainScene : MonoBehaviour
         }
         else
         {
-            color.a = isVisible ? (baseColor.a > 0f ? baseColor.a : 1f) : 0f;
+            color.a = isVisible ? (baseColor.a > 0f ? baseColor.a : 1f) : 100f;
         }
 
         image.color = color;
@@ -1355,6 +1363,8 @@ public class MainScene : MonoBehaviour
         ResolvePopeListReferences();
         RegisterPopeListFrameButtonListeners();
         RegisterPopeListArrowButtonListeners();
+        RegisterPopeListCreditNavigationButtonListeners();
+        RefreshPopeListCreditSpriteSources();
         ResolvePopeListHistoryPresenter();
         CacheCameraInitialStates();
         CachePopeListPopupTransform();
@@ -1375,6 +1385,7 @@ public class MainScene : MonoBehaviour
                 popeListLeftArrowButton,
                 popeListRightArrowButton);
             SyncPopeListNavigationSprite();
+            RefreshLatestPopeNameText();
             popeListHistoryPresenterInitialized = true;
         }
     }
@@ -1582,6 +1593,33 @@ public class MainScene : MonoBehaviour
         popeListArrowButtonListenersRegistered = true;
     }
 
+    private void RegisterPopeListCreditNavigationButtonListeners()
+    {
+        if (popeListCreditNavigationListenersRegistered)
+        {
+            return;
+        }
+
+        Button leftButton = popeListCreditLeftObject != null
+            ? popeListCreditLeftObject.GetComponent<Button>()
+            : null;
+        Button rightButton = popeListCreditRightObject != null
+            ? popeListCreditRightObject.GetComponent<Button>()
+            : null;
+
+        if (leftButton != null)
+        {
+            leftButton.onClick.AddListener(MovePopeCreditLeft);
+        }
+
+        if (rightButton != null)
+        {
+            rightButton.onClick.AddListener(MovePopeCreditRight);
+        }
+
+        popeListCreditNavigationListenersRegistered = true;
+    }
+
     private void ResolvePopeListHistoryPresenter()
     {
         if (popeListHistoryPresenter != null || popeListPopup == null)
@@ -1615,6 +1653,71 @@ public class MainScene : MonoBehaviour
         }
     }
 
+    private void RefreshLatestPopeNameText()
+    {
+        if (popeNameText == null)
+        {
+            GameObject popeNameObject = FindSceneObjectByNameIncludingInactive("PopeName");
+            popeNameText = popeNameObject != null
+                ? popeNameObject.GetComponent<TMP_Text>()
+                : null;
+        }
+
+        if (popeNameText != null)
+        {
+            popeNameText.text = popeListHistoryPresenter != null
+                ? popeListHistoryPresenter.LatestPopeDisplayName
+                : string.Empty;
+        }
+    }
+
+    private void SetPopeListCreditNavigationObjectsVisible(bool isVisible)
+    {
+        if (popeListCreditLeftObject == null && popeListPopup != null)
+        {
+            Transform leftTransform = FindDeepChild(popeListPopup.transform, "CreditLeft");
+            popeListCreditLeftObject = leftTransform != null ? leftTransform.gameObject : null;
+        }
+
+        if (popeListCreditRightObject == null && popeListPopup != null)
+        {
+            Transform rightTransform = FindDeepChild(popeListPopup.transform, "CreditRight");
+            popeListCreditRightObject = rightTransform != null ? rightTransform.gameObject : null;
+        }
+
+        if (popeListCreditLeftObject != null)
+        {
+            popeListCreditLeftObject.SetActive(isVisible);
+            Button leftButton = popeListCreditLeftObject.GetComponent<Button>();
+            if (leftButton != null)
+            {
+                leftButton.interactable = isVisible;
+            }
+        }
+
+        if (popeListCreditRightObject != null)
+        {
+            popeListCreditRightObject.SetActive(isVisible);
+            Button rightButton = popeListCreditRightObject.GetComponent<Button>();
+            if (rightButton != null)
+            {
+                rightButton.interactable = isVisible;
+            }
+        }
+    }
+
+    public void MovePopeCreditLeft()
+    {
+        SoundManager.Instance.PlaySFX("ButtonLight");
+        MovePopeCredit(-1);
+    }
+
+    public void MovePopeCreditRight()
+    {
+        SoundManager.Instance.PlaySFX("ButtonLight");
+        MovePopeCredit(1);
+    }
+
     private void MovePopeCredit(int direction)
     {
         if (direction == 0 || !IsPopupOpen(popeListPopup))
@@ -1623,6 +1726,7 @@ public class MainScene : MonoBehaviour
         }
 
         InitializePopeListRuntimeBindings();
+        RefreshPopeListCreditSpriteSources();
         if (resolvedPopeListCreditSprites.Count == 0)
         {
             return;
@@ -1652,15 +1756,21 @@ public class MainScene : MonoBehaviour
     private void UpdatePopeListArrowState()
     {
         bool canSwitchCredit = resolvedPopeListCreditSprites.Count > 1;
+        Button creditLeftButton = popeListCreditLeftObject != null
+            ? popeListCreditLeftObject.GetComponent<Button>()
+            : null;
+        Button creditRightButton = popeListCreditRightObject != null
+            ? popeListCreditRightObject.GetComponent<Button>()
+            : null;
 
-        if (popeListLeftArrowButton != null)
+        if (creditLeftButton != null)
         {
-            popeListLeftArrowButton.interactable = canSwitchCredit;
+            creditLeftButton.interactable = canSwitchCredit;
         }
 
-        if (popeListRightArrowButton != null)
+        if (creditRightButton != null)
         {
-            popeListRightArrowButton.interactable = canSwitchCredit;
+            creditRightButton.interactable = canSwitchCredit;
         }
 
         if (popeListBackButton != null)
