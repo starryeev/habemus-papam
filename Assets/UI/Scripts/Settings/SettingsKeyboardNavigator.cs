@@ -100,9 +100,11 @@ public sealed class SettingsKeyboardNavigator
         _owner = owner;
         _bindings = bindings;
 
-        RectTransform indicatorLayer = bindings.SettingsPanel != null
-            ? bindings.SettingsPanel.transform as RectTransform
-            : null;
+        RectTransform indicatorLayer = bindings.SettingsScrollRect?.content;
+        if (indicatorLayer == null && bindings.SettingsPanel != null)
+        {
+            indicatorLayer = bindings.SettingsPanel.transform as RectTransform;
+        }
         _selectionIndicator = new SettingsSelectionIndicator(
             indicatorLayer,
             bindings.SelectionArrowSprite,
@@ -260,10 +262,10 @@ public sealed class SettingsKeyboardNavigator
         AddVolume(SettingsNavigationTarget.BgmMute, _bindings.BgmVolume, VolumeControlTarget.Mute);
         AddVolume(SettingsNavigationTarget.SfxSlider, _bindings.SfxVolume, VolumeControlTarget.Slider);
         AddVolume(SettingsNavigationTarget.SfxMute, _bindings.SfxVolume, VolumeControlTarget.Mute);
-        AddButton(SettingsNavigationTarget.MoveUp, _bindings.UpKey, false);
-        AddButton(SettingsNavigationTarget.MoveLeft, _bindings.LeftKey, false);
-        AddButton(SettingsNavigationTarget.MoveDown, _bindings.DownKey, false);
-        AddButton(SettingsNavigationTarget.MoveRight, _bindings.RightKey, false);
+        AddHotKeyButton(SettingsNavigationTarget.MoveUp, _bindings.UpKey);
+        AddHotKeyButton(SettingsNavigationTarget.MoveLeft, _bindings.LeftKey);
+        AddHotKeyButton(SettingsNavigationTarget.MoveDown, _bindings.DownKey);
+        AddHotKeyButton(SettingsNavigationTarget.MoveRight, _bindings.RightKey);
         AddButton(SettingsNavigationTarget.ResetHotKeys, _bindings.ResetHotKeysButton, false);
         AddButton(SettingsNavigationTarget.NewGame, _bindings.NewGameButton, true);
         AddButton(SettingsNavigationTarget.HowToPlay, _bindings.HowToPlayButton, true);
@@ -271,12 +273,27 @@ public sealed class SettingsKeyboardNavigator
         AddButton(SettingsNavigationTarget.CloseHowToPlay, _bindings.CloseHowToPlayButton, true);
     }
 
-    private void AddButton(SettingsNavigationTarget target, Button button, bool usesPulse)
+    private void AddHotKeyButton(SettingsNavigationTarget target, Button button)
     {
+        RectTransform selectionRect = button != null
+            ? button.transform.parent as RectTransform
+            : null;
+        AddButton(target, button, false, selectionRect);
+    }
+
+    private void AddButton(
+        SettingsNavigationTarget target,
+        Button button,
+        bool usesPulse,
+        RectTransform selectionRect = null)
+    {
+        RectTransform buttonRect = button != null
+            ? button.transform as RectTransform
+            : null;
         _items[target] = new NavigationItem
         {
             Target = target,
-            Rect = button != null ? button.transform as RectTransform : null,
+            Rect = selectionRect != null ? selectionRect : buttonRect,
             Button = button,
             UsesPulse = usesPulse
         };
