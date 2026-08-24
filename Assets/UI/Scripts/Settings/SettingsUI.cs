@@ -635,22 +635,7 @@ public class SettingsUI : MonoBehaviour
 
         targetText.richText = true;
         targetText.color = Color.white;
-        targetText.text = $"{GetHotKeyActionLabel(action)}    [   {keyLabel}   ]";
-    }
-
-    private static string GetHotKeyActionLabel(HotKeyAction action)
-    {
-        switch (action)
-        {
-            case HotKeyAction.MoveUp:
-                return "위쪽 이동";
-            case HotKeyAction.MoveLeft:
-                return "좌측 이동";
-            case HotKeyAction.MoveDown:
-                return "아래 이동";
-            default:
-                return "우측 이동";
-        }
+        targetText.text = keyLabel;
     }
 
     private void UpdateManagerHotKey(HotKeyAction action, Key key)
