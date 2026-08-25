@@ -17,9 +17,10 @@ MonoBehaviour:
   itemDescription: "\uC740\uC73C\uB85C \uB9CC\uB4E0 \uCD1D\uC774\uB2E4. \uBC1C\uC0AC
     \uAE30\uB2A5\uC740 \uC5C6\uC9C0\uB9CC \uB1CC\uBB3C\uB85C\uC11C\uC758 \uAC00\uCE58\uB294
     \uB6F0\uC5B4\uB098\uB2E4."
-  itemEffectDescription: "오늘 처음 실행한 공작으로 <color=#4488FF>정치력</color>을 <color=#66CCFF>+2</color> 추가 획득한다. 효과가 발동했다면 하루가 끝날 때 <color=#4488FF>정치력</color>이 <color=#FF4D4D>0</color>으로 초기화된다."
+  itemEffectDescription: "획득 날짜부터 3일 동안 공작 시마다 <color=#5BD65B>체력</color>과 <color=#4488FF>정치력</color> <color=#66CCFF>+1</color> 추가 획득. 4일째 이 아이템 소지 시 <color=#4488FF>정치력</color> <color=#FF4D4D>0</color>으로 초기화."
   itemImage: {fileID: 5846785011111141486, guid: b30f0f2b4ad5f464bbc14f373fdd6885, type: 3}
   itemGrade: 1
   itemExpirationType: 1
   usageType: 0
-  plotInfluenceBonus: 2
+  plotInfluenceBonus: 1
+  plotHpBonus: 1

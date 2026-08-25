@@ -6,7 +6,7 @@ public class E40700 : Event
     void Reset()
     {
         eventID = "E40700";
-        eventName = "묵주닦이";
+        eventName = "악마의 유혹";
         eventDescription = "진흙같은 어두운 밤, 당신의 귓가에서 괴이한 소리가 울린다.\n아늑하고 달콤한 소리지만 당신은 그것의 출처가 악마임을 어렴풋이 느낀다.\n악마의 꼬드김에 넘어간 사람들의 결말은 뻔하다. 저항하자!";
         maxAppear = 1;
 

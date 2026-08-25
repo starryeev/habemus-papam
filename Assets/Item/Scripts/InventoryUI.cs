@@ -103,6 +103,11 @@ public class InventoryUI : MonoBehaviour
         currentDetailItem = item;
         detailPanel.SetActive(true);
 
+        if (dropButton != null)
+        {
+            dropButton.gameObject.SetActive(item.CanDrop());
+        }
+
         detailImage.sprite = item.itemImage;
         titleText.text = item.itemName;
 

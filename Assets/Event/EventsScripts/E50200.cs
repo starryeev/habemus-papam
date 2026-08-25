@@ -7,7 +7,7 @@ public class E50200 : Event
     {
         eventID = "E50200";
         eventName = "목 좀 축이세요";
-        eventDescription = "(후보 n)를 지지하는 추기경이 나에게 주스 한 잔을 권한다. 마침 목이 너무 말랐는데!\n싱그러운 과일 향이 나는 진짜 과일 주스다! 게임 개발자의 양심을 걸고 독약 같은 건 절대 아니다.";
+        eventDescription = "(후보 n)를 지지하는 장로가 나에게 주스 한 잔을 권한다. 마침 목이 너무 말랐는데!\n싱그러운 과일 향이 나는 진짜 과일 주스다! 게임 개발자의 양심을 걸고 독약 같은 건 절대 아니다.";
         maxAppear = 3;
 
         eventWeightBase = 0f;
@@ -18,8 +18,8 @@ public class E50200 : Event
         option1Requirement = "-";
         option1SuccessDescription = "푸룬 주스였다! 남은 일을 해치우려 했지만 배가 심상치 않다.\n\n체력 1 감소!\n현재 턴 행동 횟수 1회 감소!";
         option1SuccessResult = "체력 -1\n현재 턴 행동 횟수 -1";
-        option1FailDescription = "푸룬 주스였다! 당신은 뱃속이 심상치 않음을 느끼고 화장실로 직행한다.\n\n체력 1 증가!\n해당 콘클라베 즉시 종료!";
-        option1FailResult = "체력 +1\n콘클라베 즉시 종료, 교주 판정으로 직행";
+        option1FailDescription = "푸룬 주스였다! 당신은 뱃속이 심상치 않음을 느끼고 화장실로 직행한다.\n\n체력 1 증가!\n해당 썬ㅡ클라베 즉시 종료!";
+        option1FailResult = "체력 +1\n썬ㅡ클라베 즉시 종료, 교주 판정으로 직행";
         option2 = "";
     }
 

@@ -85,8 +85,8 @@ public class E12100 : Event
         image.color = Color.white;
         image.raycastTarget = false;
 
-        const float holdDuration = 0.12f;
-        const float fadeDuration = 0.45f;
+        const float holdDuration = 1f;
+        const float fadeDuration = 2f;
         yield return new WaitForSecondsRealtime(holdDuration);
 
         float elapsed = 0f;

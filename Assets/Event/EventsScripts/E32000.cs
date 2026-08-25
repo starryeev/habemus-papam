@@ -19,15 +19,15 @@ public class E32000 : Event
 
         option1 = "이교도와의 대화를 시도한다!";
         option1Chance = 0.9f;
-        option1SuccessDescription = "당신은 이교도를 설득할 방법을 찾았고, 평화주의자인 (후보 2)이(가) 나섰다. 이교도는 끝내 폭탄 조끼를 벗었다.\n\n해당 콘클라베 즉시 종료!\n(후보 2)의 경건함 8 증가!\n(후보 2)의 체력 10 감소!";
-        option1SuccessResult = "해당 콘클라베 즉시 종료\n(후보 2) 경건함 +8\n(후보 2) 체력 -10";
-        option1FailDescription = "설득이 실패하고 폭탄 조끼가 터졌다. 회의장은 혼비백산에 빠졌다.\n\n해당 콘클라베 즉시 종료!\n(후보 2) 탈락!\n플레이어와 후보 1, 2, 3의 체력 2 감소!\n플레이어와 후보 1, 2, 3의 정치력 3 감소!";
-        option1FailResult = "해당 콘클라베 즉시 종료\n(후보 2) 탈락\n플레이어와 후보 1, 2, 3 체력 -2\n플레이어와 후보 1, 2, 3 정치력 -3";
+        option1SuccessDescription = "당신은 이교도를 설득할 방법을 찾았고, 평화주의자인 (후보 2)이(가) 나섰다. 이교도는 끝내 폭탄 조끼를 벗었다.\n\n해당 썬ㅡ클라베 즉시 종료!\n(후보 2)의 경건함 8 증가!\n(후보 2)의 체력 10 감소!";
+        option1SuccessResult = "해당 썬ㅡ클라베 즉시 종료\n(후보 2) 경건함 +8\n(후보 2) 체력 -10";
+        option1FailDescription = "설득이 실패하고 폭탄 조끼가 터졌다. 회의장은 혼비백산에 빠졌다.\n\n해당 썬ㅡ클라베 즉시 종료!\n(후보 2) 탈락!\n플레이어와 후보 1, 2, 3의 체력 2 감소!\n플레이어와 후보 1, 2, 3의 정치력 3 감소!";
+        option1FailResult = "해당 썬ㅡ클라베 즉시 종료\n(후보 2) 탈락\n플레이어와 후보 1, 2, 3 체력 -2\n플레이어와 후보 1, 2, 3 정치력 -3";
 
         option2 = "저격수를 배치해 이교도를 사살한다!";
         option2Chance = 1f;
-        option2SuccessDescription = "교단 근위대의 저격수가 이교도를 제압했고 군중은 해산했다.\n\n해당 콘클라베 즉시 종료!\n플레이어와 후보 1, 2, 3의 경건함 4 감소!";
-        option2SuccessResult = "해당 콘클라베 즉시 종료\n플레이어와 후보 1, 2, 3 경건함 -4";
+        option2SuccessDescription = "교단 근위대의 저격수가 이교도를 제압했고 군중은 해산했다.\n\n해당 썬ㅡ클라베 즉시 종료!\n플레이어와 후보 1, 2, 3의 경건함 4 감소!";
+        option2SuccessResult = "해당 썬ㅡ클라베 즉시 종료\n플레이어와 후보 1, 2, 3 경건함 -4";
     }
 
     public override bool CanChoiceOption1(Cardinal performer)
@@ -98,7 +98,7 @@ public class E32000 : Event
 
     private void EndCurrentConclave()
     {
-        // 해당 콘클라베 즉시 종료 처리
+        // 해당 썬ㅡ클라베 즉시 종료 처리
         InGameManager.Instance.EndCurrentConclave();
     }
 

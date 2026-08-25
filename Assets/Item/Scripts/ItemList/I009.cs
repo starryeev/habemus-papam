@@ -24,7 +24,7 @@ public class I009 : Item
         itemID = "I009";
         itemName = "게르마늄 태양 팔찌";
         itemDescription = "태양의 에너지 덕분인지 게르마늄의 원적외선 덕분인지, 몸이 홀가분해졌다!";
-        itemEffectDescription = "기도 시 <color=#FFD84D>경건함</color>을 <color=#66CCFF>+1</color> 추가 획득한다. <color=#5BD65B>체력</color>이 0이 될 때 한 번 기절을 막고 <color=#5BD65B>체력</color>을 <color=#66CCFF>+3</color> 회복한다.";
+        itemEffectDescription = "기도 시 <color=#FFD84D>경건함</color> <color=#66CCFF>+1</color> 추가 획득. <color=#5BD65B>체력</color>이 0이 될 때 한 번 기절을 막고 <color=#5BD65B>체력</color> <color=#66CCFF>+3</color> 회복";
 
         itemGrade = ItemGrade.Rare;
         itemExpirationType = ItemExpirationType.Permanent;

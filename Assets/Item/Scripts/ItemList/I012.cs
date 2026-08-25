@@ -12,7 +12,7 @@ public class I012 : Item
 
         itemName = "연막탄";
         itemDescription = "굴뚝에 몰래 넣어서 연기 색깔을 바꾼다!\n무슨 색인지는 모르겠지만 검정이면 좋겠다...";
-        itemEffectDescription = "교황으로 선출될 때 <b>(10 - 현재 <color=#FFD84D>경건함</color>) × 10%</b> 확률로 당선을 막는다. 성공하면 아이템이 소모된다.";
+        itemEffectDescription = "교주로 선출될 때 <b>(10 - 현재 <color=#FFD84D>경건함</color>) × 10%</b> 확률로 당선을 막고 소멸";
     }
 
     public override void OnAcquire()

@@ -17,7 +17,7 @@ MonoBehaviour:
   itemDescription: "\uCD5C\uACE0\uAE09 \uC774\uD0C8\uB9AC\uC544 \uD3EC\uB3C4\uB97C
     \uBC1C\uD6A8\uD55C \uD6C4 \uC218\uB3C4\uC6D0 \uC9C0\uD558\uC5D0\uC11C \uB2E4\uC12F
     \uBC88 \uC99D\uB958\uD55C \uD654\uB048\uD55C \uC220."
-  itemEffectDescription: "사용한 날 동안 기도 시 <color=#5BD65B>체력</color>을 <color=#66CCFF>+1</color> 추가 회복한다."
+  itemEffectDescription: "획득 후 3일 동안 기도 시 <color=#5BD65B>체력</color> <color=#66CCFF>+1</color> 추가 회복."
   itemImage: {fileID: 21300000, guid: 52b7409211a774242b4645e1e7908995, type: 3}
   itemGrade: 1
   itemExpirationType: 1

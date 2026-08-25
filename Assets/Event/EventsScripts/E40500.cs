@@ -25,7 +25,7 @@ public class E40500 : Event
         option2Chance = 0.8f;
         option2SuccessDescription = "와장창!\n집중력이 흐트러진 나머지 실수를 해버렸다!\n\n현재 턴 행동 횟수 1회 증가!";
         option2SuccessResult = "현재 턴 행동 횟수 +1";
-        option2FailDescription = "어지러웠지만 신심으로 마음을 가라앉혔다. 당신의 정신력은 많은 추기경의 귀감이 되었다.\n\n정치력 1 증가!";
+        option2FailDescription = "어지러웠지만 신심으로 마음을 가라앉혔다. 당신의 정신력은 많은 장로의 귀감이 되었다.\n\n정치력 1 증가!";
         option2FailResult = "정치력 +1";
     }
 

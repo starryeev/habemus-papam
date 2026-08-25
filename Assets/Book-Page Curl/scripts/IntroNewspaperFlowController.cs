@@ -98,7 +98,7 @@ public sealed class IntroNewspaperFlowController : MonoBehaviour
         if (book.currentPage == NameInputPage && (inputNameUIController == null || !inputNameUIController.HasPlayerName))
             return;
 
-        SoundManager.Instance.PlaySFX(NewspaperSfxName);
+        SoundManager.Instance?.PlaySFX(NewspaperSfxName);
 
         if (book.currentPage == GameStartConfirmPage)
         {

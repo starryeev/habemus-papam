@@ -16,7 +16,7 @@ MonoBehaviour:
   itemName: "\uAE08\uC73C\uB85C \uB9CC\uB4E0 \uC131\uBC30"
   itemDescription: "\uC774 \uC794\uC73C\uB85C \uBBF8\uC0AC\uB97C \uB4DC\uB9AC\uC790
     \uCD94\uAE30\uACBD\uB4E4\uC758 \uB208\uAE38\uC774 \uC3E0\uB9B0\uB2E4. \uB7ED\uC154\uB9AC\uD558\uB2C8\uAE4C!"
-  itemEffectDescription: "이번 콘클라베 동안 연설 시 <color=#4488FF>정치력</color> 획득량이 <color=#66CCFF>+1</color> 증가한다."
+  itemEffectDescription: "이번 썬ㅡ클라베 동안 연설 시 <color=#4488FF>정치력</color> 획득량 <color=#66CCFF>+1</color>."
   itemImage: {fileID: 21300000, guid: 8ede32419c0be0f4eb76c3d80fe9df9e, type: 3}
   itemGrade: 0
   itemExpirationType: 0

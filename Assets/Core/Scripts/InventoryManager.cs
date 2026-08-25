@@ -15,6 +15,7 @@ public class InventoryManager : MonoBehaviour
     private Cardinal playerCardinal;
     private List<Item> inventoryItems = new List<Item>();
     private List<Item> activeBuffs = new List<Item>();
+    private readonly Dictionary<Item, int> remainingConclaveCounts = new Dictionary<Item, int>();
 
     public Cardinal Player => playerCardinal;
     public IReadOnlyList<Item> InventoryItems => inventoryItems;
@@ -57,6 +58,10 @@ public class InventoryManager : MonoBehaviour
         {
             CheckAndRemoveExpiredItems();
         }
+        else if (eventType == GameContext.GameContextEvent.ConclaveStart)
+        {
+            RemoveElapsedDayItems();
+        }
     }
 
     private void CheckAndRemoveExpiredItems()
@@ -66,13 +71,11 @@ public class InventoryManager : MonoBehaviour
             return;
         }
 
-        bool isEndOfDay = InGameManager.Instance.GetCurrentConclave() == GameContext.Conclave.Afternoon;
-
-        RemoveExpiredFromList(inventoryItems, isEndOfDay, true);
-        RemoveExpiredFromList(activeBuffs, isEndOfDay, false);
+        RemoveExpiredFromList(inventoryItems, true);
+        RemoveExpiredFromList(activeBuffs, false);
     }
 
-    private void RemoveExpiredFromList(List<Item> targetList, bool isNewDay, bool shouldUpdateUI)
+    private void RemoveExpiredFromList(List<Item> targetList, bool shouldUpdateUI)
     {
         List<Item> itemsToRemove = new List<Item>();
 
@@ -82,9 +85,10 @@ public class InventoryManager : MonoBehaviour
             {
                 itemsToRemove.Add(item);
             }
-            else if (item.itemExpirationType == ItemExpirationType.Day && isNewDay)
+            else if (item.itemExpirationType == ItemExpirationType.Day)
             {
-                itemsToRemove.Add(item);
+                int remainingConclaves = GetRemainingConclaveCount(item) - 1;
+                remainingConclaveCounts[item] = remainingConclaves;
             }
         }
 
@@ -92,6 +96,44 @@ public class InventoryManager : MonoBehaviour
         {
             item.OnRemove();
             targetList.Remove(item);
+            remainingConclaveCounts.Remove(item);
+
+            if (playerCardinal != null)
+            {
+                playerCardinal.RemovePassiveItem(item);
+            }
+        }
+
+        if (shouldUpdateUI)
+        {
+            RefreshUI();
+        }
+    }
+
+    private void RemoveElapsedDayItems()
+    {
+        RemoveElapsedDayItemsFromList(inventoryItems, true);
+        RemoveElapsedDayItemsFromList(activeBuffs, false);
+    }
+
+    private void RemoveElapsedDayItemsFromList(List<Item> targetList, bool shouldUpdateUI)
+    {
+        List<Item> itemsToRemove = new List<Item>();
+
+        foreach (var item in targetList)
+        {
+            if (item.itemExpirationType == ItemExpirationType.Day && GetRemainingConclaveCount(item) <= 0)
+            {
+                itemsToRemove.Add(item);
+            }
+        }
+
+        foreach (var item in itemsToRemove)
+        {
+            item.OnExpiration();
+            item.OnRemove();
+            targetList.Remove(item);
+            remainingConclaveCounts.Remove(item);
 
             if (playerCardinal != null)
             {
@@ -145,6 +187,7 @@ public class InventoryManager : MonoBehaviour
         }
 
         inventoryItems.Add(runtimeItem);
+        InitializeConclaveDuration(runtimeItem);
         runtimeItem.OnAcquire();
 
         if (ActionRecordManager.Instance != null)
@@ -192,7 +235,7 @@ public class InventoryManager : MonoBehaviour
 
     public void DropItem(Item item)
     {
-        if (!inventoryItems.Contains(item))
+        if (!inventoryItems.Contains(item) || !item.CanDrop())
         {
             return;
         }
@@ -210,6 +253,7 @@ public class InventoryManager : MonoBehaviour
 
         item.OnRemove();
         inventoryItems.Remove(item);
+        remainingConclaveCounts.Remove(item);
 
         if (playerCardinal != null)
         {
@@ -236,7 +280,9 @@ public class InventoryManager : MonoBehaviour
             saveData.inventoryItems.Add(new ItemSaveData
             {
                 itemId = item.itemID,
-                runtimeStateJson = item.CaptureRuntimeState()
+                runtimeStateJson = item.CaptureRuntimeState(),
+                remainingConclaveCount = GetRemainingConclaveCount(item),
+                hasRemainingConclaveCount = item.itemExpirationType == ItemExpirationType.Day
             });
         }
 
@@ -250,7 +296,9 @@ public class InventoryManager : MonoBehaviour
             saveData.activeBuffs.Add(new ItemSaveData
             {
                 itemId = item.itemID,
-                runtimeStateJson = item.CaptureRuntimeState()
+                runtimeStateJson = item.CaptureRuntimeState(),
+                remainingConclaveCount = GetRemainingConclaveCount(item),
+                hasRemainingConclaveCount = item.itemExpirationType == ItemExpirationType.Day
             });
         }
 
@@ -261,6 +309,7 @@ public class InventoryManager : MonoBehaviour
     {
         inventoryItems.Clear();
         activeBuffs.Clear();
+        remainingConclaveCounts.Clear();
 
         if (playerCardinal != null)
         {
@@ -307,6 +356,8 @@ public class InventoryManager : MonoBehaviour
             }
 
             runtimeItem.RestoreRuntimeState(itemSave.runtimeStateJson);
+            InitializeConclaveDuration(runtimeItem,
+                itemSave.hasRemainingConclaveCount ? itemSave.remainingConclaveCount : 3);
             target.Add(runtimeItem);
         }
     }
@@ -323,6 +374,32 @@ public class InventoryManager : MonoBehaviour
         runtimeItem.name = sourceItem.name;
         runtimeItem.ResetRuntimeState();
         return runtimeItem;
+    }
+
+    private void InitializeConclaveDuration(Item item, int savedRemainingConclaves = 3)
+    {
+        if (item == null || item.itemExpirationType != ItemExpirationType.Day)
+        {
+            return;
+        }
+
+        remainingConclaveCounts[item] = Mathf.Max(0, savedRemainingConclaves);
+    }
+
+    private int GetRemainingConclaveCount(Item item)
+    {
+        if (item == null || item.itemExpirationType != ItemExpirationType.Day)
+        {
+            return 0;
+        }
+
+        if (!remainingConclaveCounts.TryGetValue(item, out int remainingConclaves))
+        {
+            remainingConclaves = 3;
+            remainingConclaveCounts[item] = remainingConclaves;
+        }
+
+        return remainingConclaves;
     }
 
     private void ReapplyItemsAfterLoad()

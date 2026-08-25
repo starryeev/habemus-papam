@@ -24,6 +24,53 @@ public class PopeListHistoryPresenter : MonoBehaviour
     public Sprite CurrentCenterPortrait { get; private set; }
     public string LatestPopeDisplayName { get; private set; } = string.Empty;
 
+    public static bool TryGetLatestPopeHeadline(out string headline)
+    {
+        headline = string.Empty;
+
+        if (ActionRecordManager.Instance == null)
+        {
+            return false;
+        }
+
+        IReadOnlyList<PapalElectionRecordSaveData> records =
+            ActionRecordManager.Instance.GetPersistentPapalElectionHistory();
+
+        if (records == null || records.Count == 0)
+        {
+            return false;
+        }
+
+        PapalElectionRecordSaveData latestRecord = records[records.Count - 1];
+        if (latestRecord == null)
+        {
+            return false;
+        }
+
+        string popeName = latestRecord.popeName?.Trim() ?? string.Empty;
+        string baseName = RegnalSuffixPattern.Replace(popeName, string.Empty).Trim();
+        if (string.IsNullOrEmpty(baseName))
+        {
+            return false;
+        }
+
+        int regnalNumber = 0;
+        foreach (PapalElectionRecordSaveData record in records)
+        {
+            string recordName = record?.popeName?.Trim() ?? string.Empty;
+            if (string.Equals(
+                    RegnalSuffixPattern.Replace(recordName, string.Empty).Trim(),
+                    baseName,
+                    StringComparison.Ordinal))
+            {
+                regnalNumber++;
+            }
+        }
+
+        headline = $"제 {records.Count}대 교주 ({baseName}) {regnalNumber}세 서거";
+        return true;
+    }
+
     public void Initialize(
         IReadOnlyList<Button> frameButtons,
         Button resolvedLeftButton,

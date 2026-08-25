@@ -19,7 +19,7 @@ public class I005 : Item
 
         itemName = "태양주";
         itemDescription = "고향집 뒷산 포도밭에서 따온 포도를 대충 증류해서 만든 달달한 술";
-        itemEffectDescription = "사용한 콘클라베 동안 기도 시 <color=#5BD65B>체력</color>을 <color=#66CCFF>+1</color> 추가 회복한다.";
+        itemEffectDescription = "사용 시, 해당 날짜 기도 시 <color=#5BD65B>체력</color> <color=#66CCFF>+1</color> 추가 회복";
 
         prayerBonusHp = 1;
     }

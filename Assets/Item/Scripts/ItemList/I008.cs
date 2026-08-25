@@ -12,7 +12,7 @@ public class I008 : Item
         itemID = "I008";
         itemName = "태양 팔찌";
         itemDescription = "태양의 힘이 확실히 느껴지는 경건한 팔찌다!";
-        itemEffectDescription = "기도 시 <color=#FFD84D>경건함</color>을 <color=#66CCFF>+1</color> 추가 획득한다.";
+        itemEffectDescription = "기도 시 <color=#FFD84D>경건함</color> <color=#66CCFF>+1</color> 추가 획득";
 
         itemGrade = ItemGrade.Common;
         itemExpirationType = ItemExpirationType.Permanent;

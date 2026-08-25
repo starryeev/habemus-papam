@@ -3,17 +3,10 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "I007", menuName = "Items/태양의 은총")]
 public class I007 : Item
 {
-    [System.Serializable]
-    private class RuntimeState
-    {
-        public bool hasTriggeredToday;
-    }
-
     [Header("태양의 은총 설정")]
     [Tooltip("처음 공작 사용 시 추가로 획득할 정치력")]
-    [SerializeField] private float plotInfluenceBonus = 2f;
-
-    private bool hasTriggeredToday;
+    [SerializeField] private float plotInfluenceBonus = 1f;
+    [SerializeField] private float plotHpBonus = 1f;
 
     void Reset()
     {
@@ -24,34 +17,25 @@ public class I007 : Item
 
         itemName = "태양의 은총";
         itemDescription = "은으로 만든 총이다. 발사 기능은 없지만 뇌물로서의 가치는 뛰어나다.";
-        itemEffectDescription = "오늘 처음 실행한 공작으로 <color=#4488FF>정치력</color>을 <color=#66CCFF>+2</color> 추가 획득한다. 효과가 발동했다면 하루가 끝날 때 <color=#4488FF>정치력</color>이 <color=#FF4D4D>0</color>으로 초기화된다.";
 
-        plotInfluenceBonus = 2f;
-    }
-
-    public override void OnAcquire()
-    {
-        hasTriggeredToday = false;
+        plotInfluenceBonus = 1f;
+        plotHpBonus = 1f;
+        itemEffectDescription = "3일 동안 공작마다<color=#5BD65B>체력</color>과 <color=#4488FF>정치력</color> <color=#66CCFF>+1</color> 추가 획득. 4일째에 이 아이템을 소지했다면, <color=#4488FF>정치력</color>을 <color=#FF4D4D>0</color>으로 초기화";
     }
 
     public override void OnPlot(Cardinal owner)
     {
-        if (owner == null || hasTriggeredToday)
+        if (owner == null)
         {
             return;
         }
 
+        owner.ChangeHp(plotHpBonus);
         owner.ChangeInfluence(plotInfluenceBonus);
-        hasTriggeredToday = true;
     }
 
-    public override void OnRemove()
+    public override void OnExpiration()
     {
-        if (!hasTriggeredToday)
-        {
-            return;
-        }
-
         Cardinal player = FindPlayer();
         if (player == null)
         {
@@ -59,38 +43,6 @@ public class I007 : Item
         }
 
         player.ChangeInfluence(-player.Influence);
-        hasTriggeredToday = false;
-    }
-
-    public override void ResetRuntimeState()
-    {
-        hasTriggeredToday = false;
-    }
-
-    public override string CaptureRuntimeState()
-    {
-        RuntimeState state = new RuntimeState
-        {
-            hasTriggeredToday = hasTriggeredToday
-        };
-
-        return JsonUtility.ToJson(state);
-    }
-
-    public override void RestoreRuntimeState(string runtimeStateJson)
-    {
-        ResetRuntimeState();
-
-        if (string.IsNullOrWhiteSpace(runtimeStateJson))
-        {
-            return;
-        }
-
-        RuntimeState state = JsonUtility.FromJson<RuntimeState>(runtimeStateJson);
-        if (state != null)
-        {
-            hasTriggeredToday = state.hasTriggeredToday;
-        }
     }
 
     private Cardinal FindPlayer()

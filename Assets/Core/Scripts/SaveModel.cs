@@ -334,6 +334,8 @@ public class ItemSaveData
 {
     public string itemId;
     public string runtimeStateJson;
+    public int remainingConclaveCount;
+    public bool hasRemainingConclaveCount;
 }
 
 [Serializable]

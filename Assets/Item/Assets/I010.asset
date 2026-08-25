@@ -16,7 +16,7 @@ MonoBehaviour:
   itemName: "\uAD50\uD669\uCCAD \uC8FC\uBCF4"
   itemDescription: "\uAD50\uD68C\uC758 \uB3D9\uD5A5\uC744 \uD30C\uC545\uD574 \uAD50\uD669
     \uC790\uB9AC\uB97C \uD55C \uBC1C \uBE60\uB974\uAC8C \uD53C\uD55C\uB2E4."
-  itemEffectDescription: "연설 시 <color=#4488FF>정치력</color> 변화량을 <color=#66CCFF>+1</color>로 고정하고 <color=#FFD84D>경건함</color>을 <color=#66CCFF>+1</color> 회복한다."
+  itemEffectDescription: "획득 후 3일 동안 연설 시 <color=#4488FF>정치력</color> 변화량 <color=#66CCFF>+1</color>로 고정, <color=#FFD84D>경건함</color> <color=#66CCFF>+1</color> 회복."
   itemImage: {fileID: 780759684653237311, guid: a6f51c839b9ce9b43bfaab591e9757f9, type: 3}
   itemGrade: 0
   itemExpirationType: 1
