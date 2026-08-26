@@ -19,6 +19,15 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button closeButton;
     [SerializeField] private Button dropButton;
 
+    [Header("Detail Panel Grade Visuals")]
+    [SerializeField] private Image detailPanelBackgroundImage;
+    [SerializeField] private Sprite commonDetailPanelSprite;
+    [SerializeField] private Sprite rareDetailPanelSprite;
+
+    [Header("Item Slot Visuals")]
+    [SerializeField] private Sprite emptySlotSprite;
+    [SerializeField] private Sprite filledSlotSprite;
+
     private Item currentDetailItem;
     private bool isInitialized = false;
 
@@ -49,7 +58,7 @@ public class InventoryUI : MonoBehaviour
 
         foreach (var slot in slots)
         {
-            slot.Setup(this);
+            slot.Setup(this, emptySlotSprite, filledSlotSprite);
         }
 
         if (useButton != null)
@@ -102,6 +111,7 @@ public class InventoryUI : MonoBehaviour
 
         currentDetailItem = item;
         detailPanel.SetActive(true);
+        ApplyDetailPanelGradeVisual(item.itemGrade);
 
         if (dropButton != null)
         {
@@ -143,6 +153,23 @@ public class InventoryUI : MonoBehaviour
             {
                 useButton.gameObject.SetActive(false);
             }
+        }
+    }
+
+    private void ApplyDetailPanelGradeVisual(ItemGrade itemGrade)
+    {
+        if (detailPanelBackgroundImage == null)
+        {
+            return;
+        }
+
+        Sprite targetSprite = itemGrade == ItemGrade.Rare
+            ? rareDetailPanelSprite
+            : commonDetailPanelSprite;
+
+        if (targetSprite != null)
+        {
+            detailPanelBackgroundImage.sprite = targetSprite;
         }
     }
 
