@@ -23,15 +23,15 @@ public class I001 : Item
         usageType = ItemUsageType.Active;
 
         itemName = "묵직한 아령";
-        itemEffectDescription = "소지 시 기도로 체력을 회복할 수 없다. 사용 시 소지했던 턴 수만큼 체력을 회복한다.";
-        healPerHeldTurn = 1;
+        itemDescription = "꽤 묵직한 아령이다. 운동은 쓰지만 열매는 달다.";
+        itemEffectDescription = "소지 중에 기도로 <color=#5BD65B>체력</color>을 회복할 수 없음. 사용 시, 보유했던 턴 수 × 2만큼 <color=#5BD65B>체력</color>을 회복";
+        healPerHeldTurn = 2;
     }
 
     public override void OnAcquire()
     {
         heldTurns = Mathf.Max(1, heldTurns);
         SubscribeToTurns();
-        Debug.Log("[아이템] 아령 획득: 기도 회복 차단 시작");
     }
 
     public override void OnReapply(Cardinal owner)
@@ -42,7 +42,6 @@ public class I001 : Item
     public override void OnRemove()
     {
         UnsubscribeFromTurns();
-        Debug.Log("[아이템] 아령 제거: 기도 회복 차단 해제");
     }
 
     public override void OnUse()

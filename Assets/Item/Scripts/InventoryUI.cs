@@ -113,6 +113,11 @@ public class InventoryUI : MonoBehaviour
         detailPanel.SetActive(true);
         ApplyDetailPanelGradeVisual(item.itemGrade);
 
+        if (dropButton != null)
+        {
+            dropButton.gameObject.SetActive(item.CanDrop());
+        }
+
         detailImage.sprite = item.itemImage;
         titleText.text = item.itemName;
 

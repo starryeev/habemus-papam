@@ -77,7 +77,6 @@ public class SaveManager : MonoBehaviour
                 return true;
             }
 
-            Debug.Log("[Save] 기존 자동저장 파일을 폐기합니다.");
             DeleteSave();
         }
         catch (Exception exception)
@@ -387,6 +386,16 @@ public class SaveManager : MonoBehaviour
             ActionRecordManager.Instance.RestoreCurrentRunStats(saveModel.actionStats);
         }
 
+        if (CardinalManager.Instance != null)
+        {
+            CardinalManager.Instance.EnsureSchemerAssignmentAfterLoad();
+        }
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayBGM("DummyBGM", 0);
+        }
+
         RefreshSceneUi(saveModel);
     }
 
@@ -394,6 +403,10 @@ public class SaveManager : MonoBehaviour
     {
         switch (saveModel.resumeStep)
         {
+            case SaveResumeStep.Gameplay:
+                InGameManager.Instance.ResumePlayerActionFlow();
+                break;
+
             case SaveResumeStep.ReopenPendingEvent:
                 InGameManager.Instance.RestorePendingTurnEventUI();
                 break;
@@ -440,6 +453,11 @@ public class SaveManager : MonoBehaviour
         {
             CardinalManager.Instance.StatsUI.Initialize(CardinalManager.Instance.Cardinals);
             CardinalManager.Instance.StatsUI.FadeInAfterConclaveEntrance(1f);
+
+            if (timeUI != null)
+            {
+                timeUI.FadeInAfterConclaveEntrance(1f);
+            }
         }
     }
 
@@ -602,12 +620,6 @@ public class SaveManager : MonoBehaviour
             {
                 File.Move(temporaryPath, SaveFilePath);
             }
-
-            int phase = saveModel.gameContext.isEventPhase
-                ? 3
-                : Mathf.Clamp(saveModel.gameContext.completedActions + 1, 1, 2);
-            Debug.Log($"[Save] {saveModel.checkpointType} 완료: Turn " +
-                $"{saveModel.gameContext.currentTurn}-{phase} / {SaveFilePath}");
         }
         catch (Exception exception)
         {

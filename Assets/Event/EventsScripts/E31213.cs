@@ -15,13 +15,13 @@ public class E31213 : Event
 
         option1 = "(후보 1)을(를) 지지한다!";
         option1Chance = 1f;
-        option1SuccessDescription = "숭고하고 합리적인 행동을 통해 지고의 구원을 찾을 수 있다는 태양교의 교리를 견지하며, 당신은 경전에 대한 교리의 우월성을 좌중에게 환기하였다.\n다른 말로는, 귀찮으니 그냥 믿던 거 믿자는 뜻이다.\n\n정치력 10 증가!\n(후보 1)의 정치력 30 증가!";
-        option1SuccessResult = "정치력 +10\n후보 1 정치력 +30";
+        option1SuccessDescription = "당신은 기존 교리의 정통성을 주장한 (후보 1)을(를) 지지했다.\n\n정치력 1 증가!\n(후보 1)의 정치력 3 증가!";
+        option1SuccessResult = "정치력 +1\n(후보 1) 정치력 +3";
 
         option2 = "(후보 3)을(를) 지지한다!";
         option2Chance = 1f;
-        option2SuccessDescription = "계시를 믿고 따르는 것이 지극히 마땅한 일이다!\n황금 경전의 내용을 공표하고 교리를 다시 연구하자!\n...이제 (후보 3)한테 묻어가면 쟤가 당선되는 거지?\n\n경건함 20 증가!\n(후보 3)의 정치력 30 증가!";
-        option2SuccessResult = "경건함 +20\n후보 3 정치력 +30";
+        option2SuccessDescription = "당신은 황금 경전의 내용을 공표하자는 (후보 3)을(를) 지지했다.\n\n경건함 2 증가!\n(후보 3)의 정치력 3 증가!";
+        option2SuccessResult = "경건함 +2\n(후보 3) 정치력 +3";
     }
 
     public override bool CanChoiceOption1(Cardinal performer)

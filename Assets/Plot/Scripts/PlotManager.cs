@@ -79,6 +79,11 @@ public class PlotManager : MonoBehaviour
         float playerInfluence = GetPlayerInfluence();
         Plot[] selectedPlots = new Plot[3];
 
+        if (InGameManager.Instance != null && InGameManager.Instance.IsNpcCandidateLeading(2))
+        {
+            Debug.Log($"[NPC 선두 패시브][후보 2] 공작 생성 조건 보정 적용 | 플레이어 정치력 {playerInfluence:0.##}, 모든 공작 정치력 조건 +1");
+        }
+
         for (int slot = 0; slot < selectedPlots.Length; slot++)
         {
             selectedPlots[slot] = PickSlotPlot(
@@ -190,21 +195,27 @@ public class PlotManager : MonoBehaviour
         usedPlots.Clear();
     }
 
-    // 콘클라베 시작 시 새로운 공작 Set 생성
+    // 첫 콘클라베 시작 시 공작 Set을 생성하고, 이후에는 퇴장 시 새로 고친 Set을 유지한다.
     private void OnGameContextChanged(GameContext.GameContextEvent eventType)
     {
         if (eventType == GameContext.GameContextEvent.ConclaveStart)
         {
             int currentDay = InGameManager.Instance.Context.CurrentDay;
-            if (activePlotDay == currentDay && availPlotSets.All(plotSet => plotSet != null)) return;
+            activePlotDay = currentDay;
+            if (availPlotSets.All(plotSet => plotSet != null)) return;
 
             HashSet<Plot> previousDayPlots = new HashSet<Plot>(availPlotSets
                 .Where(plotSet => plotSet != null)
                 .SelectMany(plotSet => plotSet.plots)
                 .Where(plot => plot != null));
-            activePlotDay = currentDay;
-            availPlotSets[0] = GeneratePlotSet(previousDayPlots);
-            availPlotSets[1] = GeneratePlotSet(previousDayPlots);
+            for (int i = 0; i < availPlotSets.Length; i++)
+            {
+                if (availPlotSets[i] == null) availPlotSets[i] = GeneratePlotSet(previousDayPlots);
+            }
+        }
+        else if (eventType == GameContext.GameContextEvent.ConclaveEnd)
+        {
+            for (int i = 0; i < availPlotSets.Length; i++) RerollPlotSet(i);
         }
     }
 
@@ -220,22 +231,33 @@ public class PlotManager : MonoBehaviour
     {
         if (InGameManager.Instance != null && !InGameManager.Instance.CanPerformPlayerAction(performer)) return;
         Plot selectedPlot = AvailPlotSets[plotSet].plots[index];
-        if (!MeetsEffectiveInfluenceCondition(selectedPlot, performer) || !selectedPlot.IsEffectiveCostEnough(performer)) return;
+        bool meetsInfluenceCondition = MeetsEffectiveInfluenceCondition(selectedPlot, performer);
+        if (performer != null && performer.CompareTag("Player") &&
+            InGameManager.Instance != null && InGameManager.Instance.IsNpcCandidateLeading(2))
+        {
+            int baseRequirement = selectedPlot.GetInfluenceRequirement();
+            int effectiveRequirement = GetEffectiveInfluenceRequirement(selectedPlot, performer);
+            Debug.Log(
+                $"[NPC 선두 패시브][후보 2] 공작 정치력 조건 +1 적용 | {selectedPlot.plotID}, " +
+                $"조건 {baseRequirement} -> {effectiveRequirement}, 플레이어 정치력 {performer.Influence:0.##}, " +
+                $"결과 {(meetsInfluenceCondition ? "충족" : "미충족")}");
+        }
+        if (!meetsInfluenceCondition || !selectedPlot.IsEffectiveCostEnough(performer)) return;
         if (InGameManager.Instance != null) InGameManager.Instance.ExecuteNpcActionsBeforePlayerAction(performer);
         selectedPlot.Execute(performer);
         performer?.OnPlotExecuted();
-        if (InGameManager.Instance != null && InGameManager.Instance.EventManager != null)
-        {
-            Event tutorial = InGameManager.Instance.EventManager.GetFirstPlotTutorialEvent();
-            InGameManager.Instance.QueueImmediateEventAfterPlayerAction(tutorial);
-        }
-        AvailPlotSets[plotSet].use(index);
+        PlotSet usedPlotSet = AvailPlotSets[plotSet];
+        usedPlotSet.use(index);
 
         if (ActionRecordManager.Instance != null)
         {
             ActionRecordManager.Instance.RecordPlot(performer);
         }
         if (InGameManager.Instance != null) InGameManager.Instance.CompletePlayerAction(performer);
+        if (usedPlotSet.isAllUsed() && ReferenceEquals(AvailPlotSets[plotSet], usedPlotSet))
+        {
+            RerollPlotSet(plotSet);
+        }
     }
 
     public void RerollPlotSet(int plotSet = 0)

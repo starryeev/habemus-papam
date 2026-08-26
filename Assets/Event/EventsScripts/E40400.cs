@@ -16,8 +16,8 @@ public class E40400 : Event
         option1 = "눈을 감고 빗소리를 듣자.";
         option1Chance = 1f;
         option1Requirement = "-";
-        option1SuccessDescription = "몸과 마음이 치유되는 느낌이다.\n\n모든 후보의 체력 2 증가!\n다음 턴 행동 횟수 1회 증가!";
-        option1SuccessResult = "모든 후보의 체력 +2\n다음 턴 행동 횟수 +1";
+        option1SuccessDescription = "몸과 마음이 치유되는 느낌이다.\n\n모든 후보의 체력 2 증가!\n현재 턴 행동 횟수 1회 증가!";
+        option1SuccessResult = "모든 후보의 체력 +2\n현재 턴 행동 횟수 +1";
         option2 = "";
     }
 
@@ -39,7 +39,8 @@ public class E40400 : Event
         {
             cardinal.ChangeHp(2f);
         }
-        InGameManager.Instance.QueueNextTurnActionDelta(1);
+        InGameManager.Instance.ChangeCurrentTurnActions(1,
+            PlayerActionEffectSourceType.Event, eventID, eventName);
 
         return true;
     }

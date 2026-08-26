@@ -15,19 +15,20 @@ public class I004 : Item
         usageType = ItemUsageType.Passive;
 
         itemName = "금으로 만든 성배";
-        itemDescription = "이 잔으로 미사를 드리자 추기경들의 눈길이 쏠린다. 럭셔리하니까!";
-        itemEffectDescription = "이번 콘클라베 동안 연설 시 정치력 회복량 10 증가";
+        itemDescription = "이 잔으로 미사를 드리자 장로들의 눈길이 쏠린다. 럭셔리하니까!";
+        itemEffectDescription = "오늘 연설 시 <color=#4488FF>정치력</color> 획득량 <color=#66CCFF>+2</color> 증가";
 
-        influenceDelta = 1;
+        influenceDelta = 2;
     }
 
     public override void OnSpeech(Cardinal owner)
     {
-        float beforeInf = owner.Influence;
-
         // 정치력 증가 적용
         owner.ChangeInfluence(influenceDelta);
+    }
 
-        Debug.Log($"[아이템 효과 발동] 금성배 연설: 정치력 {beforeInf} -> {owner.Influence} (변화량: +{influenceDelta})");
+    public override float PreviewSpeechInfluenceAfterAction(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta + influenceDelta;
     }
 }

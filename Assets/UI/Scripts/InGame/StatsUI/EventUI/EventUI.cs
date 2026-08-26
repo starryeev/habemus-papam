@@ -69,7 +69,6 @@ public class EventUI : MonoBehaviour
     {
         GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
         SetState(EventUIState.CHOICE);
-        Debug.Log("EventUI Set to" + InGameManager.Instance.GetCurrentEvent());
     }
     public void UISetEvent(string eventID = "11100")
     {
@@ -80,16 +79,13 @@ public class EventUI : MonoBehaviour
     public void ShowResult1()
     {
         SetState(EventUIState.RESULT1);
-        Debug.Log($"EventUI {InGameManager.Instance.GetCurrentEvent()} Result 1 Showing");
     }
     public void ShowResult2()
     {
         SetState(EventUIState.RESULT2);
-        Debug.Log($"EventUI Result 2 {InGameManager.Instance.GetCurrentEvent()} Showing");
     }
     public void Close()
     {
-        Debug.Log("EventUI.Close");
         SetState(EventUIState.NONE);
         if (InGameManager.Instance != null)
         {

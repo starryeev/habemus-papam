@@ -19,31 +19,22 @@ public class I005 : Item
 
         itemName = "태양주";
         itemDescription = "고향집 뒷산 포도밭에서 따온 포도를 대충 증류해서 만든 달달한 술";
-        itemEffectDescription = "이번 콘클라베 동안 기도 시 체력 회복량 두 배";
+        itemEffectDescription = "사용 시, 해당 날짜 기도 시 <color=#5BD65B>체력</color> <color=#66CCFF>+1</color> 추가 회복";
 
         prayerBonusHp = 1;
     }
 
     public override void OnUse()
     {
-        
-        Cardinal player = FindPlayer();
-        if (player != null)
-        {
-            Debug.Log("[아이템 사용] 캬! 태양주를 들이켰습니다. 아우 취한다.");
-        }
     }
 
     public override void OnPray(Cardinal owner)
     {
         owner.ChangeHp(prayerBonusHp);
-        Debug.Log($"[버프 효과] 그냥 태양주의 기운! 기도 추가 회복: +{prayerBonusHp}");
     }
 
-    private Cardinal FindPlayer()
+    public override float PreviewPrayerHp(float originalDelta, GameBalance balance, bool isSuccess)
     {
-        if (InventoryManager.Instance != null) return InventoryManager.Instance.Player;
-        return null;
+        return originalDelta + prayerBonusHp;
     }
-
 }

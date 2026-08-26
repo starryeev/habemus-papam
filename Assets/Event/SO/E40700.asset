@@ -29,17 +29,14 @@ MonoBehaviour:
   option1: "\uC544\uB2C8\uB2E4 \uC774 \uC545\uB9C8\uC57C!"
   option1Chance: 1
   option1Requirement: "경건함 6 이상"
-  option1SuccessDescription: "\uB098\uC758 \uB2A5\uB825\uC744 \uC870\uC2EC\uD558\uB77C,
-    \uC194\uB77C \uB79C\uD134 \uBE5B!\n\uBA38\uB9AC\uC5D0\uC11C \uB098\uC628 \uCC2C\uB780\uD55C
-    \uAD11\uD718\uC5D0 \uC545\uB9C8\uB294 \uC800\uD56D\uB3C4 \uBABB\uD558\uACE0 \uC2A4\uB7EC\uC84C\uB2E4.\n\n\uCCB4\uB825
-    100 \uC99D\uAC00!"
+  option1SuccessDescription: "나의 능력을 조심하라, 솔라 랜턴 빛! 찬란한 광휘에 악마는 저항도 못하고 스러졌다.\n\n체력 10 증가!"
   option1SuccessResult: "체력 +10"
   option1FailDescription: 
   option1FailResult: 
   option2: "\uD760, \uB4E3\uACE0 \uBCF4\uB2C8 \uB9DE\uB294 \uB9D0\uC774\uAD70. \uBC18\uBC15\uD560
     \uC218\uAC00 \uC5C6\uB2E4."
   option2Chance: 1
-  option2SuccessDescription: "역사는 반복되고 사람은 끊임없이 멍청한 짓을 한다.\n\n체력 2 감소!\n다음 턴 행동 횟수 1회 감소!"
-  option2SuccessResult: "체력 -2\n다음 턴 행동 횟수 -1"
+  option2SuccessDescription: "역사는 반복되고 사람은 끊임없이 멍청한 짓을 한다.\n\n체력 2 감소!\n현재 턴 행동 횟수 1회 감소!"
+  option2SuccessResult: "체력 -2\n현재 턴 행동 횟수 -1"
   option2FailDescription: 
   option2FailResult: 

@@ -186,13 +186,11 @@ public class PlotUI : MonoBehaviour
 
             if (pm.AvailPlotSets[0].isUsed[i])
             {
-                Debug.Log($"{i}번 공작 사용됨");
                 plotPanels[i].color = new Color(0.8f, 0.8f, 0.8f);
                 plotUseButtons[i].interactable = false;
             }
             else
             {
-                Debug.Log($"{i}번 공작사용안됨");
                 plotPanels[i].color = new Color(1f, 1f, 1f);
 
                 UpdatePlotButtonState(i);
@@ -288,8 +286,6 @@ public class PlotUI : MonoBehaviour
         var pm = PlotManager.Instance;
 
         pm.UsePlot(0, index);
-
-        Debug.Log($"{index}번째 공작 사용");
 
         OnClickClose();
     }

@@ -15,18 +15,18 @@ public class E40500 : Event
 
         option1 = "집으로 수행원을 보낸다.";
         option1Chance = 0.8f;
-        option1Requirement = "정치력 40 이상";
-        option1SuccessDescription = "진짜 불이 켜져 있었다!\n휴, 하마터면 집 통째로 태양께 봉헌할 뻔했네.\n\n정치력 15 감소!\n경건함 10 감소!";
-        option1SuccessResult = "정치력 - 15\n경건함 - 10";
+        option1Requirement = "정치력 4 이상";
+        option1SuccessDescription = "진짜 불이 켜져 있었다! 하마터면 집을 통째로 태양께 봉헌할 뻔했다.\n\n정치력 2 감소!\n경건함 1 감소!";
+        option1SuccessResult = "정치력 -2\n경건함 -1";
         option1FailDescription = "걱정은 기우였다.\n무안해진 당신은 다음에 수행원에게 밥 한 끼 사주리라 다짐했다!\n\n아무 일도 일어나지 않았다.";
         option1FailResult = "-";
 
         option2 = "뭐 손 쓸 수단이 없다.\n이 일을 마치고 빨리 가보는 수밖에.";
         option2Chance = 0.8f;
-        option2SuccessDescription = "와장창!\n집중력이 흐트러진 나머지 실수를 해버렸다!\n\n다음 턴 행동 횟수 1회 증가!";
-        option2SuccessResult = "다음 턴 행동 횟수 +1";
-        option2FailDescription = "어지러웠지만 신심으로 마음을 가라앉혔다.\n당신의 정신력은 많은 추기경들의 귀감이 되었다!\n\n정치력 5 증가!";
-        option2FailResult = "정치력 + 5";
+        option2SuccessDescription = "와장창!\n집중력이 흐트러진 나머지 실수를 해버렸다!\n\n현재 턴 행동 횟수 1회 증가!";
+        option2SuccessResult = "현재 턴 행동 횟수 +1";
+        option2FailDescription = "어지러웠지만 신심으로 마음을 가라앉혔다. 당신의 정신력은 많은 장로의 귀감이 되었다.\n\n정치력 1 증가!";
+        option2FailResult = "정치력 +1";
     }
 
     public override bool CanChoiceOption1(Cardinal performer)
@@ -60,8 +60,8 @@ public class E40500 : Event
 
         if(Random.value <= option2Chance)
         {
-            // 이벤트 단계에서는 현재 턴의 행동이 이미 끝났으므로 다음 플레이 가능 턴에 이월한다.
-            InGameManager.Instance.QueueNextTurnActionDelta(1);
+            InGameManager.Instance.ChangeCurrentTurnActions(1,
+                PlayerActionEffectSourceType.Event, eventID, eventName);
             return true;
         }
 

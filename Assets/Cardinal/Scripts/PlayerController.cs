@@ -152,6 +152,12 @@ public class PlayerController : MonoBehaviour, ICardinalController
             return;
         }
 
+        bool isSchemeNpc = npcState.CurrentState == CardinalState.Scheme || npcState.IsSchemer;
+        if (isSchemeNpc && InGameManager.Instance != null && InGameManager.Instance.IsInitialTutorialLocked)
+        {
+            return;
+        }
+
         if (npcState.CurrentState == CardinalState.ChatMaster ||
             npcState.CurrentState == CardinalState.Chatting)
         {
@@ -164,7 +170,7 @@ public class PlayerController : MonoBehaviour, ICardinalController
             return;
         }
 
-        string sfxName = npcState.CurrentState == CardinalState.Scheme || npcState.IsSchemer
+        string sfxName = isSchemeNpc
             ? SchemeContactSfxName
             : PushSfxName;
 

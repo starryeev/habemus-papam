@@ -16,7 +16,7 @@ class EventResult : MonoBehaviour
     {
         ButtonText.text = "확인";
         currentEvent = evt;
-        title.text = evt.eventName;
+        title.text = evt.ResolveDisplayText(evt.eventName);
         bool succeeded;
 
         if(result == 1)
@@ -24,13 +24,13 @@ class EventResult : MonoBehaviour
             succeeded = evt.OnChoiceOption1(UIManager.Instance.Ingame.Stats.LinkedCardinals[0]);
             if(succeeded)
             {
-                text.text = evt.option1SuccessDescription;
-                this.result.text = evt.option1SuccessResult;
+                text.text = evt.ResolveDisplayText(evt.option1SuccessDescription);
+                this.result.text = evt.ResolveDisplayText(evt.option1SuccessResult);
             }
             else
             {
-                text.text = evt.option1FailDescription;
-                this.result.text = evt.option1FailResult;
+                text.text = evt.ResolveDisplayText(evt.option1FailDescription);
+                this.result.text = evt.ResolveDisplayText(evt.option1FailResult);
             }
         }
         else if(result == 2)
@@ -38,13 +38,13 @@ class EventResult : MonoBehaviour
             succeeded = evt.OnChoiceOption2(UIManager.Instance.Ingame.Stats.LinkedCardinals[0]);
             if(succeeded)
             {
-                text.text = evt.option2SuccessDescription;
-                this.result.text = evt.option2SuccessResult;
+                text.text = evt.ResolveDisplayText(evt.option2SuccessDescription);
+                this.result.text = evt.ResolveDisplayText(evt.option2SuccessResult);
             }
             else
             {
-                text.text = evt.option2FailDescription;
-                this.result.text = evt.option2FailResult;
+                text.text = evt.ResolveDisplayText(evt.option2FailDescription);
+                this.result.text = evt.ResolveDisplayText(evt.option2FailResult);
             }
         }
         else

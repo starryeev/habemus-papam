@@ -100,7 +100,10 @@ public class Cardinal : MonoBehaviour
                     InGameManager.Instance.HandlePlayerHpReachedZero(this);
                 }
 
-                Debug.Log($"[{gameObject.name}] 체력이 0이 되어 기절했습니다!");
+                if (CardinalManager.Instance != null && CardinalManager.Instance.StatsUI != null)
+                {
+                    CardinalManager.Instance.StatsUI.RefreshVisualOrder();
+                }
             }
         }
         else if (hp > 0f)
@@ -422,6 +425,62 @@ public class Cardinal : MonoBehaviour
         items.Clear();
     }
 
+    public void GetPrayerDeltaPreview(GameBalance balance, bool isSuccess, out float pietyDelta, out float hpDelta)
+    {
+        if (balance == null)
+        {
+            pietyDelta = 0f;
+            hpDelta = 0f;
+            return;
+        }
+
+        pietyDelta = isSuccess ? balance.PraySuccessDeltaPiety : balance.PrayFailDeltaPiety;
+        hpDelta = isSuccess ? balance.PraySuccessDeltaHp : balance.PrayFailDeltaHp;
+
+        foreach (Item item in items)
+        {
+            if (item == null) continue;
+            pietyDelta = item.PreviewPrayerPiety(pietyDelta, balance, isSuccess);
+            hpDelta = item.PreviewPrayerHp(hpDelta, balance, isSuccess);
+        }
+
+        if (hpDelta > 0f && items.Exists(item => item is I001))
+        {
+            hpDelta = 0f;
+        }
+    }
+
+    public void GetSpeechDeltaPreview(
+        GameBalance balance,
+        bool isSuccess,
+        float baseInfluenceDelta,
+        out float influenceDelta,
+        out float hpDelta)
+    {
+        if (balance == null)
+        {
+            influenceDelta = 0f;
+            hpDelta = 0f;
+            return;
+        }
+
+        influenceDelta = baseInfluenceDelta;
+        hpDelta = isSuccess ? balance.SpeechSuccessDeltaHp : balance.SpeechFailDeltaHp;
+
+        foreach (Item item in items)
+        {
+            if (item == null) continue;
+            influenceDelta = item.PreviewSpeechInfluence(influenceDelta, balance, isSuccess);
+            hpDelta = item.PreviewSpeechHp(hpDelta, balance, isSuccess);
+        }
+
+        foreach (Item item in items)
+        {
+            if (item == null) continue;
+            influenceDelta = item.PreviewSpeechInfluenceAfterAction(influenceDelta, balance, isSuccess);
+        }
+    }
+
     public void Pray()
     {
         if (InGameManager.Instance == null || !InGameManager.Instance.CanPerformPlayerAction(this))
@@ -438,14 +497,14 @@ public class Cardinal : MonoBehaviour
         ResolvePrayer(InGameManager.Instance.Balance.PraySuccessChance, CompareTag("Player"));
     }
 
-    public void PerformNpcPrayer(float successChance)
+    public bool PerformNpcPrayer(float successChance)
     {
-        ResolvePrayer(Mathf.Clamp01(successChance), false);
+        return ResolvePrayer(Mathf.Clamp01(successChance), false);
     }
 
-    private void ResolvePrayer(float successChance, bool completePlayerAction)
+    private bool ResolvePrayer(float successChance, bool completePlayerAction)
     {
-        if (InGameManager.Instance == null) return;
+        if (InGameManager.Instance == null) return false;
 
         GameBalance balance = InGameManager.Instance.Balance;
         bool guaranteedSuccess = completePlayerAction && InGameManager.Instance.EventManager != null &&
@@ -489,8 +548,10 @@ public class Cardinal : MonoBehaviour
         if (completePlayerAction)
         {
             GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
-            InGameManager.Instance.CompletePlayerAction(this);
+            InGameManager.Instance.CompletePlayerAction(this, NPCBehaviour.Pray);
         }
+
+        return success;
     }
 
     public void Speech()
@@ -504,14 +565,14 @@ public class Cardinal : MonoBehaviour
         ResolveSpeech(InGameManager.Instance.GetSpeechSuccessChance(this), CompareTag("Player"));
     }
 
-    public void PerformNpcSpeech(float successChance)
+    public bool PerformNpcSpeech(float successChance)
     {
-        ResolveSpeech(Mathf.Clamp01(successChance), false);
+        return ResolveSpeech(Mathf.Clamp01(successChance), false);
     }
 
-    private void ResolveSpeech(float successChance, bool completePlayerAction)
+    private bool ResolveSpeech(float successChance, bool completePlayerAction)
     {
-        if (InGameManager.Instance == null) return;
+        if (InGameManager.Instance == null) return false;
 
         GameBalance balance = InGameManager.Instance.Balance;
         bool guaranteedSuccess = completePlayerAction && InGameManager.Instance.EventManager != null &&
@@ -592,8 +653,10 @@ public class Cardinal : MonoBehaviour
         if (completePlayerAction)
         {
             GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
-            InGameManager.Instance.CompletePlayerAction(this);
+            InGameManager.Instance.CompletePlayerAction(this, NPCBehaviour.Speech);
         }
+
+        return success;
     }
 
     public void OnPlotExecuted()

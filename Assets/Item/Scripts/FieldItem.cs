@@ -19,12 +19,7 @@ public class FieldItem : MonoBehaviour
 
                 if (isAdded)
                 {
-                    Debug.Log($"[아이템 획득] {itemData.itemName}");
                     Destroy(gameObject);
-                }
-                else
-                {
-                    Debug.Log("인벤토리가 가득 찼습니다.");
                 }
             }
         }

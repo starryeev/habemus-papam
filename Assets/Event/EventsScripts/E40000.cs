@@ -15,16 +15,16 @@ public class E40000 : Event
 
         option1 = "흠... 아무리 봐도 수상하다.\n주위를  살피며 조심히 돌아서 가자.";
         option1Chance = 1f;
-        option1Requirement = "경건함 50 이상";
-        option1SuccessDescription = "오늘도 무사히 산책을 마쳤다.\n이 또한 태양신의 은혜겠지요.\n\n체력 15 증가!\n경건함 5 증가!";
-        option1SuccessResult = "체력 + 15\n경건함 + 5";
+        option1Requirement = "경건함 5 이상";
+        option1SuccessDescription = "오늘도 무사히 산책을 마쳤다. 이 또한 태양신의 은혜겠지요.\n\n체력 2 증가!\n경건함 1 증가!";
+        option1SuccessResult = "체력 +2\n경건함 +1";
         option1FailDescription = "-";
         option1FailResult = "-";
 
         option2 = "돌다리는 나약한 자나 두들겨 보는 것이다.\n그냥 가자.";
         option2Chance = 1f;
-        option2SuccessDescription = "미끄덩... 첨벙!\n이런, 원치 않은 반신욕 덕에 몸이 무거워졌다.\n\n체력 10 감소!\n이번 썬ㅡ클라베 종료까지 이동 속도 15% 감소!";
-        option2SuccessResult = "체력 - 10\n콘클라베 종료까지 이동 속도 - 15%";
+        option2SuccessDescription = "미끄러져 물에 빠지고 몸이 무거워졌다.\n\n체력 1 감소!\n현재 턴 행동 횟수 1회 감소!";
+        option2SuccessResult = "체력 -1\n현재 턴 행동 횟수 -1";
     }
 
     public override bool CanChoiceOption1(Cardinal performer)
@@ -59,7 +59,8 @@ public class E40000 : Event
         if(Random.value <= option2Chance)
         {
             performer.ChangeHp(-1f);
-            InGameManager.Instance.QueueNextTurnActionDelta(-1);
+            InGameManager.Instance.ChangeCurrentTurnActions(-1,
+                PlayerActionEffectSourceType.Event, eventID, eventName);
             return true;
         }
 

@@ -76,6 +76,8 @@ public class Lecture : MonoBehaviour
     {
         if (speechList.Contains(playerSC) || currentSpeaker == playerSC || overflowPlayer == playerSC) return;
         if (playerSC == null || !playerSC.CanAcceptManualInteraction()) return;
+        if (InGameManager.Instance != null &&
+            !InGameManager.Instance.CanStartPlayerWorldAction(NPCBehaviour.Speech, playerSC)) return;
 
         if (CanPlayerGoDirectlyToSpeech(playerSC))
         {
@@ -113,6 +115,8 @@ public class Lecture : MonoBehaviour
         {
             return false;
         }
+        if (InGameManager.Instance != null &&
+            !InGameManager.Instance.CanStartPlayerWorldAction(NPCBehaviour.Speech, playerSC)) return false;
 
         CancelPlayerRegistration(playerSC);
 

@@ -55,8 +55,6 @@ public class P021 : Plot
 
         PayCost(performer);
 
-        Debug.Log("P021 사용");
-
         InGameManager gameManager = InGameManager.Instance;
         if (gameManager == null) return;
 

@@ -22,6 +22,54 @@ public class PopeListHistoryPresenter : MonoBehaviour
 
     public bool IsBrowsing { get; private set; }
     public Sprite CurrentCenterPortrait { get; private set; }
+    public string LatestPopeDisplayName { get; private set; } = string.Empty;
+
+    public static bool TryGetLatestPopeHeadline(out string headline)
+    {
+        headline = string.Empty;
+
+        if (ActionRecordManager.Instance == null)
+        {
+            return false;
+        }
+
+        IReadOnlyList<PapalElectionRecordSaveData> records =
+            ActionRecordManager.Instance.GetPersistentPapalElectionHistory();
+
+        if (records == null || records.Count == 0)
+        {
+            return false;
+        }
+
+        PapalElectionRecordSaveData latestRecord = records[records.Count - 1];
+        if (latestRecord == null)
+        {
+            return false;
+        }
+
+        string popeName = latestRecord.popeName?.Trim() ?? string.Empty;
+        string baseName = RegnalSuffixPattern.Replace(popeName, string.Empty).Trim();
+        if (string.IsNullOrEmpty(baseName))
+        {
+            return false;
+        }
+
+        int regnalNumber = 0;
+        foreach (PapalElectionRecordSaveData record in records)
+        {
+            string recordName = record?.popeName?.Trim() ?? string.Empty;
+            if (string.Equals(
+                    RegnalSuffixPattern.Replace(recordName, string.Empty).Trim(),
+                    baseName,
+                    StringComparison.Ordinal))
+            {
+                regnalNumber++;
+            }
+        }
+
+        headline = $"제 {records.Count}대 교주 ({baseName}) {regnalNumber}세 서거";
+        return true;
+    }
 
     public void Initialize(
         IReadOnlyList<Button> frameButtons,
@@ -138,6 +186,7 @@ public class PopeListHistoryPresenter : MonoBehaviour
     private void BuildDisplayNames()
     {
         displayNames.Clear();
+        LatestPopeDisplayName = string.Empty;
 
         var baseNames = new List<string>(history.Count);
         var hadSuffixes = new List<bool>(history.Count);
@@ -178,6 +227,58 @@ public class PopeListHistoryPresenter : MonoBehaviour
             bool showRegnalNumber = hadSuffixes[i] || totals[baseName] > 1;
             displayNames.Add(showRegnalNumber ? $"{baseName} {occurrence}세" : baseName);
         }
+
+        if (history.Count > 0)
+        {
+            PapalElectionRecordSaveData latestRecord = history[history.Count - 1];
+            string latestName = latestRecord != null ? latestRecord.popeName?.Trim() : string.Empty;
+
+            if (!string.IsNullOrEmpty(latestName) && latestRecord != null && latestRecord.generation > 0)
+            {
+                LatestPopeDisplayName = $"{latestName} {ToRomanNumeral(latestRecord.generation)}";
+            }
+            else
+            {
+                LatestPopeDisplayName = latestName;
+            }
+        }
+    }
+
+    private static string ToRomanNumeral(int value)
+    {
+        if (value <= 0)
+        {
+            return string.Empty;
+        }
+
+        var numerals = new (int Value, string Symbol)[]
+        {
+            (1000, "M"),
+            (900, "CM"),
+            (500, "D"),
+            (400, "CD"),
+            (100, "C"),
+            (90, "XC"),
+            (50, "L"),
+            (40, "XL"),
+            (10, "X"),
+            (9, "IX"),
+            (5, "V"),
+            (4, "IV"),
+            (1, "I"),
+        };
+
+        var result = new System.Text.StringBuilder();
+        foreach ((int numeralValue, string symbol) in numerals)
+        {
+            while (value >= numeralValue)
+            {
+                result.Append(symbol);
+                value -= numeralValue;
+            }
+        }
+
+        return result.ToString();
     }
 
     private void Render()

@@ -49,7 +49,8 @@ public class P022 : Plot
 
         if (performer != null && performer.CompareTag("Player"))
         {
-            InGameManager.Instance.AddCurrentTurnActions(2);
+            InGameManager.Instance.AddCurrentTurnActions(2,
+                PlayerActionEffectSourceType.Plot, plotID, plotName);
         }
     }
 

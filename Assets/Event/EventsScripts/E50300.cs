@@ -16,8 +16,8 @@ public class E50300 : Event
         option1 = "아니요. 그런 게 아니라....";
         option1Chance = 1f;
         option1Requirement = "-";
-        option1SuccessDescription = "궁지에 몰린 당신! 그때 당신을 위해 몇몇 추기경이 나섰다!\n그야말로 '신들린' 세이브였다!\n\n정치력 15 증가";
-        option1SuccessResult = "정치력 +15";
+        option1SuccessDescription = "궁지에 몰린 당신을 위해 몇몇 장로가 나섰다. 그야말로 신들린 세이브였다!\n\n정치력 2 증가!";
+        option1SuccessResult = "정치력 +2";
         option2 = "";
     }
 

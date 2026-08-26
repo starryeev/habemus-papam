@@ -362,7 +362,6 @@ MonoBehaviour:
   masterAlertBubblePrefab: {fileID: 6928995857789074070, guid: d553432ab88609b438ec793def78a7ba, type: 3}
   prayingBubblePrefab: {fileID: 8144235865602989633, guid: cb5d69de717b5254d9513704cec63ade, type: 3}
   SpeechingBubblePrefab: {fileID: 7420857138657768832, guid: 1dffa87288485bc43ac97834b819a969, type: 3}
-  bubbleOffset: {x: 0, y: 1, z: 0}
   prayDuration: 7
   speechDuration: 7
 --- !u!195 &7058176528115609993

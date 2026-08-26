@@ -32,13 +32,8 @@ MonoBehaviour:
   option1: "\uC131\uC804\uB9CC\uD07C\uC740 \uB9C9\uC544\uC57C \uD55C\uB2E4!"
   option1Chance: 1
   option1Requirement: "경건함 5 이상"
-  option1SuccessDescription: "\uB048\uC9C8\uAE34 \uC124\uB4DD \uB05D\uC5D0, \uC6D0\uB300\uD55C
-    \uAD70\uC0AC \uC791\uC804\uC740 \uACBD\uC81C \uC7AC\uC81C\uC640 \uC678\uAD50\uC801
-    \uD56D\uC758\uB85C \uCD95\uC18C\uB418\uC5C8\uB2E4!\n\uAD50\uB2E8\uC774 \uD3C9\uD654\uB97C
-    \uB418\uCC3E\uC558\uB2E4! \uB2F9\uC2E0\uC740 \uD3C9\uD654\uC758 \uC0AC\uB3C4\uB85C\uC11C
-    \uD070 \uC874\uACBD\uC744 \uBC1B\uAC8C \uB418\uC5C8\uB2E4! \uC88B\uC740 \uAC74\uAC00?\n\n\uACBD\uAC74\uD568
-    20 \uC99D\uAC00!\n\uC815\uCE58\uB825 15 \uC99D\uAC00!"
-  option1SuccessResult: "\uACBD\uAC74\uD568 +20\n\uC815\uCE58\uB825 +15"
+  option1SuccessDescription: "끈질긴 설득 끝에 군사 작전은 외교적 항의로 축소되었다. 당신은 평화의 사도로서 존경을 받았다.\n\n경건함 2 증가!\n정치력 2 증가!"
+  option1SuccessResult: "경건함 +2\n정치력 +2"
   option1FailDescription: 
   option1FailResult: 
   option2: "(\uD6C4\uBCF4 1) \uAD50\uC8FC \uC2DC\uD0A4\uACE0 \uB098\uB294 \uC740\uD1F4\uB098

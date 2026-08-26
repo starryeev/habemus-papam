@@ -12,12 +12,11 @@ public class I012 : Item
 
         itemName = "연막탄";
         itemDescription = "굴뚝에 몰래 넣어서 연기 색깔을 바꾼다!\n무슨 색인지는 모르겠지만 검정이면 좋겠다...";
-        itemEffectDescription = "교황 선출 시 (100 - 경건함)%의 확률로 당선 방어 (아이템 소모)";
+        itemEffectDescription = "교주로 선출될 때 <b>(10 - 현재 <color=#FFD84D>경건함</color>) × 10%</b> 확률로 당선을 막고 소멸";
     }
 
     public override void OnAcquire()
     {
-        Debug.Log("[아이템] 연막탄 획득: 선출 시 자동으로 작동 대기합니다.");
     }
 
     public bool TryDefendElection(float playerPiety)
@@ -27,12 +26,9 @@ public class I012 : Item
 
         if (roll < defenseChance)
         {
-            Debug.Log($"<color=yellow>[아이템 효과]</color> 연막탄 작동 성공! (확률: {defenseChance:F1}%)");
             ConsumeItem(); 
             return true; 
         }
-
-        Debug.Log($"<color=red>[아이템 효과]</color> 연막탄이 불발되었습니다. (확률: {defenseChance:F1}%)");
 
         return false;
     }

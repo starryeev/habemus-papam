@@ -17,9 +17,7 @@ MonoBehaviour:
   itemDescription: "\uC774\uAC78 \uD3ED\uB85C\uD574\uC11C \uBAA8\uB450\uC758 \uB208\uAE38\uC744
     \uB3CC\uB9AC\uBA74 \uC790\uC5F0\uC2A4\uB7FD\uAC8C \uAD50\uD669 \uC790\uB9AC\uB97C
     \uD53C\uD560 \uC218 \uC788\uB2E4!"
-  itemEffectDescription: "\uC0AC\uC6A9\uD55C \uCF58\uD074\uB77C\uBCA0 \uB3D9\uC548
-    \uC5F0\uC124 \uC2DC \uC815\uCE58\uB825 \uB300\uC2E0 \uCCB4\uB825\uACFC \uACBD\uAC74\uD568\uC744
-    10\uC529 \uD68C\uBCF5"
+  itemEffectDescription: "사용한 썬ㅡ클라베 동안 연설 <color=#4488FF>정치력</color> 변화량 <color=#FF4D4D>0</color>으로 고정, <color=#5BD65B>체력</color>과 <color=#FFD84D>경건함</color> 각각 <color=#66CCFF>+1</color> 회복."
   itemImage: {fileID: 6527845173001157465, guid: 2550094c5d260f34f86d67d9b05643eb, type: 3}
   itemGrade: 1
   itemExpirationType: 0

@@ -17,8 +17,7 @@ MonoBehaviour:
   itemDescription: "\uBE44\uBC00\uC758 \uACE0\uB300 \uBB38\uC790\uB85C \uB41C \uBE44\uBC00
     \uBA54\uC138\uC9C0\uB97C \uB2F4\uACE0 \uC788\uB294 \uC544\uC8FC \uBE44\uBC00\uC2A4\uB7EC\uC6B4
     \uD669\uAE08 \uD310\uC774\uB2E4. \uADF8 \uB0B4\uC6A9\uC740 \uBE44\uBC00\uC774\uB2E4."
-  itemEffectDescription: "\uC544\uC774\uD15C \uCC3D \uD55C \uCE78\uC744 \uCC28\uC9C0\uD558\uACE0
-    \uC788\uC74C. \uBE5B\uC774 \uB0A8."
+  itemEffectDescription: "별도 효과 없이 아이템 창 한 칸 차지. 빛이 남."
   itemImage: {fileID: 896916981497446641, guid: a9568c1e7966e2a4185dc2f83a7b8571, type: 3}
   itemGrade: 0
   itemExpirationType: 2

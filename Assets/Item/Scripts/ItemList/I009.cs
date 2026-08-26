@@ -24,7 +24,7 @@ public class I009 : Item
         itemID = "I009";
         itemName = "게르마늄 태양 팔찌";
         itemDescription = "태양의 에너지 덕분인지 게르마늄의 원적외선 덕분인지, 몸이 홀가분해졌다!";
-        itemEffectDescription = "기도 시 경건함 회복량 5 증가, 체력 0일 시 기절 1회 방어 및 30으로 회복";
+        itemEffectDescription = "기도 시 <color=#FFD84D>경건함</color> <color=#66CCFF>+1</color> 추가 획득. <color=#5BD65B>체력</color>이 0이 될 때 한 번 기절을 막고 <color=#5BD65B>체력</color> <color=#66CCFF>+3</color> 회복";
 
         itemGrade = ItemGrade.Rare;
         itemExpirationType = ItemExpirationType.Permanent;
@@ -42,9 +42,12 @@ public class I009 : Item
 
     public override void OnPray(Cardinal owner)
     {
-        float beforePiety = owner.Piety;
         owner.ChangePiety(pietyBonus);
-        Debug.Log($"[아이템 효과] 게르마늄 팔찌: 경건함 {beforePiety} -> {owner.Piety}");
+    }
+
+    public override float PreviewPrayerPiety(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta + pietyBonus;
     }
 
     public override bool OnHpReachedZero(Cardinal owner)
@@ -54,8 +57,6 @@ public class I009 : Item
             hasUsedRevive = true; 
 
             owner.ChangeHp(reviveHpAmount); // 체력 30 회복
-
-            Debug.Log($"[아이템 효과 발동!!] 게르마늄의 힘으로 기절을 극복했습니다! 체력 회복: {reviveHpAmount}");
 
             return true; 
         }

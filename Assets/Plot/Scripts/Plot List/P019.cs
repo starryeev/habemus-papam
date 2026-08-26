@@ -48,25 +48,13 @@ public class P019 : Plot
 
         PayCost(performer);
 
-        var cm = CardinalManager.Instance;
-
-        int highestHpCardinal = 0;
-
-        for (int i = 1; i < 3; i++)
+        if (InGameManager.Instance != null)
         {
-            if (cm.Cardinals[highestHpCardinal].Hp < cm.Cardinals[i].Hp)
-            {
-                highestHpCardinal = i;
-            }
-        }
-
-
-        Cardinal target = cm.Cardinals[highestHpCardinal];
-
-        if (target != null)
-        {
-            if (target.CompareTag("Player")) InGameManager.Instance.BlockPlayerTurnActions();
-            else Debug.Log("[Turn] NPC 행동 슬롯 시스템 도입 전까지 P019 행동 불가 효과는 보류됩니다.");
+            InGameManager.Instance.BlockPlayerActions(2,
+                PlayerActionEffectSourceType.Plot, plotID, plotName,
+                PlayerActionEffectPersistence.CurrentDay, true);
+            for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+                InGameManager.Instance.BlockNpcNextTurnActions(candidateNumber, 2);
         }
     }
 

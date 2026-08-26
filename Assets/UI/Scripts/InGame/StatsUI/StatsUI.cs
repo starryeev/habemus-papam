@@ -49,6 +49,108 @@ public class StatsUI : MonoBehaviour
         return Array.IndexOf(linkedCardinals, candidate);
     }
 
+    public string GetDisplayName(int linkedIndex)
+    {
+        if (linkedIndex < 0 || linkedIndex >= linkedCardinals.Length)
+        {
+            return string.Empty;
+        }
+
+        GameNameSaveData names = SaveManager.Instance != null
+            ? SaveManager.Instance.CurrentGameNames
+            : null;
+
+        if (names != null)
+        {
+            if (linkedIndex == 0 && !string.IsNullOrWhiteSpace(names.playerName))
+            {
+                return names.playerName;
+            }
+
+            int npcIndex = linkedIndex - 1;
+            if (npcIndex >= 0 && names.npcNames != null &&
+                npcIndex < names.npcNames.Count &&
+                !string.IsNullOrWhiteSpace(names.npcNames[npcIndex]))
+            {
+                return names.npcNames[npcIndex];
+            }
+        }
+
+        Cardinal cardinal = linkedCardinals[linkedIndex];
+        return cardinal != null ? cardinal.name : string.Empty;
+    }
+
+    public string ResolveCandidateNames(string source, int randomCandidateNumber)
+    {
+        if (string.IsNullOrEmpty(source))
+        {
+            return source;
+        }
+
+        string resolved = source;
+        string randomName = GetDisplayName(randomCandidateNumber);
+        if (!string.IsNullOrEmpty(randomName))
+        {
+            resolved = resolved
+                .Replace("(랜덤후보)", randomName)
+                .Replace("(랜덤 후보)", randomName)
+                .Replace("(랜덤) 후보", randomName)
+                .Replace("(후보 n)", randomName)
+                .Replace("(후보n)", randomName)
+                .Replace("랜덤후보", randomName)
+                .Replace("랜덤 후보", randomName)
+                .Replace("후보 n", randomName)
+                .Replace("후보n", randomName);
+        }
+
+        string candidate1 = GetDisplayName(1);
+        string candidate2 = GetDisplayName(2);
+        string candidate3 = GetDisplayName(3);
+        if (!string.IsNullOrEmpty(candidate1) &&
+            !string.IsNullOrEmpty(candidate2) &&
+            !string.IsNullOrEmpty(candidate3))
+        {
+            resolved = resolved.Replace(
+                "후보 1, 2, 3",
+                $"{candidate1}, {candidate2}, {candidate3}");
+        }
+
+        for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+        {
+            string displayName = GetDisplayName(candidateNumber);
+            if (string.IsNullOrEmpty(displayName))
+            {
+                continue;
+            }
+
+            resolved = resolved
+                .Replace($"(후보 {candidateNumber})", displayName)
+                .Replace($"(후보{candidateNumber})", displayName)
+                .Replace($"후보 {candidateNumber}", displayName)
+                .Replace($"후보{candidateNumber}", displayName);
+        }
+
+#if UNITY_EDITOR
+        if (!string.IsNullOrEmpty(randomName) &&
+            !string.IsNullOrEmpty(candidate1) &&
+            !string.IsNullOrEmpty(candidate2) &&
+            !string.IsNullOrEmpty(candidate3))
+        {
+            Debug.Assert(
+                !resolved.Contains("후보 n") &&
+                !resolved.Contains("후보n") &&
+                !resolved.Contains("랜덤후보") &&
+                !resolved.Contains("랜덤 후보") &&
+                !resolved.Contains("(후보 1)") &&
+                !resolved.Contains("(후보 2)") &&
+                !resolved.Contains("(후보 3)"),
+                $"이벤트 후보 이름 치환에 실패했습니다: {resolved}");
+        }
+#endif
+
+        return resolved;
+    }
+
     public void HideForConclaveEntrance()
     {
         EnsureCanvasGroup();
@@ -149,33 +251,17 @@ public class StatsUI : MonoBehaviour
 
     public void ApplySavedNames()
     {
-        if (SaveManager.Instance == null || StatsList == null)
+        if (StatsList == null)
         {
             return;
         }
 
-        GameNameSaveData names = SaveManager.Instance.CurrentGameNames;
-        if (names == null)
+        for (int i = 0; i < StatsList.Length; i++)
         {
-            return;
-        }
-
-        if (StatsList.Length > 0 && StatsList[0] != null)
-        {
-            StatsList[0].SetName(names.playerName);
-        }
-
-        if (names.npcNames == null)
-        {
-            return;
-        }
-
-        for (int i = 1; i < StatsList.Length; i++)
-        {
-            int npcIndex = i - 1;
-            if (StatsList[i] != null && npcIndex < names.npcNames.Count)
+            string displayName = GetDisplayName(i);
+            if (StatsList[i] != null && !string.IsNullOrEmpty(displayName))
             {
-                StatsList[i].SetName(names.npcNames[npcIndex]);
+                StatsList[i].SetName(displayName);
             }
         }
     }
@@ -193,6 +279,14 @@ public class StatsUI : MonoBehaviour
         else CalculateAndMoveStats();
     }
 
+    public void RefreshVisualOrder()
+    {
+        if (isInitialized && (closeup == null || !closeup.gameObject.activeSelf))
+        {
+            CalculateAndMoveStats();
+        }
+    }
+
     void CalculateAndMoveStats()
     {
         for (int i = 0; i < 4; i++)
@@ -208,21 +302,17 @@ public class StatsUI : MonoBehaviour
         for (int rank = 0; rank < 4; rank++)
         {
             int targetIndex = -1;
-            float highestVal = -10000f; 
 
             for (int i = 0; i < 4; i++)
             {
-                if (tempMaxStats[i] > highestVal)
+                if (tempMaxStats[i] <= -99999f)
                 {
-                    highestVal = tempMaxStats[i];
-                    targetIndex = i;
+                    continue;
                 }
-                else if(tempMaxStats[i] == highestVal)
+
+                if (targetIndex == -1 || HasHigherVisualPriority(i, targetIndex, tempMaxStats))
                 {
-                    if(SubStats[i] > SubStats[targetIndex])
-                    {
-                        targetIndex = i;
-                    }
+                    targetIndex = i;
                 }
             }
 
@@ -259,6 +349,28 @@ public class StatsUI : MonoBehaviour
                 tempMaxStats[targetIndex] = -99999f; 
             }
         }
+    }
+
+    private bool HasHigherVisualPriority(int candidateIndex, int currentIndex, float[] maxStats)
+    {
+        bool candidateIsActive = linkedCardinals[candidateIndex] != null &&
+            !linkedCardinals[candidateIndex].IsKnockedOut &&
+            linkedCardinals[candidateIndex].Hp > 0f;
+        bool currentIsActive = linkedCardinals[currentIndex] != null &&
+            !linkedCardinals[currentIndex].IsKnockedOut &&
+            linkedCardinals[currentIndex].Hp > 0f;
+
+        if (candidateIsActive != currentIsActive)
+        {
+            return candidateIsActive;
+        }
+
+        if (maxStats[candidateIndex] != maxStats[currentIndex])
+        {
+            return maxStats[candidateIndex] > maxStats[currentIndex];
+        }
+
+        return SubStats[candidateIndex] > SubStats[currentIndex];
     }
 
     //스탯 가져오기
@@ -329,7 +441,6 @@ public class StatsUI : MonoBehaviour
             closeup.gameObject.SetActive(true);
             closeupIndex = idx;
             closeup.SetCardinal(linkedCardinals[idx], closeupIndex);
-            Debug.Log($"Show Closeup for Cardinal Index: {idx}");
         }
     }
 
@@ -343,6 +454,5 @@ public class StatsUI : MonoBehaviour
 
         closeup.gameObject.SetActive(false);
         closeupIndex = -1;
-        Debug.Log("Hide Closeup");
     }
 }

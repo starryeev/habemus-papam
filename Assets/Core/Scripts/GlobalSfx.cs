@@ -20,6 +20,7 @@ public sealed class GlobalSfx : MonoBehaviour
         "ResetData",
         "Dict",
         "PopeList",
+        "Door",
     };
 
     private static GlobalSfx instance;
@@ -182,6 +183,11 @@ public sealed class GlobalSfx : MonoBehaviour
 
         if (sceneName == MainSceneName)
         {
+            if (buttonName == "Door")
+            {
+                return "Door";
+            }
+
             if (buttonName == "Start" &&
                 HasAncestor(button.transform, "WarningPopUp"))
             {

@@ -59,9 +59,6 @@ public class StateController : MonoBehaviour
     [Tooltip("연설(Speeching) 상태일 때 표시될 말풍선 프리팹")]
     [SerializeField] private GameObject SpeechingBubblePrefab;
 
-    [Tooltip("캐릭터 위치를 기준으로 말풍선이 생성될 오프셋 (높이 조절)")]
-    [SerializeField] private Vector3 bubbleOffset = new Vector3(0, 2.5f, 0);
-
     [Header("Pray 설정")]
     [Tooltip("기도 상태를 유지할 시간 (초)")]
     [SerializeField] private float prayDuration = 3.0f;
@@ -287,7 +284,7 @@ public class StateController : MonoBehaviour
                 if (chatSequenceCoroutine != null) StopCoroutine(chatSequenceCoroutine);
                 chatSequenceCoroutine = StartCoroutine(ProcessChatSequence());
 
-                ShowBubble(masterBubblePrefab); // 말풍선
+                ShowBubble(listenerBubblePrefab); // 말풍선
                 break;
 
             case CardinalState.Chatting:
@@ -391,6 +388,7 @@ public class StateController : MonoBehaviour
                 {
                     aiWanderCoroutine = StartCoroutine(AIWanderRoutine());
                 }
+                ShowBubble(masterBubblePrefab);
                 break;
         }
     }
@@ -499,6 +497,7 @@ public class StateController : MonoBehaviour
                     aiWanderCoroutine = null;
                 }
                 if (agent != null && agent.isOnNavMesh) agent.ResetPath();
+                HideBubble();
                 break;
         }
     }
@@ -806,7 +805,7 @@ public class StateController : MonoBehaviour
 
         if (prefab != null)
         {
-            currentBubbleInstance = Instantiate(prefab, transform.position + bubbleOffset, Quaternion.identity, transform);
+            currentBubbleInstance = Instantiate(prefab, transform, false);
         }
     }
 
@@ -943,13 +942,6 @@ public class StateController : MonoBehaviour
 
                     // 말풍선 교체
                     if (masterAlertBubblePrefab != null) ShowBubble(masterAlertBubblePrefab);
-
-                    // 정치력 감소
-                    Cardinal playerCardinal = playerObj.GetComponent<Cardinal>();
-                    if (playerCardinal != null)
-                    {
-                        playerCardinal.ChangeInfluence(-3f);
-                    }
                 }
             }
 
@@ -1009,8 +1001,6 @@ public class StateController : MonoBehaviour
         {
             RestoreStateAfterAction();
         }
-
-        Debug.Log("이동 시퀀스 강제 중단됨.");
     }
 
     public void ForceCompletePrayer()
@@ -1290,12 +1280,13 @@ public class StateController : MonoBehaviour
         yield return StartCoroutine(WaitForActionDestination(
             "연설 대기 위치",
             () => !IsHeadingToSpeech,
-            result => reachedSpeechQueuePoint = result));
+            result => reachedSpeechQueuePoint = result,
+            false));
 
         if (!reachedSpeechQueuePoint)
         {
             speechSequenceCoroutine = null;
-            AbortActionSequence("연설 대기 위치 접근이 중단되었거나 실패했습니다.");
+            AbortActionSequence("연설 대기 위치 접근이 중단되었거나 실패했습니다.", false);
             yield break;
         }
 
@@ -1414,7 +1405,7 @@ public class StateController : MonoBehaviour
 
         if (active)
         {
-            if (spriteRenderer != null) spriteRenderer.color = Color.blue;
+            if (spriteRenderer != null) spriteRenderer.color = new Color32(164, 164, 164, 255);
 
             if (currentState == CardinalState.Idle || currentState == CardinalState.Chatting)
             {
@@ -1482,14 +1473,13 @@ public class StateController : MonoBehaviour
         // 플레이어와 충돌
         if (currentState == CardinalState.Scheme && other.CompareTag("Player"))
         {
+            if (InGameManager.Instance != null && InGameManager.Instance.IsInitialTutorialLocked) return;
+
             BoxCollider2D bodyCollider = GetComponent<BoxCollider2D>();
             if (bodyCollider == null || !bodyCollider.Distance(other).isOverlapped)
             {
                 return;
             }
-
-            Debug.Log($"[Scheme] 모략가 {name}가 플레이어를 감지했습니다!");
-
             // 2. 나(NPC)와 상대방(Player)의 Cardinal 컴포넌트를 각각 가져옵니다.
             Cardinal npc = GetComponent<Cardinal>();
             Cardinal player = other.GetComponent<Cardinal>();
@@ -1527,11 +1517,6 @@ public class StateController : MonoBehaviour
         {
             // 시간제 스턴: 지정된 시간 후 자동 해제
             stunCoroutine = StartCoroutine(StunTimerRoutine(duration));
-        }
-        else
-        {
-            // 턴제/무한 스턴: 외부에서 ReleaseStun()을 부를 때까지 대기
-            Debug.Log($"콘클라베 종료 시까지 행동 불가.");
         }
     }
 
@@ -1577,7 +1562,6 @@ public class StateController : MonoBehaviour
 
         // 데이터 정리
         if (stunCoroutine != null) { StopCoroutine(stunCoroutine); stunCoroutine = null; }
-        Debug.Log($"{name} : 스턴 해제 및 복귀.");
     }
 
     // 중복되는 물리 초기화 로직을 하나로 묶음
@@ -1649,7 +1633,11 @@ public class StateController : MonoBehaviour
         agent.obstacleAvoidanceType = actionObstacleAvoidanceType;
     }
 
-    private IEnumerator WaitForActionDestination(string context, System.Func<bool> shouldAbort, System.Action<bool> onComplete)
+    private IEnumerator WaitForActionDestination(
+        string context,
+        System.Func<bool> shouldAbort,
+        System.Action<bool> onComplete,
+        bool logWarning = true)
     {
         if (agent == null || !agent.isOnNavMesh)
         {
@@ -1676,7 +1664,8 @@ public class StateController : MonoBehaviour
 
             if (!agent.pathPending && agent.pathStatus == NavMeshPathStatus.PathInvalid)
             {
-                Debug.LogWarning($"[{name}] {context} 경로가 유효하지 않아 시퀀스를 중단합니다.");
+                if (logWarning)
+                    Debug.LogWarning($"[{name}] {context} 경로가 유효하지 않아 시퀀스를 중단합니다.");
                 onComplete(false);
                 yield break;
             }
@@ -1695,7 +1684,8 @@ public class StateController : MonoBehaviour
             elapsed += Time.deltaTime;
             if (elapsed >= actionMoveTimeout)
             {
-                Debug.LogWarning($"[{name}] {context} 이동이 {actionMoveTimeout:F1}초 안에 끝나지 않아 시퀀스를 중단합니다.");
+                if (logWarning)
+                    Debug.LogWarning($"[{name}] {context} 이동이 {actionMoveTimeout:F1}초 안에 끝나지 않아 시퀀스를 중단합니다.");
                 onComplete(false);
                 yield break;
             }
@@ -1704,9 +1694,10 @@ public class StateController : MonoBehaviour
         }
     }
 
-    private void AbortActionSequence(string reason)
+    private void AbortActionSequence(string reason, bool logWarning = true)
     {
-        Debug.LogWarning($"[{name}] {reason}");
+        if (logWarning)
+            Debug.LogWarning($"[{name}] {reason}");
         ClearActionRequestState();
         ResetAgentMovementState();
 

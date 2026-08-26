@@ -51,4 +51,7 @@ MonoBehaviour:
     \uC811\uC218\uD55C\uB2E4.\n\uB9CC\uAD6D\uC758 \uC778\uBBFC\uC774\uC5EC, \uB2E8\uACB0\uD558\uB77C.
     \uBD81\uADF9\uACF0 \uB9CC\uC138, \uC0AC\uD68C\uC8FC\uC758 \uB9CC\uC138, (\uD6C4\uBCF4
     3) \uB9CC\uC138.\""
-  option2FailDescription: 
+  option2FailDescription:
+  option1Requirement: "경건함 8 이상"
+  option1SuccessResult: "게임 종료\n\"대현자\" 엔딩"
+  option2SuccessResult: "게임 종료\n\"북극곰\" 엔딩"

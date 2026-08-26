@@ -17,9 +17,7 @@ MonoBehaviour:
   itemDescription: "\uD0DC\uC591\uC758 \uC5D0\uB108\uC9C0 \uB355\uBD84\uC778\uC9C0
     \uAC8C\uB974\uB9C8\uB284\uC758 \uC6D0\uC801\uC678\uC120 \uB355\uBD84\uC778\uC9C0,
     \uBAB8\uC774 \uD640\uAC00\uBD84\uD574\uC84C\uB2E4!"
-  itemEffectDescription: "\uAE30\uB3C4 \uC2DC \uACBD\uAC74\uD568 \uD68C\uBCF5\uB7C9
-    5 \uC99D\uAC00, \uCCB4\uB825 0\uC77C \uC2DC \uAE30\uC808 1\uD68C \uBC29\uC5B4
-    \uBC0F 30\uC73C\uB85C \uD68C\uBCF5"
+  itemEffectDescription: "기도 시 <color=#FFD84D>경건함</color> <color=#66CCFF>+1</color> 추가 획득. <color=#5BD65B>체력</color> 0일 때 한 번 기절 방지, <color=#5BD65B>체력</color> <color=#66CCFF>+3</color> 회복."
   itemImage: {fileID: 2907395969097187080, guid: 15f517c160b21174c9689333728eda3b, type: 3}
   itemGrade: 1
   itemExpirationType: 2

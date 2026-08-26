@@ -10,12 +10,12 @@ public class I010 : Item
     void Reset()
     {
         itemID = "I010";
-        itemName = "교황청 주보";
-        itemDescription = "교회의 동향을 파악해 교황 자리를 한 발 빠르게 피한다.";
-        itemEffectDescription = "연설 시 정치력 회복량 최소로 고정, 대신 경건함을 5씩 회복";
+        itemName = "교단 주보";
+        itemDescription = "교단의 동향을 파악해 교주 자리를 한 발 빠르게 피한다.";
+        itemEffectDescription = "오늘 연설 시 <color=#4488FF>정치력</color> 변화량을 <color=#66CCFF>0</color>으로 고정하고, 대신 <color=#FFD84D>경건함</color>을 <color=#66CCFF>+1</color> 회복";
 
         itemGrade = ItemGrade.Common;
-        itemExpirationType = ItemExpirationType.Day; 
+        itemExpirationType = ItemExpirationType.Conclave; 
         usageType = ItemUsageType.Passive;
 
         pietyBonus = 1f;
@@ -23,19 +23,18 @@ public class I010 : Item
 
     public override float ModifySpeechInfluence(float originalDelta, GameBalance balance, bool isSuccess)
     {
-        float fixedInfluence = balance.SpeechSuccessDeltaInfluenceMin;
-
-        Debug.Log($"[아이템 효과] 교황청 주보: 원래 변동될 정치력({originalDelta})을 강제로 ({fixedInfluence})로 고정합니다.");
+        float fixedInfluence = 0;
 
         return fixedInfluence;
     }
 
+    public override float PreviewSpeechInfluence(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return 0;
+    }
+
     public override void OnSpeech(Cardinal owner)
     {
-        float beforePiety = owner.Piety;
-
         owner.ChangePiety(pietyBonus);
-
-        Debug.Log($"[아이템 효과] 교황청 주보: 경건함 {beforePiety} -> {owner.Piety} (+{pietyBonus})");
     }
 }

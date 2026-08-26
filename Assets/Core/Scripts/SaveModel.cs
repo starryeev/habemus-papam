@@ -256,13 +256,23 @@ public class GameContextSaveData
     public int conclave;
     public int currentTurn = 1;
     public int completedActions;
-    public int actionsThisTurn = 2;
+    public int actionsThisTurn = 8;
+    public int positionProgressVersion;
+    public List<int> actionCountsByPosition = new List<int>();
+    public List<int> unavailableActionCountsByPosition = new List<int>();
+    public int currentActionPosition;
+    public int completedActionsInPosition;
+    public int performedActionsInPosition;
+    public int completedUnavailableActions;
+    public int actionEffectVersion;
+    public List<PlayerActionEffectData> playerActionEffects = new List<PlayerActionEffectData>();
     public bool isEventPhase;
     public int nextTurnActionModifier;
     public bool blockNextTurn;
     public bool blockRemainingCurrentTurn;
     public bool awaitingTurnEvent;
     public bool eventBeforeActions;
+    public int lastEventCheckedActionPosition = -1;
     public bool endConclaveAfterEvent;
     public string currentEventId = string.Empty;
     public bool isTimeRunning;
@@ -276,6 +286,7 @@ public class GameContextSaveData
     public List<int> npcTurnBehaviours = new List<int>();
     public List<bool> npcTurnActionsExecuted = new List<bool>();
     public List<bool> npcNextTurnActionBlocked = new List<bool>();
+    public List<int> npcNextTurnBlockedActionCounts = new List<int>();
     public List<int> prayerBlockedCandidateNumbers = new List<int>();
     public List<PendingEffectSaveData> pendingEffects = new List<PendingEffectSaveData>();
 }
@@ -323,6 +334,8 @@ public class ItemSaveData
 {
     public string itemId;
     public string runtimeStateJson;
+    public int remainingConclaveCount;
+    public bool hasRemainingConclaveCount;
 }
 
 [Serializable]
@@ -332,9 +345,23 @@ public class EventManagerSaveData
     public List<EventRecordSaveData> records = new List<EventRecordSaveData>();
     public List<EventChoiceSaveData> choices = new List<EventChoiceSaveData>();
     public List<EventPlotDamageBonusSaveData> plotDamageBonuses = new List<EventPlotDamageBonusSaveData>();
-    public List<int> attemptedScheduledSlots = new List<int>();
+    public List<PendingGuaranteedEventSaveData> pendingGuaranteedEvents = new List<PendingGuaranteedEventSaveData>();
+    public bool subEventOccurredThisTurn;
     public bool guaranteeNextPrayerOrSpeech;
     public bool freePlotPietyForCurrentConclave;
+}
+
+public enum PendingEventTiming
+{
+    AfterCurrentEvent,
+    NextEnteredPosition
+}
+
+[Serializable]
+public class PendingGuaranteedEventSaveData
+{
+    public string eventId;
+    public PendingEventTiming timing;
 }
 
 [Serializable]

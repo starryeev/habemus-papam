@@ -16,7 +16,7 @@ MonoBehaviour:
   itemName: "\uB098\uBB34\uC9C0\uD321\uC774"
   itemDescription: "\uAC77\uAE30\uAC00 \uD3B8\uD574\uC9C4\uB2E4. \uB9C8\uC74C\uC5D0
     \uC548 \uB4DC\uB294 \uC0AC\uB78C\uC744 \uC704\uD611\uD560 \uC218\uB3C4 \uC788\uB2E4!"
-  itemEffectDescription: "획득 시 다음 턴 행동 횟수 1회 증가. 사용 시 체력이 가장 낮은 후보(NPC)의 체력 4 감소."
+  itemEffectDescription: "획득 시 현재 턴 행동 횟수 <color=#66CCFF>+1</color>회. 사용 시 <color=#5BD65B>체력</color>이 가장 낮은 후보 NPC <color=#5BD65B>체력</color> <color=#FF4D4D>-4</color>."
   itemImage: {fileID: -1558343435522932048, guid: 0d33f8596e8db3046bf2055c0cb7abdd, type: 3}
   itemGrade: 1
   itemExpirationType: 2

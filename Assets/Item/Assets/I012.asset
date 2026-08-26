@@ -17,8 +17,7 @@ MonoBehaviour:
   itemDescription: "\uAD74\uB69D\uC5D0 \uBAB0\uB798 \uB123\uC5B4\uC11C \uC5F0\uAE30
     \uC0C9\uAE54\uC744 \uBC14\uAFBC\uB2E4!\n\uBB34\uC2A8 \uC0C9\uC778\uC9C0\uB294
     \uBAA8\uB974\uACA0\uC9C0\uB9CC \uAC80\uC815\uC774\uBA74 \uC88B\uACA0\uB2E4..."
-  itemEffectDescription: "\uAD50\uD669 \uC120\uCD9C \uC2DC (100 - \uACBD\uAC74\uD568)%\uC758
-    \uD655\uB960\uB85C \uB2F9\uC120 \uBC29\uC5B4 (\uC544\uC774\uD15C \uC18C\uBAA8)"
+  itemEffectDescription: "교황으로 선출될 때 <b>(10 - 현재 <color=#FFD84D>경건함</color>) × 10%</b> 확률로 당선 방어 후 소멸."
   itemImage: {fileID: 5254156653180700282, guid: 511b02e9ed5a603429b8a9c130109eea, type: 3}
   itemGrade: 1
   itemExpirationType: 2

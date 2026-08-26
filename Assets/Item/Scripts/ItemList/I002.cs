@@ -6,6 +6,7 @@ public class I002 : Item
     [Header("나무지팡이 설정")]
     [Tooltip("사용 시 감소시킬 체력")]
     [SerializeField] private int damageAmount = 4;
+    private GameContext subscribedContext;
 
     void Reset()
     {
@@ -16,28 +17,30 @@ public class I002 : Item
 
         itemName = "나무지팡이";
         itemDescription = "걷기가 편해진다. 마음에 안 드는 사람을 위협할 수도 있다!";
-        itemEffectDescription = "획득 시 다음 턴 행동 횟수 1회 증가. 사용 시 체력이 가장 낮은 후보(NPC)의 체력 4 감소.";
+        itemEffectDescription = "소지 시, 턴당 행동 횟수 <color=#66CCFF>+1</color>회 증가. 사용 시, <color=#5BD65B>체력</color>이 가장 낮은 후보 NPC의 <color=#5BD65B>체력</color> <color=#FF4D4D>-4</color> 감소";
 
         damageAmount = 4;
     }
 
     public override void OnAcquire()
     {
-        Cardinal player = FindPlayer();
-        if (player != null && InGameManager.Instance != null)
-        {
-            InGameManager.Instance.QueueNextTurnActionDelta(1);
-        }
+        ApplyActionBonus();
+        SubscribeToTurns();
     }
 
     public override void OnReapply(Cardinal owner)
     {
-        // 획득 시의 일회성 행동 보너스는 GameContext 저장값에서 복원한다.
+        SubscribeToTurns();
     }
 
     public override void OnRemove()
     {
-        // 예약된 행동 보너스는 다른 효과와 섞일 수 있어 제거 시 역보정을 하지 않는다.
+        UnsubscribeFromTurns();
+    }
+
+    public override void ResetRuntimeState()
+    {
+        UnsubscribeFromTurns();
     }
 
     public override void OnUse()
@@ -49,10 +52,6 @@ public class I002 : Item
             float beforeHp = target.Hp;
             target.ChangeHp(-damageAmount); 
             
-        }
-        else
-        {
-            Debug.Log("[아이템 사용 실패] 공격할 대상이 없습니다.");
         }
     }
 
@@ -81,9 +80,38 @@ public class I002 : Item
         return weakestTarget;
     }
 
-    private Cardinal FindPlayer()
+    private void SubscribeToTurns()
     {
-        if (InventoryManager.Instance != null) return InventoryManager.Instance.Player;
-        return null;
+        GameContext context = InGameManager.Instance != null ? InGameManager.Instance.Context : null;
+        if (context == null || context == subscribedContext) return;
+
+        UnsubscribeFromTurns();
+        subscribedContext = context;
+        subscribedContext.OnGameContextEvent += HandleContextEvent;
     }
+
+    private void UnsubscribeFromTurns()
+    {
+        if (subscribedContext == null) return;
+
+        subscribedContext.OnGameContextEvent -= HandleContextEvent;
+        subscribedContext = null;
+    }
+
+    private void HandleContextEvent(GameContext.GameContextEvent eventType)
+    {
+        if (eventType == GameContext.GameContextEvent.TurnStart)
+        {
+            ApplyActionBonus();
+        }
+    }
+
+    private void ApplyActionBonus()
+    {
+        if (InGameManager.Instance == null) return;
+
+        InGameManager.Instance.ChangeCurrentTurnActions(1,
+            PlayerActionEffectSourceType.Item, itemID, itemName);
+    }
+
 }

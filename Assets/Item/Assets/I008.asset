@@ -16,8 +16,7 @@ MonoBehaviour:
   itemName: "\uD0DC\uC591 \uD314\uCC0C"
   itemDescription: "\uD0DC\uC591\uC758 \uD798\uC774 \uD655\uC2E4\uD788 \uB290\uAEF4\uC9C0\uB294
     \uACBD\uAC74\uD55C \uD314\uCC0C\uB2E4!"
-  itemEffectDescription: "\uAE30\uB3C4 \uC2DC \uACBD\uAC74\uD568 \uD68C\uBCF5\uB7C9
-    5 \uC99D\uAC00"
+  itemEffectDescription: "기도 시 <color=#FFD84D>경건함</color> <color=#66CCFF>+1</color> 추가 획득."
   itemImage: {fileID: -194224930418327051, guid: 9d9ca0b1f3a562042818da62901b41e2, type: 3}
   itemGrade: 0
   itemExpirationType: 2

@@ -52,6 +52,7 @@ public class CardinalManager : MonoBehaviour
     private EventSystem blockedEventSystem;
     private InputSystemUIInputModule blockedInputModule;
     private Coroutine enableInputCoroutine;
+    private bool schemersAssignedThisConclave;
 
     [SerializeField] private StatsUI statsUI;
     public StatsUI StatsUI => statsUI;
@@ -136,12 +137,21 @@ public class CardinalManager : MonoBehaviour
             statsUI.HideForConclaveEntrance();
         }
 
+        TimeUI timeUI = UIManager.Instance != null && UIManager.Instance.Ingame != null
+            ? UIManager.Instance.Ingame.Time
+            : null;
+        if (timeUI != null)
+        {
+            timeUI.HideForConclaveEntrance();
+        }
+
         StartCoroutine(ResetAndEnterSequence());
         SoundManager.Instance.PlayBGM("DummyBGM", 1);
     }
 
     private IEnumerator ResetAndEnterSequence()
     {
+        schemersAssignedThisConclave = false;
         ConclavePathData leftPath = conclavePaths.Find(p => p.groupName.Contains("Left"));
         ConclavePathData rightPath = conclavePaths.Find(p => p.groupName.Contains("Right"));
         ConclavePathData playerPath = conclavePaths.Find(p => p.groupName.Contains("Player"));
@@ -214,8 +224,6 @@ public class CardinalManager : MonoBehaviour
             }
         }
 
-        Debug.Log("모든 입장 완료. 콘클라베 시작.");
-
         foreach (var c in cardinals)
         {
             if (c == null) continue;
@@ -228,13 +236,24 @@ public class CardinalManager : MonoBehaviour
         }
 
         //공작
-        AssignRandomSchemers();
+        if (InGameManager.Instance == null || !InGameManager.Instance.IsInitialTutorialLocked)
+        {
+            AssignRandomSchemers();
+        }
 
         //스탯 연동과 타이머 연동
         if (statsUI != null)
         {
             statsUI.Initialize(cardinals);
             statsUI.FadeInAfterConclaveEntrance(1f);
+
+            TimeUI timeUI = UIManager.Instance != null && UIManager.Instance.Ingame != null
+                ? UIManager.Instance.Ingame.Time
+                : null;
+            if (timeUI != null)
+            {
+                timeUI.FadeInAfterConclaveEntrance(1f);
+            }
 
             InGameManager.Instance.StartTimer();
         }
@@ -382,8 +401,6 @@ public class CardinalManager : MonoBehaviour
         }
 
         yield return new WaitUntil(() => exitingCardinalCount == 0);
-
-        Debug.Log("All cardinals have exited.");
         if (InGameManager.Instance != null)
         {
             InGameManager.Instance.OnConclaveExitSequenceCompleted();
@@ -580,8 +597,11 @@ public class CardinalManager : MonoBehaviour
     // ========================================================================
     private void AssignRandomSchemers()
     {
-        var candidates = cardinals.Where(c => c != null && !c.CompareTag("Player")).ToList();
+        var candidates = cardinals.Where(c => c != null &&
+            c.gameObject.activeSelf &&
+            !c.CompareTag("Player")).ToList();
         var selectedSchemers = candidates.OrderBy(x => Random.value).Take(2).ToList();
+        int assignedCount = 0;
 
         foreach (var c in selectedSchemers)
         {
@@ -589,9 +609,55 @@ public class CardinalManager : MonoBehaviour
             if (sc != null)
             {
                 sc.SetSchemerMode(true);
-                Debug.Log($"NPC {c.name} Scheme 상태 적용");
+                assignedCount++;
             }
         }
+
+        schemersAssignedThisConclave = assignedCount > 0;
+    }
+
+    public void EnsureSchemerAssignmentAfterLoad()
+    {
+        if (InGameManager.Instance != null && InGameManager.Instance.IsInitialTutorialLocked)
+        {
+            schemersAssignedThisConclave = false;
+            return;
+        }
+
+        schemersAssignedThisConclave = cardinals.Any(cardinal => cardinal != null &&
+            cardinal.gameObject.activeSelf &&
+            cardinal.GetComponent<StateController>()?.IsSchemer == true);
+
+        if (!schemersAssignedThisConclave)
+        {
+            AssignRandomSchemers();
+        }
+    }
+
+    public void SetInitialTutorialSchemeLock(bool locked)
+    {
+        if (locked)
+        {
+            foreach (Cardinal cardinal in cardinals)
+            {
+                StateController state = cardinal != null ? cardinal.GetComponent<StateController>() : null;
+                if (state != null && state.IsSchemer) state.SetSchemerMode(false);
+            }
+
+            schemersAssignedThisConclave = false;
+            return;
+        }
+
+        if (IsConclaveTransitionInProgress || schemersAssignedThisConclave) return;
+        if (cardinals.Any(cardinal => cardinal != null &&
+            cardinal.gameObject.activeSelf &&
+            cardinal.GetComponent<StateController>()?.IsSchemer == true))
+        {
+            schemersAssignedThisConclave = true;
+            return;
+        }
+
+        AssignRandomSchemers();
     }
 
     public int GetCurrentChatMasterCount()

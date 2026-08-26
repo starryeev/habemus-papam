@@ -26,7 +26,9 @@ public abstract class Item : ScriptableObject
 
     public virtual void OnAcquire() { }
     public virtual void OnRemove() { }
+    public virtual void OnExpiration() { }
     public virtual void OnUse() { }
+    public virtual bool CanDrop() { return true; }
     public virtual void OnPray(Cardinal owner) { }
     public virtual void OnSpeech(Cardinal owner) { }
     public virtual void OnPlot(Cardinal owner) { }
@@ -61,6 +63,31 @@ public abstract class Item : ScriptableObject
     }
 
     public virtual float ModifySpeechInfluence(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta;
+    }
+
+    public virtual float PreviewPrayerPiety(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta;
+    }
+
+    public virtual float PreviewPrayerHp(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta;
+    }
+
+    public virtual float PreviewSpeechInfluence(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta;
+    }
+
+    public virtual float PreviewSpeechInfluenceAfterAction(float originalDelta, GameBalance balance, bool isSuccess)
+    {
+        return originalDelta;
+    }
+
+    public virtual float PreviewSpeechHp(float originalDelta, GameBalance balance, bool isSuccess)
     {
         return originalDelta;
     }

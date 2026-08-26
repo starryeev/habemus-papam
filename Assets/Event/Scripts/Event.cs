@@ -4,6 +4,7 @@ using UnityEngine.SceneManagement;
 
 public abstract class Event : ScriptableObject
 {
+    [System.NonSerialized] private int displayCandidateNumber;
     [SerializeField] public string eventID;
     [SerializeField] public string eventName;
     [TextArea] public string eventDescription;
@@ -48,6 +49,32 @@ public abstract class Event : ScriptableObject
 
     public abstract bool OnChoiceOption1(Cardinal performer);
     public abstract bool OnChoiceOption2(Cardinal performer);
+
+    public void PrepareDisplay()
+    {
+        List<int> availableCandidates = new List<int>();
+        for (int candidateNumber = 1; candidateNumber <= 3; candidateNumber++)
+        {
+            if (GetCandidate(candidateNumber) != null)
+            {
+                availableCandidates.Add(candidateNumber);
+            }
+        }
+
+        displayCandidateNumber = availableCandidates.Count > 0
+            ? availableCandidates[Random.Range(0, availableCandidates.Count)]
+            : 1;
+    }
+
+    public string ResolveDisplayText(string source)
+    {
+        StatsUI statsUI = CardinalManager.Instance != null
+            ? CardinalManager.Instance.StatsUI
+            : null;
+        return statsUI != null
+            ? statsUI.ResolveCandidateNames(source, displayCandidateNumber)
+            : source;
+    }
 
     protected bool FinishChoice(int optionIndex, bool succeeded)
     {

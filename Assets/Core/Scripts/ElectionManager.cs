@@ -126,17 +126,14 @@ public class ElectionManager : MonoBehaviour
 
             if (smokeBomb != null && smokeBomb is I012 bombScript)
             {
-                Debug.Log("플레이어 당선 위기! 인벤토리의 연막탄(I012)을 확인했습니다.");
                 float playerPiety = currentWinnerCandidate.Piety;
 
                 if (bombScript.TryDefendElection(playerPiety))
                 {
-                    Debug.Log("<color=white>연막탄 성공! 당선이 무효화되어 부결 처리됩니다.</color>");
                     isElected = false; 
                 }
                 else
                 {
-                    Debug.Log("<color=red>연막탄 실패... 그대로 게임 오버 판정으로 넘어갑니다.</color>");
                     LoadEndingScene(EndingType.SmokeBomb);
                     return;
                 }
@@ -147,16 +144,12 @@ public class ElectionManager : MonoBehaviour
     {
         if (isElected)
         {
-            Debug.Log($"-> {currentWinnerCandidate.name} 당선!");
-
             if (currentWinnerCandidate.CompareTag("Player"))
             {
-                Debug.Log($"[Election] Player elected: {currentWinnerCandidate.name}");
                 LoadEndingScene(EndingType.PlayerPope);
             }
             else
             {
-                Debug.Log($"[Election] NPC elected: {currentWinnerCandidate.name}");
                 LoadEndingScene(EndingType.NpcPope);
             }
         }
@@ -271,7 +264,6 @@ public class ElectionManager : MonoBehaviour
     private void ForceElectCandidate(Cardinal candidate, EndingType endingType)
     {
         currentWinnerCandidate = candidate;
-        Debug.Log($"[Election Debug] {candidate.name} elected. Ending: {endingType}");
         LoadEndingScene(endingType);
     }
 

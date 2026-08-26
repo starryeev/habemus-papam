@@ -79,7 +79,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 974e35ca22ec4971b4d7da88afa6efd6, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpeechTriggerSfx
 --- !u!1 &7455590352920837333
 GameObject:
@@ -160,7 +160,6 @@ MonoBehaviour:
   masterAlertBubblePrefab: {fileID: 6928995857789074070, guid: d553432ab88609b438ec793def78a7ba, type: 3}
   prayingBubblePrefab: {fileID: 8144235865602989633, guid: cb5d69de717b5254d9513704cec63ade, type: 3}
   SpeechingBubblePrefab: {fileID: 7420857138657768832, guid: 1dffa87288485bc43ac97834b819a969, type: 3}
-  bubbleOffset: {x: 0, y: 1, z: 0}
   prayDuration: 7
   speechDuration: 7
   actionMoveTimeout: 8

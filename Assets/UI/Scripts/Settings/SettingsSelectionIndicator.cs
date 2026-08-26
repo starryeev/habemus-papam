@@ -65,12 +65,14 @@ public sealed class SettingsSelectionIndicator
         {
             float leftQuarterWidth = _leftArrow.rect.width * 0.25f;
             float rightQuarterWidth = _rightArrow.rect.width * 0.25f;
-            _leftArrow.anchoredPosition = new Vector2(
+            _leftArrow.localPosition = new Vector3(
                 bounds.min.x - ArrowSpacing - leftQuarterWidth,
-                bounds.center.y);
-            _rightArrow.anchoredPosition = new Vector2(
+                bounds.center.y,
+                _leftArrow.localPosition.z);
+            _rightArrow.localPosition = new Vector3(
                 bounds.max.x + ArrowSpacing + rightQuarterWidth,
-                bounds.center.y);
+                bounds.center.y,
+                _rightArrow.localPosition.z);
         }
 
         SetActive(_leftArrow, true);

@@ -14,6 +14,7 @@ public class E31210 : Event
 
         option1Chance = 1f;
         option2Chance = 0.5f;
+        option1Requirement = "경건함 4 이상";
     }
 
     public override bool CanChoiceOption1(Cardinal performer)

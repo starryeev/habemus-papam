@@ -16,7 +16,7 @@ MonoBehaviour:
   itemName: "\uC8FC\uC0AC\uC704"
   itemDescription: "\uC2E0\uBE44\uD55C \uC8FC\uC0AC\uC704\uB2E4. \uAD74\uB9AC\uB2E4
     \uBCF4\uBA74 \uC0C8\uB85C\uC6B4 \uC544\uC774\uB514\uC5B4\uAC00 \uB5A0\uC624\uB978\uB2E4!"
-  itemEffectDescription: "\uACF5\uC791 \uC120\uD0DD\uC9C0 \uC0C8\uB85C \uACE0\uCE68"
+  itemEffectDescription: "사용 시 현재 공작 선택지 두 세트 모두 새로 고침."
   itemImage: {fileID: 8742578653727323799, guid: 0283233bc4f62f248914aa9cb86015c4, type: 3}
   itemGrade: 0
   itemExpirationType: 2

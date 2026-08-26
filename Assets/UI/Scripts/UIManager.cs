@@ -28,6 +28,7 @@ void Awake()
             AttachCameraZoom();
             DebugModeToggle.Attach(gameObject);
             ActionPriorityPopupController.Attach(gameObject);
+            PlayerActionNoticePopupController.Attach(gameObject);
         }
         else
         {

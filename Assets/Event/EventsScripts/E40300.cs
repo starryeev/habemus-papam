@@ -19,8 +19,8 @@ public class E40300 : Event
         option1Requirement = "-";
         option1SuccessDescription = "까악 까악! 까마귀들은 한바탕 난동을 피운 뒤 저 멀리 날아갔다.\n가방 안이 영 허전해 보이는데....\n\n수중에 있는 모든 아이템 소멸!";
         option1SuccessResult = "모든 아이템 소멸";
-        option1FailDescription = "까악! 당신은 까마귀들을 쥐어박고 내쫓았다. 방금이 마지막 놈이었다.\n하얗게 불태웠어....\n\n체력 30 감소!";
-        option1FailResult = "체력 - 30";
+        option1FailDescription = "까마귀들을 쥐어박고 내쫓았지만 완전히 지쳐 버렸다.\n\n체력 3 감소!";
+        option1FailResult = "체력 -3";
         option2 = "";
     }
 

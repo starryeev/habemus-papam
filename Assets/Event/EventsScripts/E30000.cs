@@ -14,6 +14,7 @@ public class E30000 : Event
 
         option1Chance = 1f;
         option2Chance = 0.5f;
+        option1Requirement = "경건함 3 이상";
     }
 
     public override bool CanChoiceOption1(Cardinal performer)
@@ -53,7 +54,8 @@ public class E30000 : Event
         if(Random.value <= option2Chance)
         {  // 성공했을 때 로직
             performer.ChangeHp(3);
-            InGameManager.Instance.QueueNextTurnActionDelta(-1);
+            InGameManager.Instance.ChangeCurrentTurnActions(-1,
+                PlayerActionEffectSourceType.Event, eventID, eventName);
 
             return FinishChoice(2, true);
         }

@@ -171,7 +171,6 @@ public class InputNameUIController : MonoBehaviour
 
         CurrentPlayerName = inputName;
         UpdatePlayerNameDisplay();
-        Debug.Log(CurrentPlayerName);
         HideWarning();
         return true;
     }

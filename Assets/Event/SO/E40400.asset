@@ -27,8 +27,8 @@ MonoBehaviour:
   option1: "\uB208\uC744 \uAC10\uACE0 \uBE57\uC18C\uB9AC\uB97C \uB4E3\uC790."
   option1Chance: 1
   option1Requirement: '-'
-  option1SuccessDescription: "몸과 마음이 치유되는 느낌이다.\n\n모든 후보의 체력 2 증가!\n다음 턴 행동 횟수 1회 증가!"
-  option1SuccessResult: "모든 후보의 체력 +2\n다음 턴 행동 횟수 +1"
+  option1SuccessDescription: "몸과 마음이 치유되는 느낌이다.\n\n모든 후보의 체력 2 증가!\n현재 턴 행동 횟수 1회 증가!"
+  option1SuccessResult: "모든 후보의 체력 +2\n현재 턴 행동 횟수 +1"
   option1FailDescription: 
   option1FailResult: 
   option2: 

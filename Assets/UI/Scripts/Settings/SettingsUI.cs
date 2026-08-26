@@ -88,7 +88,6 @@ public class SettingsUI : MonoBehaviour
 
         CloseHowToPlayPanel();
         CacheHotKeyButtons();
-        HideRemovedActionHotKeyButtons();
         RegisterEvents();
         InitializeKeyboardNavigation();
         SyncHotKeyButtonsFromManager();
@@ -252,6 +251,16 @@ public class SettingsUI : MonoBehaviour
             leftKey.onClick.AddListener(OnClickLeftKey);
         }
 
+        if (prayHotKey != null)
+        {
+            prayHotKey.onClick.AddListener(OnClickPrayHotKey);
+        }
+
+        if (speechHotKey != null)
+        {
+            speechHotKey.onClick.AddListener(OnClickSpeechHotKey);
+        }
+
         if (resetHotKeysButton != null)
         {
             resetHotKeysButton.onClick.AddListener(OnClickResetHotKeys);
@@ -328,6 +337,16 @@ public class SettingsUI : MonoBehaviour
         if (leftKey != null)
         {
             leftKey.onClick.RemoveListener(OnClickLeftKey);
+        }
+
+        if (prayHotKey != null)
+        {
+            prayHotKey.onClick.RemoveListener(OnClickPrayHotKey);
+        }
+
+        if (speechHotKey != null)
+        {
+            speechHotKey.onClick.RemoveListener(OnClickSpeechHotKey);
         }
 
         if (resetHotKeysButton != null)
@@ -419,6 +438,8 @@ public class SettingsUI : MonoBehaviour
             LeftKey = leftKey,
             DownKey = downKey,
             RightKey = rightKey,
+            PrayKey = prayHotKey,
+            SpeechKey = speechHotKey,
             ResetHotKeysButton = resetHotKeysButton,
             NewGameButton = newGameButton,
             QuitGameButton = quitGameButton,
@@ -506,6 +527,16 @@ public class SettingsUI : MonoBehaviour
         StartWaitingHotKeyInput(HotKeyAction.MoveLeft);
     }
 
+    private void OnClickPrayHotKey()
+    {
+        StartWaitingHotKeyInput(HotKeyAction.Pray);
+    }
+
+    private void OnClickSpeechHotKey()
+    {
+        StartWaitingHotKeyInput(HotKeyAction.Speech);
+    }
+
     public void OnClickResetHotKeys()
     {
         _keyboardNavigator?.CancelCurrentInteraction();
@@ -573,19 +604,8 @@ public class SettingsUI : MonoBehaviour
         hotKeyButtons[HotKeyAction.MoveDown] = downKey;
         hotKeyButtons[HotKeyAction.MoveRight] = rightKey;
         hotKeyButtons[HotKeyAction.MoveLeft] = leftKey;
-    }
-
-    private void HideRemovedActionHotKeyButtons()
-    {
-        if (prayHotKey != null)
-        {
-            prayHotKey.gameObject.SetActive(false);
-        }
-
-        if (speechHotKey != null)
-        {
-            speechHotKey.gameObject.SetActive(false);
-        }
+        hotKeyButtons[HotKeyAction.Pray] = prayHotKey;
+        hotKeyButtons[HotKeyAction.Speech] = speechHotKey;
     }
 
     internal void SyncHotKeyButtonsFromManager()
@@ -635,22 +655,7 @@ public class SettingsUI : MonoBehaviour
 
         targetText.richText = true;
         targetText.color = Color.white;
-        targetText.text = $"{GetHotKeyActionLabel(action)}    [   {keyLabel}   ]";
-    }
-
-    private static string GetHotKeyActionLabel(HotKeyAction action)
-    {
-        switch (action)
-        {
-            case HotKeyAction.MoveUp:
-                return "위쪽 이동";
-            case HotKeyAction.MoveLeft:
-                return "좌측 이동";
-            case HotKeyAction.MoveDown:
-                return "아래 이동";
-            default:
-                return "우측 이동";
-        }
+        targetText.text = keyLabel;
     }
 
     private void UpdateManagerHotKey(HotKeyAction action, Key key)

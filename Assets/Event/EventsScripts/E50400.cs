@@ -16,8 +16,8 @@ public class E50400 : Event
         option1 = "악! 악! 악!";
         option1Chance = 1f;
         option1Requirement = "-";
-        option1SuccessDescription = "푸쉬이이.... 이마에 삼위일체가 시뻘겋게 수놓였다.\n태양의 신실한 종 다운 트리플 혹이었다.\n\n체력 33 감소!\n정치력 3 증가!\n경건함 3 증가!";
-        option1SuccessResult = "체력 - 33\n정치력 + 3\n경건함 + 3";
+        option1SuccessDescription = "이마에 삼위일체가 시뻘겋게 수놓였다. 태양의 신실한 종다운 트리플 혹이었다.\n\n체력 4 감소!\n정치력 1 증가!\n경건함 1 증가!";
+        option1SuccessResult = "체력 -4\n정치력 +1\n경건함 +1";
         option2 = "";
     }
 
