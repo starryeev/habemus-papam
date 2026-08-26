@@ -7,7 +7,9 @@ public enum HotKeyAction
     MoveUp,
     MoveDown,
     MoveRight,
-    MoveLeft
+    MoveLeft,
+    Pray,
+    Speech
 }
 
 public class SettingsManager : MonoBehaviour
@@ -20,6 +22,8 @@ public class SettingsManager : MonoBehaviour
         { HotKeyAction.MoveDown, Key.S },
         { HotKeyAction.MoveRight, Key.D },
         { HotKeyAction.MoveLeft, Key.A },
+        { HotKeyAction.Pray, Key.F },
+        { HotKeyAction.Speech, Key.G },
     };
 
     private int masterVolume = 100;
