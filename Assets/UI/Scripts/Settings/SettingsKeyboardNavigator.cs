@@ -24,6 +24,8 @@ public sealed class SettingsKeyboardNavigationBindings
     public Button LeftKey;
     public Button DownKey;
     public Button RightKey;
+    public Button PrayKey;
+    public Button SpeechKey;
     public Button ResetHotKeysButton;
     public Button NewGameButton;
     public Button QuitGameButton;
@@ -50,6 +52,8 @@ public sealed class SettingsKeyboardNavigator
         SettingsNavigationTarget.MoveLeft,
         SettingsNavigationTarget.MoveDown,
         SettingsNavigationTarget.MoveRight,
+        SettingsNavigationTarget.Pray,
+        SettingsNavigationTarget.Speech,
         SettingsNavigationTarget.ResetHotKeys,
         SettingsNavigationTarget.HowToPlay
     };
@@ -266,6 +270,8 @@ public sealed class SettingsKeyboardNavigator
         AddHotKeyButton(SettingsNavigationTarget.MoveLeft, _bindings.LeftKey);
         AddHotKeyButton(SettingsNavigationTarget.MoveDown, _bindings.DownKey);
         AddHotKeyButton(SettingsNavigationTarget.MoveRight, _bindings.RightKey);
+        AddHotKeyButton(SettingsNavigationTarget.Pray, _bindings.PrayKey);
+        AddHotKeyButton(SettingsNavigationTarget.Speech, _bindings.SpeechKey);
         AddButton(SettingsNavigationTarget.ResetHotKeys, _bindings.ResetHotKeysButton, false);
         AddButton(SettingsNavigationTarget.NewGame, _bindings.NewGameButton, true);
         AddButton(SettingsNavigationTarget.HowToPlay, _bindings.HowToPlayButton, true);
@@ -1042,6 +1048,10 @@ public sealed class SettingsKeyboardNavigator
                 return SettingsNavigationTarget.MoveLeft;
             case HotKeyAction.MoveDown:
                 return SettingsNavigationTarget.MoveDown;
+            case HotKeyAction.Pray:
+                return SettingsNavigationTarget.Pray;
+            case HotKeyAction.Speech:
+                return SettingsNavigationTarget.Speech;
             default:
                 return SettingsNavigationTarget.MoveRight;
         }
@@ -1064,6 +1074,12 @@ public sealed class SettingsKeyboardNavigator
                 return true;
             case SettingsNavigationTarget.MoveRight:
                 action = HotKeyAction.MoveRight;
+                return true;
+            case SettingsNavigationTarget.Pray:
+                action = HotKeyAction.Pray;
+                return true;
+            case SettingsNavigationTarget.Speech:
+                action = HotKeyAction.Speech;
                 return true;
             default:
                 action = default;

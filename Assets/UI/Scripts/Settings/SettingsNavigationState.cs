@@ -19,6 +19,8 @@ public enum SettingsNavigationTarget
     MoveLeft,
     MoveDown,
     MoveRight,
+    Pray,
+    Speech,
     ResetHotKeys,
     NewGame,
     QuitGame,

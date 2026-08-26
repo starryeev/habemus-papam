@@ -109,6 +109,24 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
             return;
         }
 
+        if (SettingsService.Instance?.IsInputCaptured == true)
+        {
+            return;
+        }
+
+        Keyboard keyboard = Keyboard.current;
+        if (IsHotKeyPressedThisFrame(keyboard, HotKeyAction.Pray, Key.F))
+        {
+            TryStartActionImmediately(ActionType.Prayer);
+            return;
+        }
+
+        if (IsHotKeyPressedThisFrame(keyboard, HotKeyAction.Speech, Key.G))
+        {
+            TryStartActionImmediately(ActionType.Speech);
+            return;
+        }
+
         Mouse mouse = Mouse.current;
         Camera mainCamera = Camera.main;
         if (mouse == null || mainCamera == null || !mouse.leftButton.wasPressedThisFrame)
@@ -199,16 +217,26 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
             return;
         }
 
+        TryStartActionImmediately(pendingAction);
+    }
+
+    private bool TryStartActionImmediately(ActionType actionType)
+    {
+        if (isConfirming || actionType == ActionType.None)
+        {
+            return false;
+        }
+
         Transform playerTransform = CardinalManager.Instance != null ? CardinalManager.Instance.PlayerTransform : null;
         StateController playerState = playerTransform != null ? playerTransform.GetComponent<StateController>() : null;
-        if (playerState == null || !CanUseAction(pendingAction, playerState))
+        if (playerState == null || !CanUseAction(actionType, playerState))
         {
             CloseAllPopups();
-            return;
+            return false;
         }
 
         isConfirming = true;
-        bool started = pendingAction == ActionType.Prayer
+        bool started = actionType == ActionType.Prayer
             ? (gamsil != null && gamsil.TryStartPlayerPrayerImmediately(playerState))
             : (lecture != null && lecture.TryStartPlayerSpeechImmediately(playerState));
 
@@ -219,6 +247,23 @@ public sealed class ActionPriorityPopupController : MonoBehaviour
         }
 
         isConfirming = false;
+        return started;
+    }
+
+    private static bool IsHotKeyPressedThisFrame(
+        Keyboard keyboard,
+        HotKeyAction action,
+        Key fallbackKey)
+    {
+        if (keyboard == null)
+        {
+            return false;
+        }
+
+        Key key = SettingsManager.Instance != null
+            ? SettingsManager.Instance.GetHotKey(action)
+            : fallbackKey;
+        return key != Key.None && keyboard[key].wasPressedThisFrame;
     }
 
     private void UpdateInitialTutorialGuidance()
