@@ -12,7 +12,10 @@ public class MainScene : MonoBehaviour
     private const string PopeListNavigationButtonName = "PopeList";
     private const string DoorNavigationButtonName = "Door";
     private const string DoorSfxName = "Door";
+    private const string NavigationSunObjectName = "Sun";
     private const float PopeListNavigationIdleAlpha = 143f / 255f;
+    private const float NavigationMouseOnlySunAlpha = 0.3f;
+    private const float NavigationSelectedSunAlpha = 1f;
 
     private const string IntroNewspaperSceneName = "IntroNewspaperScene";
 
@@ -64,8 +67,10 @@ public class MainScene : MonoBehaviour
     private readonly Dictionary<Button, Outline> buttonOutlines = new();
     private readonly Dictionary<Button, Image> navigationButtonImages = new();
     private readonly Dictionary<Image, Color> navigationButtonImageColors = new();
+    private readonly Dictionary<Button, GameObject> navigationButtonSuns = new();
     private readonly Dictionary<Button, Vector2Int> navigationButtonCoordinates = new();
     private readonly HashSet<Button> navigationPointerBoundButtons = new();
+    private Button hoveredNavigationButton;
     private GameObject gameStopPopup;
     private Button gameStopYesButton;
     private Button gameStopNoButton;
@@ -85,12 +90,12 @@ public class MainScene : MonoBehaviour
     private static readonly Dictionary<string, Vector2Int> navigationCoordinatesByButtonName = new()
     {
         { "LoadBtn", new Vector2Int(0, 0) },
-        { "Setting", new Vector2Int(-2, 0) },
-        { "GameStartBtn", new Vector2Int(-1, 1) },
+        { "Setting", new Vector2Int(-1, 0) },
+        { "GameStartBtn", new Vector2Int(-2, 1) },
         { "ResetData", new Vector2Int(1, 0) },
         { "Dict", new Vector2Int(2, 0) },
-        { "PopeList", new Vector2Int(2, 1) },
-        { DoorNavigationButtonName, new Vector2Int(3, 0) },
+        { "PopeList", new Vector2Int(4, 2) },
+        { DoorNavigationButtonName, new Vector2Int(3, 1) },
     };
     private static readonly Dictionary<string, string> navigationSfxByButtonName = new()
     {
@@ -172,6 +177,7 @@ public class MainScene : MonoBehaviour
 
     private void OnDisable()
     {
+        hoveredNavigationButton = null;
         ClearSelectionHighlight();
         ApplyPopeListMouseOnlyMode(false);
         popeListHistoryPresenter?.ExitBrowseMode();
@@ -761,6 +767,11 @@ public class MainScene : MonoBehaviour
         return true;
     }
 
+    private bool IsNavigationButtonEligible(Button button)
+    {
+        return button != null && navigationButtons != null && IsNavigationIndexEligible(navigationButtons.IndexOf(button));
+    }
+
     private Button GetCurrentNavigationButton()
     {
         if (!IsNavigationIndexEligible(currentNavigationIndex))
@@ -810,22 +821,32 @@ public class MainScene : MonoBehaviour
 
         if (highlightedButton == currentButton && highlightedOutline == targetOutline)
         {
-            if (!targetOutline.enabled)
+            bool shouldShowOutline = ShouldShowNavigationOutline(currentButton);
+            if (targetOutline.enabled != shouldShowOutline)
             {
-                targetOutline.enabled = true;
+                targetOutline.enabled = shouldShowOutline;
             }
 
             ApplyOutlineStyle(targetOutline);
             UpdateNavigationButtonImageVisibility(currentButton);
+            UpdateNavigationSunVisuals(currentButton);
             return;
         }
 
         ClearSelectionHighlight();
         ApplyOutlineStyle(targetOutline);
-        targetOutline.enabled = true;
+        targetOutline.enabled = ShouldShowNavigationOutline(currentButton);
         highlightedButton = currentButton;
         highlightedOutline = targetOutline;
         UpdateNavigationButtonImageVisibility(currentButton);
+        UpdateNavigationSunVisuals(currentButton);
+    }
+
+    private static bool ShouldShowNavigationOutline(Button button)
+    {
+        return button == null ||
+            button.name != PopeListNavigationButtonName ||
+            HasPreviousPopeHistory();
     }
 
     private void ClearSelectionHighlight()
@@ -838,6 +859,7 @@ public class MainScene : MonoBehaviour
         highlightedButton = null;
         highlightedOutline = null;
         SetCachedNavigationButtonImagesVisible(null);
+        UpdateNavigationSunVisuals(null);
     }
 
     private void UpdateNavigationButtonImageVisibility(Button currentButton)
@@ -878,18 +900,13 @@ public class MainScene : MonoBehaviour
             navigationButtonImageColors[image] = baseColor;
         }
 
-        if (button != null && button.name == DoorNavigationButtonName)
-        {
-            image.enabled = isVisible;
-            image.color = baseColor;
-            return;
-        }
-
         image.enabled = true;
         Color color = baseColor;
         if (button != null && button.name == PopeListNavigationButtonName)
         {
-            color.a = isVisible ? 1f : PopeListNavigationIdleAlpha;
+            color.a = HasPreviousPopeHistory()
+                ? (isVisible ? 1f : PopeListNavigationIdleAlpha)
+                : 0f;
         }
         else
         {
@@ -897,6 +914,18 @@ public class MainScene : MonoBehaviour
         }
 
         image.color = color;
+    }
+
+    private static bool HasPreviousPopeHistory()
+    {
+        if (ActionRecordManager.Instance == null)
+        {
+            return false;
+        }
+
+        IReadOnlyList<PapalElectionRecordSaveData> records =
+            ActionRecordManager.Instance.GetPersistentPapalElectionHistory();
+        return records != null && records.Count > 0;
     }
 
     private void ResolveNavigationButtonImageReferences()
@@ -932,6 +961,8 @@ public class MainScene : MonoBehaviour
             Button button = buttonTransform.GetComponent<Button>();
             CacheNavigationButtonReference(button, true);
         }
+
+        ResolveNavigationButtonSunReferences();
     }
 
     private void CacheNavigationButtonReference(Button button, bool addToNavigationButtons)
@@ -958,6 +989,82 @@ public class MainScene : MonoBehaviour
             {
                 navigationButtons.Add(button);
             }
+        }
+    }
+
+    private void ResolveNavigationButtonSunReferences()
+    {
+        navigationButtonSuns.Clear();
+
+        if (navigationButtons == null)
+        {
+            return;
+        }
+
+        foreach (Button button in navigationButtons)
+        {
+            if (button == null)
+            {
+                continue;
+            }
+
+            Transform sunTransform = FindDeepChild(button.transform, NavigationSunObjectName);
+            if (sunTransform != null)
+            {
+                navigationButtonSuns[button] = sunTransform.gameObject;
+            }
+        }
+    }
+
+    private void UpdateNavigationSunVisuals(Button selectedButton)
+    {
+        ResolveNavigationButtonSunReferences();
+        bool canShowNavigationSuns = !IsNavigationBlocked();
+
+        foreach (KeyValuePair<Button, GameObject> entry in navigationButtonSuns)
+        {
+            Button button = entry.Key;
+            GameObject sunObject = entry.Value;
+            if (button == null || sunObject == null)
+            {
+                continue;
+            }
+
+            bool isSelected = canShowNavigationSuns && button == selectedButton;
+            bool isHovered = canShowNavigationSuns && button == hoveredNavigationButton && IsNavigationButtonEligible(button);
+            bool isVisible = isSelected || isHovered;
+            sunObject.SetActive(isVisible);
+            SetNavigationSunAlpha(sunObject, isHovered && !isSelected ? NavigationMouseOnlySunAlpha : NavigationSelectedSunAlpha);
+        }
+    }
+
+    private static void SetNavigationSunAlpha(GameObject sunObject, float alpha)
+    {
+        if (sunObject == null)
+        {
+            return;
+        }
+
+        alpha = Mathf.Clamp01(alpha);
+        CanvasGroup canvasGroup = sunObject.GetComponent<CanvasGroup>();
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = alpha;
+            return;
+        }
+
+        foreach (Graphic graphic in sunObject.GetComponentsInChildren<Graphic>(true))
+        {
+            Color color = graphic.color;
+            color.a = alpha;
+            graphic.color = color;
+        }
+
+        foreach (SpriteRenderer spriteRenderer in sunObject.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            Color color = spriteRenderer.color;
+            color.a = alpha;
+            spriteRenderer.color = color;
         }
     }
 
@@ -992,8 +1099,44 @@ public class MainScene : MonoBehaviour
             };
             pointerDownEntry.callback.AddListener(_ => SelectNavigationButton(button));
             trigger.triggers.Add(pointerDownEntry);
+
+            EventTrigger.Entry pointerEnterEntry = new EventTrigger.Entry
+            {
+                eventID = EventTriggerType.PointerEnter,
+            };
+            pointerEnterEntry.callback.AddListener(_ => OnNavigationPointerEnter(button));
+            trigger.triggers.Add(pointerEnterEntry);
+
+            EventTrigger.Entry pointerExitEntry = new EventTrigger.Entry
+            {
+                eventID = EventTriggerType.PointerExit,
+            };
+            pointerExitEntry.callback.AddListener(_ => OnNavigationPointerExit(button));
+            trigger.triggers.Add(pointerExitEntry);
+
             navigationPointerBoundButtons.Add(button);
         }
+    }
+
+    private void OnNavigationPointerEnter(Button button)
+    {
+        if (!IsNavigationButtonEligible(button))
+        {
+            return;
+        }
+
+        hoveredNavigationButton = button;
+        UpdateNavigationSunVisuals(GetCurrentNavigationButton());
+    }
+
+    private void OnNavigationPointerExit(Button button)
+    {
+        if (hoveredNavigationButton == button)
+        {
+            hoveredNavigationButton = null;
+        }
+
+        UpdateNavigationSunVisuals(GetCurrentNavigationButton());
     }
 
     private static bool TryGetDirectionalDistance(
@@ -1160,47 +1303,13 @@ public class MainScene : MonoBehaviour
             Image doorImage = doorButton.GetComponent<Image>();
             if (doorImage != null)
             {
-                ConfigureDoorHitArea(doorImage);
-                doorImage.enabled = false;
+                doorImage.raycastTarget = true;
+                doorImage.alphaHitTestMinimumThreshold = 0.1f;
             }
 
             doorButton.onClick.RemoveListener(OnClickOpenGameStopPopup);
             doorButton.onClick.AddListener(OnClickOpenGameStopPopup);
         }
-    }
-
-    private void ConfigureDoorHitArea(Image doorImage)
-    {
-        Transform hitAreaTransform = doorButton.transform.Find("DoorHitArea");
-        Image hitAreaImage;
-
-        if (hitAreaTransform == null)
-        {
-            GameObject hitAreaObject = new GameObject(
-                "DoorHitArea",
-                typeof(RectTransform),
-                typeof(CanvasRenderer),
-                typeof(Image));
-            hitAreaTransform = hitAreaObject.transform;
-            hitAreaTransform.SetParent(doorButton.transform, false);
-            hitAreaImage = hitAreaObject.GetComponent<Image>();
-        }
-        else
-        {
-            hitAreaImage = hitAreaTransform.GetComponent<Image>();
-        }
-
-        RectTransform hitAreaRect = (RectTransform)hitAreaTransform;
-        hitAreaRect.anchorMin = Vector2.zero;
-        hitAreaRect.anchorMax = Vector2.one;
-        hitAreaRect.offsetMin = Vector2.zero;
-        hitAreaRect.offsetMax = Vector2.zero;
-
-        hitAreaImage.sprite = doorImage.sprite;
-        hitAreaImage.color = Color.clear;
-        hitAreaImage.raycastTarget = true;
-        hitAreaImage.maskable = false;
-        hitAreaImage.alphaHitTestMinimumThreshold = 0.1f;
     }
 
     private void SetGameStopPopup(bool isActive)

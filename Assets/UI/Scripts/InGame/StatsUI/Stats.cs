@@ -18,6 +18,9 @@ public class Stats : MonoBehaviour
     [Space(10f)]
     [Header("캐릭터 설명")]
     [SerializeField] string Description;
+
+    public Image PortraitImage => Picture;
+
     public void SetHP(float hp, float maxHp = 10f)
     {
         this.hp.text = $"{(int)hp}";
