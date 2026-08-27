@@ -441,7 +441,7 @@ public class StatsUI : MonoBehaviour
             closeup.gameObject.SetActive(true);
             closeupIndex = idx;
             UnityEngine.UI.Image sourcePortrait = StatsList[idx] != null ? StatsList[idx].PortraitImage : null;
-            closeup.SetCardinal(linkedCardinals[idx], closeupIndex, sourcePortrait);
+            closeup.SetCardinal(linkedCardinals[idx], closeupIndex, sourcePortrait, GetDisplayName(idx));
         }
     }
 

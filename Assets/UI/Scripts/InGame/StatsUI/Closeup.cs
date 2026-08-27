@@ -24,11 +24,11 @@ public class Closeup : MonoBehaviour
     [SerializeField] string[] DummyDescriptions = new string[4];
     [SerializeField] string[] DummyPassives = new string[4];
 
-    public void SetCardinal(Cardinal cardinal, int idx, Image sourcePortrait)
+    public void SetCardinal(Cardinal cardinal, int idx, Image sourcePortrait, string displayName)
     {
         //초상화 및 설명 설정
         SetPortrait(sourcePortrait);
-        Name.text = DummyNames[idx];
+        Name.text = !string.IsNullOrWhiteSpace(displayName) ? displayName : DummyNames[idx];
         Title.text = DummyTitles[idx];
         Description.text = DummyDescriptions[idx];
         Passive.text = DummyPassives[idx];
