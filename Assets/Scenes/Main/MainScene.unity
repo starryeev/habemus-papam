@@ -2910,7 +2910,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -3275,7 +3275,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 925312537}
         m_TargetAssemblyTypeName: MainScene, Assembly-CSharp
-        m_MethodName: OnClickCancelStartGame
+        m_MethodName: OnClickCancelGameStop
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4072,7 +4072,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 925312537}
         m_TargetAssemblyTypeName: MainScene, Assembly-CSharp
-        m_MethodName: OnClickConfirmStartGame
+        m_MethodName: OnClickConfirmGameStop
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -7440,7 +7440,7 @@ MonoBehaviour:
   - {fileID: 656352999}
   - {fileID: 1334165051}
   - {fileID: 133550516}
-  - {fileID: 0}
+  - {fileID: 8744502}
   - {fileID: 1934470426}
   selectedOutlineColor: {r: 1, g: 0.989954, b: 0, a: 1}
   selectedOutlineDistance: {x: 2, y: -2}

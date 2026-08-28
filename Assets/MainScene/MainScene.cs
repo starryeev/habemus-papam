@@ -14,7 +14,7 @@ public class MainScene : MonoBehaviour
     private const string DoorSfxName = "Door";
     private const string NavigationSunObjectName = "Sun";
     private const float PopeListNavigationIdleAlpha = 143f / 255f;
-    private const float NavigationMouseOnlySunAlpha = 0.6f;
+    private const float NavigationMouseOnlySunAlpha = 0.3f;
     private const float NavigationSelectedSunAlpha = 1f;
 
     private const string IntroNewspaperSceneName = "IntroNewspaperScene";
@@ -900,13 +900,6 @@ public class MainScene : MonoBehaviour
             navigationButtonImageColors[image] = baseColor;
         }
 
-        if (button != null && button.name == DoorNavigationButtonName)
-        {
-            image.enabled = isVisible;
-            image.color = baseColor;
-            return;
-        }
-
         image.enabled = true;
         Color color = baseColor;
         if (button != null && button.name == PopeListNavigationButtonName)
@@ -1310,47 +1303,13 @@ public class MainScene : MonoBehaviour
             Image doorImage = doorButton.GetComponent<Image>();
             if (doorImage != null)
             {
-                ConfigureDoorHitArea(doorImage);
-                doorImage.enabled = false;
+                doorImage.raycastTarget = true;
+                doorImage.alphaHitTestMinimumThreshold = 0.1f;
             }
 
             doorButton.onClick.RemoveListener(OnClickOpenGameStopPopup);
             doorButton.onClick.AddListener(OnClickOpenGameStopPopup);
         }
-    }
-
-    private void ConfigureDoorHitArea(Image doorImage)
-    {
-        Transform hitAreaTransform = doorButton.transform.Find("DoorHitArea");
-        Image hitAreaImage;
-
-        if (hitAreaTransform == null)
-        {
-            GameObject hitAreaObject = new GameObject(
-                "DoorHitArea",
-                typeof(RectTransform),
-                typeof(CanvasRenderer),
-                typeof(Image));
-            hitAreaTransform = hitAreaObject.transform;
-            hitAreaTransform.SetParent(doorButton.transform, false);
-            hitAreaImage = hitAreaObject.GetComponent<Image>();
-        }
-        else
-        {
-            hitAreaImage = hitAreaTransform.GetComponent<Image>();
-        }
-
-        RectTransform hitAreaRect = (RectTransform)hitAreaTransform;
-        hitAreaRect.anchorMin = Vector2.zero;
-        hitAreaRect.anchorMax = Vector2.one;
-        hitAreaRect.offsetMin = Vector2.zero;
-        hitAreaRect.offsetMax = Vector2.zero;
-
-        hitAreaImage.sprite = doorImage.sprite;
-        hitAreaImage.color = Color.clear;
-        hitAreaImage.raycastTarget = true;
-        hitAreaImage.maskable = false;
-        hitAreaImage.alphaHitTestMinimumThreshold = 0.1f;
     }
 
     private void SetGameStopPopup(bool isActive)
