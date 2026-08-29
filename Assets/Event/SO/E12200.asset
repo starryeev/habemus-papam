@@ -25,9 +25,12 @@ MonoBehaviour:
   conflictEvents: []
   option1: "\uD0DC\uC591\uC758 \uD638\uD761\uC73C\uB85C \uBC1C\uC744 \uAD6C\uB978\uB2E4."
   option1Chance: 1
-  option1Requirement: "경건함 4 이상"
-  option1SuccessDescription: "당신은 숨을 크게 들이쉬고 태양의 기운을 담아 내쉰다. 신성한 빛을 받은 움직임에 연회장의 모두가 넋을 잃는다.\n\n경건함 1 증가!"
-  option1SuccessResult: "경건함 +1"
+  option1Requirement: "\uACBD\uAC74\uD568 4 \uC774\uC0C1"
+  option1SuccessDescription: "\uB2F9\uC2E0\uC740 \uC228\uC744 \uD06C\uAC8C \uB4E4\uC774\uC26C\uACE0
+    \uD0DC\uC591\uC758 \uAE30\uC6B4\uC744 \uB2F4\uC544 \uB0B4\uC270\uB2E4. \uC2E0\uC131\uD55C
+    \uBE5B\uC744 \uBC1B\uC740 \uC6C0\uC9C1\uC784\uC5D0 \uC5F0\uD68C\uC7A5\uC758 \uBAA8\uB450\uAC00
+    \uB10B\uC744 \uC783\uB294\uB2E4."
+  option1SuccessResult: "\uACBD\uAC74\uD568 1 \uC99D\uAC00!"
   option1FailDescription: 
   option1FailResult: 
   option2: "\uBC1C\uC5D0 \uBD88\uC774 \uBD99\uC744 \uB54C\uAE4C\uC9C0 \uBC1C\uBC14\uB2E5\uC744
@@ -37,9 +40,11 @@ MonoBehaviour:
     \n\uC77C\uB2E8 \uC8FD\uC5B4\uB77C\uACE0 \uBC1C\uBC14\uB2E5\uC744 \uBE44\uBCBC
     \uBCF8\uB2E4.\n...\uC9C4\uC9DC\uB85C \uBC1C\uBC14\uB2E5\uC5D0 \uBD88\uC774 \uBD99\uC5C8\uB2E4!\n\uC9C4\uC9DC
     \uB728\uAC81\uB2E4!"
-  option2SuccessResult: "체력 -1\n현재 턴 행동 횟수 +1"
+  option2SuccessResult: "\uCCB4\uB825 1 \uAC10\uC18C!\n\uD604\uC7AC \uD134 \uD589\uB3D9
+    \uD69F\uC218 1 \uCD94\uAC00!"
   option2FailDescription: "\uB2F9\uC2E0\uC740 \uC228\uC744 \uD06C\uAC8C \uB4E4\uC774\uC26C\uACE0,\n\uC77C\uB2E8
     \uC8FD\uC5B4\uB77C\uACE0 \uBC1C\uBC14\uB2E5\uC744 \uBE44\uBCBC \uBCF8\uB2E4.\n...\uADF8\uB9CC
     \uBC1C\uBAA9\uC744 \uC811\uC9C0\uB974\uACE0 \uB9D0\uC558\uB2E4!\n\uC9C4\uC9DC
     \uC544\uD504\uB2E4!"
-  option2FailResult: "체력 -1\n현재 턴 행동 횟수 -1"
+  option2FailResult: "\uCCB4\uB825 1 \uAC10\uC18C!\n\uD604\uC7AC \uD134 \uD589\uB3D9
+    \uD69F\uC218 1 \uAC10\uC18C!"

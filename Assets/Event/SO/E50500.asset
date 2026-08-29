@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::E50500
   eventID: E50500
   eventName: "\uC774 \uBD88\uACBD\uD55C \uC790\uAC00"
-  eventDescription: "(\uD6C4\uBCF4 n)\uC774(\uAC00) \uB2F9\uC2E0\uC758 \uACBD\uC804
-    \uD574\uC11D \uBC29\uC2DD\uC5D0 \uC2EC\uB300\uD558\uACE0\uB3C4 \uC9C0\uB300\uD558\uBA70
+  eventDescription: "(\uB79C\uB364 \uD6C4\uBCF4)\uC774(\uAC00) \uB2F9\uC2E0\uC758
+    \uACBD\uC804 \uD574\uC11D \uBC29\uC2DD\uC5D0 \uC2EC\uB300\uD558\uACE0\uB3C4 \uC9C0\uB300\uD558\uBA70
     \uB9D0\uB85C \uC774\uB8E8 \uD45C\uD604\uD560 \uC218 \uC5C6\uB294 \uC2EC\uAC01\uD55C
     \uBB38\uC81C\uAC00 \uC788\uC74C\uC744 \uC9C0\uC801\uD588\uB2E4.\n\uADF8\uAC8C
     \uBB34\uC2A8 \uAC15\uC544\uC9C0 \uD480 \uB72F\uC5B4\uBA39\uB294 \uC18C\uB9AC\uB0D0\uACE0
@@ -29,8 +29,11 @@ MonoBehaviour:
   option1: "\uAE61!"
   option1Chance: 1
   option1Requirement: '-'
-  option1SuccessDescription: "불과 5분 만에 이단 신문의 모든 과정이 전개됐다. 그 대상이 당신만 아니었다면 감탄했을 것이다.\n\n체력 4 감소!"
-  option1SuccessResult: "체력 -4"
+  option1SuccessDescription: "\uBD88\uACFC 5\uBD84 \uB9CC\uC5D0 \uC774\uB2E8 \uC2E0\uBB38\uC758
+    \uBAA8\uB4E0 \uACFC\uC815\uC774 \uC804\uAC1C\uB410\uB2E4. \uADF8 \uB300\uC0C1\uC774
+    \uB2F9\uC2E0\uB9CC \uC544\uB2C8\uC5C8\uB2E4\uBA74 \uAC10\uD0C4\uD588\uC744 \uAC83\uC774\uB2E4.\n\n\uCCB4\uB825
+    4 \uAC10\uC18C!"
+  option1SuccessResult: "\uCCB4\uB825 2 \uAC10\uC18C!"
   option1FailDescription: 
   option1FailResult: 
   option2: 

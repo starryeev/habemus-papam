@@ -26,13 +26,21 @@ MonoBehaviour:
   option1: "\uBE68\uAC04 \uC5F4\uB9E4\uB97C \uBA39\uB294\uB2E4."
   option1Chance: 0.5
   option1Requirement: 
-  option1SuccessDescription: "빨간 열매를 먹자 태양의 따스한 기운이 몸 구석구석을 채운다.\n\n체력 1 회복!"
-  option1SuccessResult: "체력 +1"
-  option1FailDescription: "빨간 열매의 매운맛에 정신이 아득해진다. 몸부림을 본 성직자들은 열렬한 율동이라며 감탄한다.\n\n경건함 2 증가!\n체력 2 감소!"
-  option1FailResult: "경건함 +2\n체력 -2"
+  option1SuccessDescription: "\uBE68\uAC04 \uC5F4\uB9E4\uB97C \uBA39\uC790 \uD0DC\uC591\uC758
+    \uB530\uC2A4\uD55C \uAE30\uC6B4\uC774 \uBAB8 \uAD6C\uC11D\uAD6C\uC11D\uC744 \uCC44\uC6B4\uB2E4."
+  option1SuccessResult: "\uCCB4\uB825 1 \uD68C\uBCF5!"
+  option1FailDescription: "\uBE68\uAC04 \uC5F4\uB9E4\uC758 \uB9E4\uC6B4\uB9DB\uC5D0
+    \uC815\uC2E0\uC774 \uC544\uB4DD\uD574\uC9C4\uB2E4.\n\uC6B0\uC720\uB97C \uB2EC\uB77C\uACE0
+    \uBAB8\uBD80\uB9BC\uCCD0 \uBCF4\uC9C0\uB9CC,\n\uC7A5\uB85C\uB4E4\uC740 \uB2F9\uC2E0\uC758
+    \uC5F4\uB82C\uD55C \uC728\uB3D9\uC5D0 \uAC10\uD0C4\uD55C\uB2E4."
+  option1FailResult: "\uACBD\uAC74\uD568 2 \uC99D\uAC00!\n\uCCB4\uB825 2 \uAC10\uC18C!"
   option2: "\uD30C\uB780 \uC5F4\uB9E4\uB97C \uBA39\uB294\uB2E4."
   option2Chance: 0.5
-  option2SuccessDescription: "파란 열매를 먹자 태양의 따스한 기운이 몸 구석구석을 채운다.\n\n체력 2 회복!"
-  option2SuccessResult: "체력 +2"
-  option2FailDescription: "파란 열매의 매운맛에 정신이 아득해진다. 몸부림을 본 성직자들은 열렬한 율동이라며 감탄한다.\n\n경건함 2 증가!\n체력 2 감소!"
-  option2FailResult: "경건함 +2\n체력 -2"
+  option2SuccessDescription: "\uD30C\uB780 \uC5F4\uB9E4\uB97C \uBA39\uC790 \uD0DC\uC591\uC758
+    \uB530\uC2A4\uD55C \uAE30\uC6B4\uC774 \uBAB8 \uAD6C\uC11D\uAD6C\uC11D\uC744 \uCC44\uC6B4\uB2E4."
+  option2SuccessResult: "\n\uCCB4\uB825 2 \uD68C\uBCF5!"
+  option2FailDescription: "\uD30C\uB780 \uC5F4\uB9E4\uC758 \uB9E4\uC6B4\uB9DB\uC5D0
+    \uC815\uC2E0\uC774 \uC544\uB4DD\uD574\uC9C4\uB2E4.\n\uC6B0\uC720\uB97C \uB2EC\uB77C\uACE0
+    \uBAB8\uBD80\uB9BC\uCCD0 \uBCF4\uC9C0\uB9CC,\n\uC7A5\uB85C\uB4E4\uC740 \uB2F9\uC2E0\uC758
+    \uC5F4\uB82C\uD55C \uC728\uB3D9\uC5D0 \uAC10\uD0C4\uD55C\uB2E4."
+  option2FailResult: "\uACBD\uAC74\uD568 2 \uC99D\uAC00!\n\uCCB4\uB825 2 \uAC10\uC18C!"

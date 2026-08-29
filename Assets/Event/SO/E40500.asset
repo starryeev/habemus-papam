@@ -28,18 +28,23 @@ MonoBehaviour:
   conflictEvents: []
   option1: "\uC9D1\uC73C\uB85C \uC218\uD589\uC6D0\uC744 \uBCF4\uB0B8\uB2E4."
   option1Chance: 0.8
-  option1Requirement: "정치력 4 이상"
-  option1SuccessDescription: "진짜 불이 켜져 있었다! 하마터면 집을 통째로 태양께 봉헌할 뻔했다.\n\n정치력 2 감소!\n경건함 1 감소!"
-  option1SuccessResult: "정치력 -2\n경건함 -1"
+  option1Requirement: "\uC815\uCE58\uB825 4 \uC774\uC0C1"
+  option1SuccessDescription: "\uC9C4\uC9DC \uBD88\uC774 \uCF1C\uC838 \uC788\uC5C8\uB2E4!
+    \uD558\uB9C8\uD130\uBA74 \uC9D1\uC744 \uD1B5\uC9F8\uB85C \uD0DC\uC591\uAED8 \uBD09\uD5CC\uD560
+    \uBED4\uD588\uB2E4."
+  option1SuccessResult: "\uC815\uCE58\uB825 2 \uAC10\uC18C!\n\uACBD\uAC74\uD568 1
+    \uAC10\uC18C!"
   option1FailDescription: "\uAC71\uC815\uC740 \uAE30\uC6B0\uC600\uB2E4.\n\uBB34\uC548\uD574\uC9C4
     \uB2F9\uC2E0\uC740 \uB2E4\uC74C\uC5D0 \uC218\uD589\uC6D0\uC5D0\uAC8C \uBC25 \uD55C
-    \uB07C \uC0AC\uC8FC\uB9AC\uB77C \uB2E4\uC9D0\uD588\uB2E4!\n\n\uC544\uBB34 \uC77C\uB3C4
-    \uC77C\uC5B4\uB098\uC9C0 \uC54A\uC558\uB2E4."
-  option1FailResult: '-'
-  option2: "\uBB50 \uC190 \uC4F8 \uC218\uB2E8\uC774 \uC5C6\uB2E4.\n\uC774 \uC77C\uC744
-    \uB9C8\uCE58\uACE0 \uBE68\uB9AC \uAC00\uBCF4\uB294 \uC218\uBC16\uC5D0."
+    \uB07C \uC0AC\uC8FC\uB9AC\uB77C \uB2E4\uC9D0\uD588\uB2E4!"
+  option1FailResult: "\uC544\uBB34 \uC77C\uB3C4 \uC77C\uC5B4\uB098\uC9C0 \uC54A\uC558\uB2E4."
+  option2: "\uBB50 \uC190 \uC4F8 \uC218\uB2E8\uC774 \uC5C6\uB2E4. \uB098\uC911\uC5D0
+    \uAC00 \uBCF4\uC790."
   option2Chance: 0.8
-  option2SuccessDescription: "와장창! 집중력이 흐트러진 나머지 실수를 해버렸다!\n\n현재 턴 행동 횟수 1회 증가!"
-  option2SuccessResult: "현재 턴 행동 횟수 +1"
-  option2FailDescription: "어지러웠지만 신심으로 마음을 가라앉혔다. 당신의 정신력은 많은 추기경의 귀감이 되었다.\n\n정치력 1 증가!"
-  option2FailResult: "정치력 +1"
+  option2SuccessDescription: "\uC640\uC7A5\uCC3D! \uC9D1\uC911\uB825\uC774 \uD750\uD2B8\uB7EC\uC9C4
+    \uB098\uBA38\uC9C0 \uC2E4\uC218\uB97C \uD574\uBC84\uB838\uB2E4!"
+  option2SuccessResult: "\uCCB4\uB825 1 \uAC10\uC18C!"
+  option2FailDescription: "\uC5B4\uC9C0\uB7EC\uC6E0\uC9C0\uB9CC \uC2E0\uC2EC\uC73C\uB85C
+    \uB9C8\uC74C\uC744 \uAC00\uB77C\uC549\uD614\uB2E4. \uB2F9\uC2E0\uC758 \uC815\uC2E0\uB825\uC740
+    \uB9CE\uC740 \uCD94\uAE30\uACBD\uC758 \uADC0\uAC10\uC774 \uB418\uC5C8\uB2E4."
+  option2FailResult: "\uC815\uCE58\uB825 1 \uC99D\uAC00!"

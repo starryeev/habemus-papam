@@ -34,9 +34,8 @@ public class E50400 : Event
     public override bool OnChoiceOption1(Cardinal performer)
     {
         if(!CanChoiceOption1(performer)) return false;
-        performer.ChangeHp(-4f);
-        performer.ChangeInfluence(1f);
-        performer.ChangePiety(1f);
+        performer.ChangeHp(-3f);
+        performer.ChangePiety(3f);
         return true;
     }
 

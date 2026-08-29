@@ -31,7 +31,7 @@ MonoBehaviour:
   option1: "\uBC88\uAC70\uB86D\uB354\uB77C\uB3C4 \uC11C\uB958\uB97C \uC77D\uC5B4
     \uBCF8\uB2E4!"
   option1Chance: 1
-  option1Requirement: "경건함 3 이상"
+  option1Requirement: "\uACBD\uAC74\uD568 3 \uC774\uC0C1"
   option1SuccessDescription: "\uC804\uD1B5\uC801\uC778 \uBBF8\uC0AC\uC5D0\uB294 \uB113\uC740
     \uC232\uC774 \uD544\uC694\uD574\uC11C,\n\uB3C4\uC2DC \uC9C0\uC5ED\uC758 \uC0AC\uB78C\uB4E4\uC774
     \uD560 \uC218 \uC5C6\uB2E4\uB294 \uB17C\uC9C0\uC600\uB2E4.\n(\uD6C4\uBCF4 2)\uC758
@@ -45,8 +45,10 @@ MonoBehaviour:
   option2: "\uC774\uB7F0 \uC88B\uC740 \uBCA0\uAC1C\uAC00? \uC11C\uB958 \uB354\uBBF8\uB97C
     \uBCA0\uACE0 \uB0AE\uC7A0\uC774\uB098 \uC794\uB2E4."
   option2Chance: 0.5
-  option2SuccessDescription: "푹 잤더니 체력이 회복되었다! 태양만세 미사? 알 게 뭐람?\n\n체력 3 증가!\n현재 턴 행동 횟수 1회 감소!"
-  option2SuccessResult: "체력 +3\n현재 턴 행동 횟수 -1"
+  option2SuccessDescription: "\uD479 \uC7A4\uB354\uB2C8 \uCCB4\uB825\uC774 \uD68C\uBCF5\uB418\uC5C8\uB2E4!
+    \uD0DC\uC591\uB9CC\uC138 \uBBF8\uC0AC? \uC54C \uAC8C \uBB50\uB78C?"
+  option2SuccessResult: "\uCCB4\uB825 3 \uC99D\uAC00!\n\uD604\uC7AC \uD134 \uD589\uB3D9
+    \uD69F\uC218 1\uD68C \uAC10\uC18C!"
   option2FailDescription: "\uB108\uBB34 \uD479 \uC7A4\uB098? \uC790\uACE0 \uC77C\uC5B4\uB098
     \uBCF4\uB2C8 \uD68C\uC758\uAC00 \uC804\uBD80 \uB05D\uB098 \uC788\uC5C8\uB2E4!"
-  option2FailResult: "이번 썬ㅡ클라베 즉시 종료"
+  option2FailResult: "\uC774\uBC88 \uC36C\u3161\uD074\uB77C\uBCA0 \uC989\uC2DC \uC885\uB8CC!"

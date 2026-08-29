@@ -17,7 +17,7 @@ public class E50500 : Event
         option1Chance = 1f;
         option1Requirement = "-";
         option1SuccessDescription = "불과 5분 만에 이단 신문의 모든 과정이 전개됐다. 그 대상이 당신만 아니었다면 감탄했을 것이다.\n\n체력 4 감소!";
-        option1SuccessResult = "체력 -4";
+        option1SuccessResult = "체력 -2";
         option2 = "";
     }
 
@@ -34,7 +34,7 @@ public class E50500 : Event
     public override bool OnChoiceOption1(Cardinal performer)
     {
         if(!CanChoiceOption1(performer)) return false;
-        performer.ChangeHp(-4f);
+        performer.ChangeHp(-2f);
         return true;
     }
 

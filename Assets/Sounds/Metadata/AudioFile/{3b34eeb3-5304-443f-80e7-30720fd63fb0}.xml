@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{3b34eeb3-5304-443f-80e7-30720fd63fb0}">
+		<property name="assetPath">
+			<value>ttabong.mp3</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>1.4367346938775509</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{c8ff7e0e-b114-4801-b4cf-084c98d8b2e1}</destination>
+		</relationship>
+	</object>
+</objects>

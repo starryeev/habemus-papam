@@ -16,7 +16,7 @@ MonoBehaviour:
   eventName: "\uD638\uC6B0\uC8FC\uC758\uBCF4"
   eventDescription: "\uCD94\uC801\uCD94\uC801.... \uCC3D\uBC16\uC744 \uBCF4\uB2C8
     \uBE44\uAC00 \uB0B4\uB9AC\uACE0 \uC788\uB2E4.\n\uBE57\uC18C\uB9AC\uAC00 \uC740\uC740\uD558\uAC8C
-    \uC6B8\uB824 \uD37C\uC9C0\uB294 \uB300\uC2E0\uC804\uC740 \uC5B4\uB290 \uB54C\uBCF4\uB2E4
+    \uC6B8\uB824 \uD37C\uC9C0\uB294 \uB300\uC131\uC804\uC740 \uC5B4\uB290 \uB54C\uBCF4\uB2E4
     \uACE0\uC694\uD588\uB2E4."
   itemImage: {fileID: 0}
   maxAppear: 1
@@ -27,8 +27,10 @@ MonoBehaviour:
   option1: "\uB208\uC744 \uAC10\uACE0 \uBE57\uC18C\uB9AC\uB97C \uB4E3\uC790."
   option1Chance: 1
   option1Requirement: '-'
-  option1SuccessDescription: "몸과 마음이 치유되는 느낌이다.\n\n모든 후보의 체력 2 증가!\n현재 턴 행동 횟수 1회 증가!"
-  option1SuccessResult: "모든 후보의 체력 +2\n현재 턴 행동 횟수 +1"
+  option1SuccessDescription: "\uBAB8\uACFC \uB9C8\uC74C\uC774 \uCE58\uC720\uB418\uB294
+    \uB290\uB08C\uC774\uB2E4."
+  option1SuccessResult: "\uBAA8\uB4E0 \uD6C4\uBCF4\uC758 \uCCB4\uB825 2 \uC99D\uAC00!\n\uD604\uC7AC
+    \uD134 \uD589\uB3D9 \uD69F\uC218 1 \uC99D\uAC00!"
   option1FailDescription: 
   option1FailResult: 
   option2: 

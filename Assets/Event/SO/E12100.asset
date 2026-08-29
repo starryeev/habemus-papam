@@ -26,15 +26,22 @@ MonoBehaviour:
   option1: "\uB0B4 \uC548\uC5D0 \uC228\uACA8\uC9C4 \uC2E0\uC131\uD55C \uD0DC\uC591
     \uC5D0\uB108\uC9C0\uB97C \uBCF4\uC5EC \uC900\uB2E4."
   option1Chance: 1
-  option1Requirement: "경건함 3 이상"
-  option1SuccessDescription: "당신은 후드를 벗고, 그 속에 숨겨진 신성한 태양 에너지를 보여준다. 찬란한 빛을 반사한 당신의 이마에 좌중이 감탄한다.\n\n정치력 1 증가!"
-  option1SuccessResult: "정치력 +1"
+  option1Requirement: "\uACBD\uAC74\uD568 3 \uC774\uC0C1"
+  option1SuccessDescription: "\uB2F9\uC2E0\uC740 \uD6C4\uB4DC\uB97C \uBC97\uACE0,
+    \uADF8 \uC18D\uC5D0 \uC228\uACA8\uC9C4 \uC2E0\uC131\uD55C \uD0DC\uC591 \uC5D0\uB108\uC9C0\uB97C
+    \uBCF4\uC5EC\uC900\uB2E4. \uCC2C\uB780\uD55C \uBE5B\uC744 \uBC18\uC0AC\uD55C
+    \uB2F9\uC2E0\uC758 \uC774\uB9C8\uC5D0 \uC88C\uC911\uC774 \uAC10\uD0C4\uD55C\uB2E4."
+  option1SuccessResult: "\uC815\uCE58\uB825 1 \uC99D\uAC00!"
   option1FailDescription: 
   option1FailResult: 
   option2: "\uC2E0\uC559\uC744 \uAC80\uC99D\uD558\uAE30 \uC704\uD574 \uD0DC\uC591\uC744
     \uB6AB\uC5B4\uC838\uB77C \uCCD0\uB2E4\uBCF8\uB2E4."
   option2Chance: 0.5
-  option2SuccessDescription: "태양의 찬란한 에너지가 대뇌의 전두엽을 꿰뚫는다. 눈은 아프고 몸은 조금 지쳤다.\n\n체력 1 감소!"
-  option2SuccessResult: "체력 -1"
-  option2FailDescription: "태양의 에너지를 받아들이다 못해 그만 눈을 감고 말았다. 눈물이 흐르고 몸이 크게 지쳤다.\n\n체력 2 감소!"
-  option2FailResult: "체력 -2"
+  option2SuccessDescription: "\uD0DC\uC591\uC758 \uCC2C\uB780\uD55C \uC5D0\uB108\uC9C0\uAC00
+    \uB300\uB1CC\uC758 \uC804\uB450\uC5FD\uC744 \uAFF0\uB6AB\uB294\uB2E4. \uB208\uC740
+    \uC544\uD504\uACE0 \uBAB8\uC740 \uC9C0\uCE5C\uB2E4."
+  option2SuccessResult: "\uCCB4\uB825 1 \uAC10\uC18C!"
+  option2FailDescription: "\uD0DC\uC591\uC758 \uC5D0\uB108\uC9C0\uB97C \uBC1B\uC544\uB4E4\uC774\uB2E4
+    \uBABB\uD574 \uADF8\uB9CC \uB208\uC744 \uAC10\uACE0 \uB9D0\uC558\uB2E4. \uB208\uBB3C\uC774
+    \uD750\uB974\uACE0 \uBA38\uB9AC\uAC00 \uC544\uD504\uB2E4."
+  option2FailResult: "\uCCB4\uB825 2 \uAC10\uC18C!"

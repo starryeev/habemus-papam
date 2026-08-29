@@ -30,15 +30,18 @@ MonoBehaviour:
   option1: "\uD760... \uC544\uBB34\uB9AC \uBD10\uB3C4 \uC218\uC0C1\uD558\uB2E4.\n\uC8FC\uC704\uB97C 
     \uC0B4\uD53C\uBA70 \uC870\uC2EC\uD788 \uB3CC\uC544\uC11C \uAC00\uC790."
   option1Chance: 1
-  option1Requirement: "경건함 5 이상"
-  option1SuccessDescription: "오늘도 무사히 산책을 마쳤다. 이 또한 태양신의 은혜겠지요.\n\n체력 2 증가!\n경건함 1 증가!"
-  option1SuccessResult: "체력 +2\n경건함 +1"
-  option1FailDescription: '-'
-  option1FailResult: '-'
+  option1Requirement: "\uACBD\uAC74\uD568 5 \uC774\uC0C1"
+  option1SuccessDescription: "\uC624\uB298\uB3C4 \uBB34\uC0AC\uD788 \uC0B0\uCC45\uC744
+    \uB9C8\uCCE4\uB2E4. \uC774 \uB610\uD55C \uD0DC\uC591\uC758 \uC740\uD61C\uACA0\uC9C0\uC694."
+  option1SuccessResult: "\uCCB4\uB825 2 \uC99D\uAC00!\n\uACBD\uAC74\uD568 1 \uC99D\uAC00!"
+  option1FailDescription: 
+  option1FailResult: 
   option2: "\uB3CC\uB2E4\uB9AC\uB294 \uB098\uC57D\uD55C \uC790\uB098 \uB450\uB4E4\uACA8
     \uBCF4\uB294 \uAC83\uC774\uB2E4.\n\uADF8\uB0E5 \uAC00\uC790."
   option2Chance: 1
-  option2SuccessDescription: "미끄러져 체력 1 감소! 현재 턴 행동 횟수 1회 감소!"
-  option2SuccessResult: "체력 -1\n현재 턴 행동 횟수 -1"
+  option2SuccessDescription: "\uBBF8\uB044\uB369... \uCCA8\uBC99!\n\uC774\uB7F0,
+    \uC6D0\uCE58 \uC54A\uC740 \uBC18\uC2E0\uC695 \uB355\uC5D0 \uBAB8\uC774 \uBB34\uAC70\uC6CC\uC84C\uB2E4."
+  option2SuccessResult: "\uCCB4\uB825 1 \uAC10\uC18C!\n\uD604\uC7AC \uD134 \uD589\uB3D9
+    \uD69F\uC218 1 \uAC10\uC18C!"
   option2FailDescription: 
   option2FailResult: 

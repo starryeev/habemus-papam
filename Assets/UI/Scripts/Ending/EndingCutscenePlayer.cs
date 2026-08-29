@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class EndingCutscenePlayer : MonoBehaviour
 {
@@ -25,6 +26,15 @@ public class EndingCutscenePlayer : MonoBehaviour
     [SerializeField] private TMP_FontAsset boldFont;
     [SerializeField] private float fadeInDuration = 1f;
     [SerializeField] private float holdDuration = 4f;
+
+    [Header("Video")]
+    [SerializeField] private VideoPlayer videoPlayer;
+    [SerializeField] private VideoClip defaultVideoClip;
+    [SerializeField] private List<EndingVideoEntry> endingVideos = new List<EndingVideoEntry>();
+
+    [Header("BGM")]
+    [SerializeField] private string defaultBgmName;
+    [SerializeField] private List<EndingBgmEntry> endingBgms = new List<EndingBgmEntry>();
 
     [Header("Flow")]
     [SerializeField] private bool playOnStart = true;
@@ -101,6 +111,8 @@ public class EndingCutscenePlayer : MonoBehaviour
     public void PlaySelectedEnding()
     {
         EnsureReferences();
+        PlaySelectedVideo();
+        PlaySelectedBgm();
         PrepareLines();
 
         if (textSequenceCoroutine != null)
@@ -113,6 +125,11 @@ public class EndingCutscenePlayer : MonoBehaviour
 
     private void EnsureReferences()
     {
+        if (videoPlayer == null)
+        {
+            videoPlayer = GetComponent<VideoPlayer>();
+        }
+
         if (endingText == null)
         {
             GameObject textObject = GameObject.Find("UI/EndingUI/EndingText");
@@ -170,6 +187,69 @@ public class EndingCutscenePlayer : MonoBehaviour
         }
 
         EnsureGoToMainSceneButton();
+    }
+
+    private void PlaySelectedVideo()
+    {
+        if (videoPlayer == null)
+        {
+            Debug.LogWarning("[Ending] VideoPlayer is missing.");
+            return;
+        }
+
+        VideoClip clip = GetVideoClip(EndingResult.Current);
+        if (clip == null)
+        {
+            Debug.LogWarning($"[Ending] No video clip is assigned for {EndingResult.Current}.");
+            videoPlayer.Stop();
+            return;
+        }
+
+        videoPlayer.Stop();
+        videoPlayer.clip = clip;
+        videoPlayer.Play();
+    }
+
+    private VideoClip GetVideoClip(EndingType endingType)
+    {
+        foreach (EndingVideoEntry entry in endingVideos)
+        {
+            if (entry != null && entry.EndingType == endingType && entry.VideoClip != null)
+            {
+                return entry.VideoClip;
+            }
+        }
+
+        return defaultVideoClip;
+    }
+
+    private void PlaySelectedBgm()
+    {
+        if (SoundManager.Instance == null)
+        {
+            return;
+        }
+
+        string bgmName = GetBgmName(EndingResult.Current);
+        if (string.IsNullOrWhiteSpace(bgmName))
+        {
+            return;
+        }
+
+        SoundManager.Instance.PlayBGM(bgmName);
+    }
+
+    private string GetBgmName(EndingType endingType)
+    {
+        foreach (EndingBgmEntry entry in endingBgms)
+        {
+            if (entry != null && entry.EndingType == endingType && !string.IsNullOrWhiteSpace(entry.BgmName))
+            {
+                return entry.BgmName;
+            }
+        }
+
+        return defaultBgmName;
     }
 
     private void PrepareLines()
@@ -716,4 +796,24 @@ internal class EndingTextPage
 
     public string MainText { get; }
     public string SubText { get; set; }
+}
+
+[System.Serializable]
+public class EndingVideoEntry
+{
+    [SerializeField] private EndingType endingType;
+    [SerializeField] private VideoClip videoClip;
+
+    public EndingType EndingType => endingType;
+    public VideoClip VideoClip => videoClip;
+}
+
+[System.Serializable]
+public class EndingBgmEntry
+{
+    [SerializeField] private EndingType endingType;
+    [SerializeField] private string bgmName;
+
+    public EndingType EndingType => endingType;
+    public string BgmName => bgmName;
 }

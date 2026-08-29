@@ -14,7 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::E32002
   eventID: E32002
   eventName: "\uC774\uAD50\uB3C4\uC640 \uC131\uC8042"
-  eventDescription: "대신전 폭탄 테러 미수 사건으로 썬ㅡ클라베는 큰 혼란에 휩싸였다. 강경파인 (후보 1)은(는) 성전을 주장하고, 신중파인 (후보 3)은(는) 외교를 주장한다. 어느 쪽의 손을 들어줄까?"
+  eventDescription: "\uB300\uC2E0\uC804 \uD3ED\uD0C4 \uD14C\uB7EC \uBBF8\uC218 \uC0AC\uAC74\uC73C\uB85C
+    \uC36C\u3161\uD074\uB77C\uBCA0\uB294 \uD070 \uD63C\uB780\uC5D0 \uD729\uC2F8\uC600\uB2E4.\n\uC774\uAD50\uB3C4\uB4E4\uC758
+    \uAD50\uC8FC\uB294, \uD574\uB2F9 \uD3ED\uD0C4\uD14C\uB7EC\uB294 \uAD50\uB2E8\uACFC
+    \uAD00\uACC4\uC5C6\uB2E4\uBA70 \uBE60\uB974\uAC8C \uC0AC\uACFC\uC758 \uC0AC\uC808\uC744
+    \uBCF4\uB0B4 \uC654\uB2E4.\n\uAC15\uACBD\uD30C\uC778 (\uD6C4\uBCF4 1)\uC740(\uB294)
+    \uC774\uBC31 \uB144 \uB3D9\uC548\uC758 \uD3C9\uD654\uB97C \uB05D\uB0B4\uACE0
+    \uC131\uC804\uC744 \uC77C\uC73C\uD0AC \uAC83\uC744 \uAC74\uC758\uD558\uB294 \uBC18\uBA74,\n\uC2E0\uC911\uD30C\uC778
+    (\uD6C4\uBCF4 3)\uC740(\uB294) \uAD50\uC8FC\uC640\uC758 \uD68C\uB2F4\uC5D0 \uC751\uD558\uACE0
+    \uC678\uAD50\uC5D0\uC11C \uC720\uB9AC\uD55C \uC704\uCE58\uB97C \uC810\uD560 \uAC83\uC744
+    \uC8FC\uC7A5\uD55C\uB2E4.\n\uB204\uAD6C\uB97C \uACAC\uC81C\uD560\uC9C0\uB294
+    \uB2F9\uC2E0\uC758 \uC190\uC5D0 \uB2EC\uB838\uB2E4!"
   itemImage: {fileID: 0}
   maxAppear: 1
   eventWeightBase: Infinity
@@ -26,13 +36,21 @@ MonoBehaviour:
   option1: "(\uD6C4\uBCF4 1)\uC744(\uB97C) \uC9C0\uC9C0\uD55C\uB2E4."
   option1Chance: 1
   option1Requirement: 
-  option1SuccessDescription: "당신은 (후보 1)의 지지자를 자처하며 성전을 일으킬 것을 천명하였다.\n\n경건함 1 감소!\n게임 종료!\n\"성전\" 엔딩"
-  option1SuccessResult: "경건함 -1\n게임 종료\n\"성전\" 엔딩"
+  option1SuccessDescription: "\uB2F9\uC2E0\uC740 (\uD6C4\uBCF4 1)\uC758 \uC9C0\uC9C0\uC790\uB97C
+    \uC790\uCC98\uD558\uBA70, \uC131\uC804\uC744 \uC77C\uC73C\uD0AC \uAC83\uC744
+    \uCC9C\uBA85\uD558\uC600\uB2E4.\n\uD0DC\uC591\uC758 \uC55E\uAE38\uC744 \uB9C9\uC740
+    \uC790\uB4E4\uC740 \uBAA8\uB450 \uD0DC\uC591\uC5D0 \uC758\uD574 \uBD88\uC0B4\uB77C\uC9C8
+    \uAC83\uC774\uB2E4!"
+  option1SuccessResult: "\uC36C\u3161\uD074\uB77C\uBCA0 \uC885\uACB0!"
   option1FailDescription: 
   option1FailResult: 
   option2: "(\uD6C4\uBCF4 3)\uC744(\uB97C) \uC9C0\uC9C0\uD55C\uB2E4!"
   option2Chance: 1
-  option2SuccessDescription: "당신은 (후보 3)의 지지자를 자처하며 외교로 평화를 지킬 것을 선언하였다.\n\n정치력 1 증가!\n게임 종료!\n\"외교 승리\" 엔딩"
-  option2SuccessResult: "정치력 +1\n게임 종료\n\"외교 승리\" 엔딩"
+  option2SuccessDescription: "\uD0DC\uC591\uC740 \uBAA8\uB450\uB97C \uAD7D\uC5B4\uC0B4\uD53C\uB294
+    \uD3C9\uD654\uC758 \uC0C1\uC9D5\uC774\uB2E4. \uB0A1\uC740 \uC2DC\uB300\uC758
+    \uACFC\uC624\uB97C \uBC18\uBCF5\uD560 \uC218\uB294 \uC5C6\uB2E4.\n\uB2F9\uC2E0\uC740
+    (\uD6C4\uBCF4 3)\uC758 \uC9C0\uC9C0\uC790\uB97C \uC790\uCC98\uD558\uBA70, \uC131\uC804\uC744
+    \uB9C9\uC744 \uAC83\uC744 \uC120\uC5B8\uD558\uC600\uB2E4."
+  option2SuccessResult: "\uC36C\u3161\uD074\uB77C\uBCA0 \uC885\uACB0!"
   option2FailDescription: 
   option2FailResult: 

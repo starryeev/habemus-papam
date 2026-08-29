@@ -28,8 +28,10 @@ MonoBehaviour:
   option1: "\uC131\uC804\uC774\uB2E4!"
   option1Chance: 1
   option1Requirement: '-'
-  option1SuccessDescription: "너 죽고 나 죽자! 오늘 성전의 맛을 똑똑히 보여주겠다.\n\n플레이어와 후보 1, 2, 3의 정치력 4 증가!\n이번 콘클라베 동안 최소 체력 1 유지!"
-  option1SuccessResult: "플레이어와 후보 1, 2, 3 정치력 +4\n이번 콘클라베 동안 최소 체력 1 유지"
+  option1SuccessDescription: "\uB108 \uC8FD\uACE0 \uB098 \uC8FD\uC790! \uC624\uB298
+    \uC131\uC804\uC758 \uB9DB\uC744 \uB611\uB611\uD788 \uBCF4\uC5EC\uC8FC\uACA0\uB2E4."
+  option1SuccessResult: "\uBAA8\uB4E0 \uD6C4\uBCF4\uC758 \uC815\uCE58\uB825 4 \uC99D\uAC00!\n\uC774\uBC88
+    \uC36C\u3161\uD074\uB77C\uBCA0 \uB3D9\uC548 \uCD5C\uC18C \uCCB4\uB825 1 \uC720\uC9C0!"
   option1FailDescription: 
   option1FailResult: 
   option2: "\uC6B0\uB9E4\uD55C \uC774\uB2E8\uB4E4\uC544!"
@@ -40,8 +42,8 @@ MonoBehaviour:
     \uC36C\u3161\uD074\uB77C\uBCA0 \uB3D9\uC548 \uACF5\uC791\uC774 \uACBD\uAC74\uD568\uC744
     \uC18C\uBAA8\uD558\uC9C0 \uC54A\uC74C!\n\uC774\uBC88 \uC36C\u3161\uD074\uB77C\uBCA0
     \uB3D9\uC548 \uCCB4\uB825\uC774 0\uC73C\uB85C \uB5A8\uC5B4\uC9C0\uC9C0 \uC54A\uC74C!"
-  option2SuccessResult: "\uC774\uBC88 \uCF58\uD074\uB77C\uBCA0 \uB3D9\uC548 \uACF5\uC791
-    \uACBD\uAC74\uD568 \uC18C\uBAA8\uB7C9 0\uC73C\uB85C \uACE0\uC815\n\uC774\uBC88
-    \uCF58\uD074\uB77C\uBCA0 \uB3D9\uC548 \uCD5C\uC18C \uCCB4\uB825 1 \uC720\uC9C0"
+  option2SuccessResult: "\uC774\uBC88 \uC36C\u3161\uD074\uB77C\uBCA0 \uB3D9\uC548
+    \uACF5\uC791 \uACBD\uAC74\uD568 \uC18C\uBAA8\uB7C9 0\uC73C\uB85C \uACE0\uC815\n\uC774\uBC88
+    \uC36C\u3161\uD074\uB77C\uBCA0 \uB3D9\uC548 \uCD5C\uC18C \uCCB4\uB825 1 \uC720\uC9C0"
   option2FailDescription: 
   option2FailResult: 

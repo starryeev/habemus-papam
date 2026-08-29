@@ -56,7 +56,7 @@ public class E40200 : Event
             return true;
         }
 
-        InGameManager.Instance.ChangeCurrentTurnActions(1,
+        InGameManager.Instance.ChangeCurrentTurnActions(-1,
             PlayerActionEffectSourceType.Event, eventID, eventName);
         return false;
     }

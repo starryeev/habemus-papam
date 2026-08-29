@@ -393,7 +393,11 @@ public class Cardinal : MonoBehaviour
 
     private void HandleGameContextEvent(GameContext.GameContextEvent eventType)
     {
-        if (eventType == GameContext.GameContextEvent.ConclaveEnd)
+        if (eventType == GameContext.GameContextEvent.ConclaveStart)
+        {
+            prayDeltaHpEvent = 0f;
+        }
+        else if (eventType == GameContext.GameContextEvent.ConclaveEnd)
         {
             minHpOneEffectSources.Clear();
         }

@@ -60,8 +60,7 @@ public class E40500 : Event
 
         if(Random.value <= option2Chance)
         {
-            InGameManager.Instance.ChangeCurrentTurnActions(1,
-                PlayerActionEffectSourceType.Event, eventID, eventName);
+            performer.ChangeHp(-1f);
             return true;
         }
 

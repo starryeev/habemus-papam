@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{7b2cd359-bf60-4344-ab34-33de6cf94d1d}">
+		<property name="assetPath">
+			<value>Vote.mp3</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>37.041632653061221</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{c8ff7e0e-b114-4801-b4cf-084c98d8b2e1}</destination>
+		</relationship>
+	</object>
+</objects>

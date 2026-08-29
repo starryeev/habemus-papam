@@ -58,7 +58,7 @@ public class E21100 : Event
             Cardinal candidate2 = GetCandidate(2);
             if(candidate2 != null) candidate2.ChangeInfluence(1f);
 
-            performer.prayDeltaHpEvent = 5f;
+            performer.prayDeltaHpEvent = 1f;
 
             return FinishChoice(2, true);
         }

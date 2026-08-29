@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::E50200
   eventID: E50200
   eventName: "\uBAA9 \uC880 \uCD95\uC774\uC138\uC694"
-  eventDescription: "(\uD6C4\uBCF4 n)\uB97C \uC9C0\uC9C0\uD558\uB294 \uCD94\uAE30\uACBD\uC774
-    \uB098\uC5D0\uAC8C \uC8FC\uC2A4 \uD55C \uC794\uC744 \uAD8C\uD55C\uB2E4. \uB9C8\uCE68
-    \uBAA9\uC774 \uB108\uBB34 \uB9D0\uB790\uB294\uB370!\n\uC2F1\uADF8\uB7EC\uC6B4
-    \uACFC\uC77C \uD5A5\uC774 \uB098\uB294 \uC9C4\uC9DC \uACFC\uC77C \uC8FC\uC2A4\uB2E4!
-    \uAC8C\uC784 \uAC1C\uBC1C\uC790\uC758 \uC591\uC2EC\uC744 \uAC78\uACE0 \uB3C5\uC57D
-    \uAC19\uC740 \uAC74 \uC808\uB300 \uC544\uB2C8\uB2E4."
+  eventDescription: "(\uB79C\uB364 \uD6C4\uBCF4)\uAC00 \uB098\uC5D0\uAC8C \uC8FC\uC2A4
+    \uD55C \uC794\uC744 \uAD8C\uD55C\uB2E4. \uB9C8\uCE68 \uBAA9\uC774 \uB108\uBB34
+    \uB9D0\uB790\uB294\uB370!\n\uC2F1\uADF8\uB7EC\uC6B4 \uACFC\uC77C \uD5A5\uC774
+    \uB098\uB294 \uC9C4\uC9DC \uACFC\uC77C \uC8FC\uC2A4\uB2E4!\n<i>\uAC8C\uC784 \uAC1C\uBC1C\uC790\uC758
+    \uC591\uC2EC\uC744 \uAC78\uACE0 \uB3C5\uC57D \uAC19\uC740 \uAC74 \uC808\uB300
+    \uC544\uB2C8\uB2E4.</i>"
   itemImage: {fileID: 0}
   maxAppear: 3
   eventWeightBase: 0
@@ -29,10 +29,17 @@ MonoBehaviour:
   option1: "\uC8FC\uC2A4\uB97C \uB9C8\uC2E0\uB2E4."
   option1Chance: 0.5
   option1Requirement: '-'
-  option1SuccessDescription: "푸룬 주스였다! 남은 일을 해치우려 했지만 배가 심상치 않다.\n\n체력 1 감소!\n현재 턴 행동 횟수 1회 감소!"
-  option1SuccessResult: "체력 -1\n현재 턴 행동 횟수 -1"
-  option1FailDescription: "푸룬 주스였다! 당신은 뱃속이 심상치 않음을 느끼고 화장실로 직행한다.\n\n체력 1 증가!\n해당 콘클라베 즉시 종료!"
-  option1FailResult: "체력 +1\n콘클라베 즉시 종료, 교주 판정으로 직행"
+  option1SuccessDescription: "\uD478\uB8EC \uC8FC\uC2A4\uC600\uB2E4! \uB0A8\uC740
+    \uC77C\uC744 \uD574\uCE58\uC6B0\uB824 \uD588\uC9C0\uB9CC \uBC30\uAC00 \uC2EC\uC0C1\uCE58
+    \uC54A\uB2E4."
+  option1SuccessResult: "\uCCB4\uB825 1 \uAC10\uC18C!\n\uD604\uC7AC \uD134 \uD589\uB3D9
+    \uD69F\uC218 1\uD68C \uAC10\uC18C!"
+  option1FailDescription: "\uD478\uB8EC \uC8FC\uC2A4\uC600\uB2E4! \uB2F9\uC2E0\uC740
+    \uBC43\uC18D\uC774 \uC2EC\uC0C1\uCE58 \uC54A\uC74C\uC744 \uB290\uB07C\uACE0 \uD654\uC7A5\uC2E4\uB85C
+    \uC9C1\uD589\uD55C\uB2E4.\n\uAC8C\uC784 \uAC1C\uBC1C\uC790\uC758 \uC591\uC2EC\uC744
+    \uAC78\uACE0 \uAC70\uC9D3\uB9D0\uC740 \uD558\uC9C0 \uC54A\uC558\uB2E4."
+  option1FailResult: "\uC774\uBC88 \uC36C\u3161\uD074\uB77C\uBCA0 \uC989\uC2DC \uC885\uB8CC!\n\uCCB4\uB825
+    1 \uC99D\uAC00!"
   option2: 
   option2Chance: 0
   option2SuccessDescription: 

@@ -26,15 +26,18 @@ MonoBehaviour:
   conflictEvents: []
   option1: "\uC816 \uBA39\uB358 \uD798\uC744 \uB2E4\uD574 \uB2F9\uAE30\uC790!"
   option1Chance: 1
-  option1Requirement: "체력 6 이상"
-  option1SuccessDescription: "역시 몸이 좋으면 머리가 고생을 안 한다.\n\n체력 1 증가!\n정치력 2 감소!"
-  option1SuccessResult: "체력 +1\n정치력 -2"
+  option1Requirement: "\uCCB4\uB825 6 \uC774\uC0C1"
+  option1SuccessDescription: "\uC5ED\uC2DC \uBAB8\uC774 \uC88B\uC73C\uBA74 \uBA38\uB9AC\uAC00
+    \uACE0\uC0DD\uC744 \uC548 \uD55C\uB2E4."
+  option1SuccessResult: "\uCCB4\uB825 1 \uC99D\uAC00!\n\uC815\uCE58\uB825 2 \uAC10\uC18C!"
   option1FailDescription: 
   option1FailResult: 
-  option2: "\uD798\uC774 \uBD80\uC871\uD558\uB2E4.\n\uB2E4\uB978 \uC218\uB2E8\uC744
-    \uCC3E\uC544\uBD10\uC57C \uD560 \uB4EF \uD55C\uB370...."
+  option2: "\uB2E4\uB978 \uC218\uB2E8\uC744 \uCC3E\uC544\uBD10\uC57C \uD560 \uB4EF
+    \uD55C\uB370...."
   option2Chance: 0.5
-  option2SuccessDescription: "문이 열렸다. 씨름한 보람이 있네!\n\n정치력 1 감소!"
-  option2SuccessResult: "정치력 -1"
-  option2FailDescription: "꿈쩍도 안 하네. 애를 쓴 덕분인지 몸이 더 가벼워졌다.\n\n현재 턴 행동 횟수 1회 증가!"
-  option2FailResult: "현재 턴 행동 횟수 +1"
+  option2SuccessDescription: "\uBB38\uC774 \uC5F4\uB838\uB2E4. \uC528\uB984\uD55C
+    \uBCF4\uB78C\uC774 \uC788\uB124!"
+  option2SuccessResult: "\uC815\uCE58\uB825 1 \uAC10\uC18C!"
+  option2FailDescription: "\uAFC8\uCA4D\uB3C4 \uC548 \uD558\uB124. \uAD1C\uD788 \uC2DC\uAC04\uB9CC
+    \uBC84\uB838\uB2E4."
+  option2FailResult: "\uD604\uC7AC \uD134 \uD589\uB3D9 \uD69F\uC218 1\uD68C \uAC10\uC18C!"

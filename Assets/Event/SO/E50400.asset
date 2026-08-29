@@ -14,11 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::E50400
   eventID: E50400
   eventName: "\uC0BC\uC704\uC77C\uCCB4"
-  eventDescription: "(\uD6C4\uBCF4 n)\uACFC(\uC640)\uC758 \uB531\uBC24 \uB0B4\uAE30\uC5D0\uC11C
-    \uD328\uBC30\uD588\uB2E4. \uC190 \uD478\uB294 \uAF34\uC744 \uBCF4\uC544\uD558\uB2C8
-    \uC5B4\uC9C0\uAC04\uD788\uB3C4 \uBCBC\uB974\uACE0 \uC788\uC5C8\uB098 \uBCF4\uB2E4....\n\"\uBD80\uC790\uB294
-    \uB9DD\uD574\uB3C4 3 \uB300\uB97C \uBC84\uD2F4\uB2E4\uB294\uB370, \uC5B4\uB514
-    \uD6C4\uBCF4\uB2D8\uC740 \uBA87 \uB300\uAE4C\uC9C0 \uBC84\uD2F0\uC2DC\uB098 \uBCFC\uAE4C\uC694?\""
+  eventDescription: "(\uB79C\uB364 \uD6C4\uBCF4)\uACFC(\uC640)\uC758 \uB531\uBC24
+    \uB0B4\uAE30\uC5D0\uC11C \uD328\uBC30\uD588\uB2E4. \uC190 \uD478\uB294 \uAF34\uC744
+    \uBCF4\uC544\uD558\uB2C8 \uC5B4\uC9C0\uAC04\uD788\uB3C4 \uBCBC\uB974\uACE0 \uC788\uC5C8\uB098
+    \uBCF4\uB2E4....\n\"\uBD80\uC790\uB294 \uB9DD\uD574\uB3C4 3 \uB300\uB97C \uBC84\uD2F4\uB2E4\uB294\uB370,
+    \uC5B4\uB514 \uD6C4\uBCF4\uB2D8\uC740 \uBA87 \uB300\uAE4C\uC9C0 \uBC84\uD2F0\uC2DC\uB098
+    \uBCFC\uAE4C\uC694?\""
   itemImage: {fileID: 0}
   maxAppear: 3
   eventWeightBase: 20
@@ -28,8 +29,10 @@ MonoBehaviour:
   option1: "\uC545! \uC545! \uC545!"
   option1Chance: 1
   option1Requirement: '-'
-  option1SuccessDescription: "이마에 삼위일체가 시뻘겋게 수놓였다. 태양의 신실한 종다운 트리플 혹이었다.\n\n체력 4 감소!\n정치력 1 증가!\n경건함 1 증가!"
-  option1SuccessResult: "체력 -4\n정치력 +1\n경건함 +1"
+  option1SuccessDescription: "\uC774\uB9C8\uC5D0 \uC0BC\uC704\uC77C\uCCB4\uAC00 \uC2DC\uBED8\uAC8B\uAC8C
+    \uC218\uB193\uC600\uB2E4. \uD0DC\uC591\uC758 \uC2E0\uC2E4\uD55C \uC885\uB2E4\uC6B4
+    \uD2B8\uB9AC\uD50C \uD639\uC774\uC5C8\uB2E4."
+  option1SuccessResult: "\uCCB4\uB825 3 \uAC10\uC18C!\n\uACBD\uAC74\uD568 3 \uC99D\uAC00!"
   option1FailDescription: 
   option1FailResult: 
   option2: 

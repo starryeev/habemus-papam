@@ -30,11 +30,11 @@ MonoBehaviour:
   option1SuccessDescription: "\uAE4C\uC545 \uAE4C\uC545! \uAE4C\uB9C8\uADC0\uB4E4\uC740
     \uD55C\uBC14\uD0D5 \uB09C\uB3D9\uC744 \uD53C\uC6B4 \uB4A4 \uC800 \uBA40\uB9AC
     \uB0A0\uC544\uAC14\uB2E4.\n\uAC00\uBC29 \uC548\uC774 \uC601 \uD5C8\uC804\uD574
-    \uBCF4\uC774\uB294\uB370....\n\n\uC218\uC911\uC5D0 \uC788\uB294 \uBAA8\uB4E0
-    \uC544\uC774\uD15C \uC18C\uBA78!"
-  option1SuccessResult: "\uBAA8\uB4E0 \uC544\uC774\uD15C \uC18C\uBA78"
-  option1FailDescription: "까마귀들을 쥐어박고 내쫓았지만 완전히 지쳐 버렸다.\n\n체력 3 감소!"
-  option1FailResult: "체력 -3"
+    \uBCF4\uC774\uB294\uB370...."
+  option1SuccessResult: "\uBAA8\uB4E0 \uC544\uC774\uD15C \uC18C\uBA78!"
+  option1FailDescription: "\uAE4C\uB9C8\uADC0\uB4E4\uC744 \uC950\uC5B4\uBC15\uACE0
+    \uB0B4\uCAD3\uC558\uC9C0\uB9CC \uC644\uC804\uD788 \uC9C0\uCCD0 \uBC84\uB838\uB2E4."
+  option1FailResult: "\uCCB4\uB825 3 \uAC10\uC18C!"
   option2: 
   option2Chance: 0
   option2SuccessDescription: 

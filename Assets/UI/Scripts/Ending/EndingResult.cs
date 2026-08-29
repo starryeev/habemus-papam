@@ -8,7 +8,9 @@ public enum EndingType
     PolarBear,
     DiplomaticVictory,
     Ascension,
-    GreatSage
+    GreatSage,
+    VivaSun,
+    Bread
 }
 
 public static class EndingResult

@@ -154,6 +154,7 @@ public class MainScene : MonoBehaviour
         InitializePopeListRuntimeBindings();
         EnsureEventSystemNavigationDisabled();
         RefreshNavigation(true);
+        SoundManager.Instance.PlayBGM("Main");
     }
 
     private void Update()
