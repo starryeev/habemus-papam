@@ -1,4 +1,5 @@
 using TMPro;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +24,20 @@ public class Closeup : MonoBehaviour
     [SerializeField] string[] DummyTitles = new string[4];
     [SerializeField] string[] DummyDescriptions = new string[4];
     [SerializeField] string[] DummyPassives = new string[4];
+
+    private readonly List<Graphic> graphics = new List<Graphic>();
+    private readonly List<Color> originalColors = new List<Color>();
+    private bool isGrayedOut;
+
+    private void Awake()
+    {
+        Graphic[] childGraphics = GetComponentsInChildren<Graphic>(true);
+        foreach (Graphic graphic in childGraphics)
+        {
+            graphics.Add(graphic);
+            originalColors.Add(graphic.color);
+        }
+    }
 
     public void SetCardinal(Cardinal cardinal, int idx, Image sourcePortrait, string displayName)
     {
@@ -78,5 +93,27 @@ public class Closeup : MonoBehaviour
         Piety.fillAmount = piety/10;
         this.influence.text = $"{(int)influence}";
         Influence.fillAmount = influence/10;
+    }
+
+    public void SetGrayedOut(bool shouldGrayOut)
+    {
+        if (isGrayedOut == shouldGrayOut)
+        {
+            return;
+        }
+
+        isGrayedOut = shouldGrayOut;
+        for (int i = 0; i < graphics.Count; i++)
+        {
+            Color original = originalColors[i];
+            if (!shouldGrayOut)
+            {
+                graphics[i].color = original;
+                continue;
+            }
+
+            float luminance = original.r * 0.299f + original.g * 0.587f + original.b * 0.114f;
+            graphics[i].color = new Color(luminance, luminance, luminance, original.a);
+        }
     }
 }

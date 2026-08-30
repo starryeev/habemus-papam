@@ -19,6 +19,8 @@ public sealed class NewsBookInitializationTrigger : MonoBehaviour
         arr1.SetActive(false);
         arr2.SetActive(false);
         cutsceneAnim.Play();
+        SoundManager.Instance.StopBGM();
+        SoundManager.Instance.PlaySFX("CutScene");
     }
 
     public void Trigger()
@@ -28,6 +30,7 @@ public sealed class NewsBookInitializationTrigger : MonoBehaviour
             Debug.LogError("News book initializer is not assigned.", this);
             return;
         }
+        SoundManager.Instance.PlayBGM("newspaper");
         initializer.InitializeNewGameNews();
     }
 

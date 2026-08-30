@@ -275,6 +275,7 @@ public class StatsUI : MonoBehaviour
             linkedCardinals[closeupIndex].Piety,
             linkedCardinals[closeupIndex].Influence,
             linkedCardinals[closeupIndex].MaxHp);
+            closeup.SetGrayedOut(ShouldGrayOut(linkedCardinals[closeupIndex]));
         }
         else CalculateAndMoveStats();
     }
@@ -353,16 +354,18 @@ public class StatsUI : MonoBehaviour
 
     private bool HasHigherVisualPriority(int candidateIndex, int currentIndex, float[] maxStats)
     {
-        bool candidateIsActive = linkedCardinals[candidateIndex] != null &&
-            !linkedCardinals[candidateIndex].IsKnockedOut &&
-            linkedCardinals[candidateIndex].Hp > 0f;
-        bool currentIsActive = linkedCardinals[currentIndex] != null &&
-            !linkedCardinals[currentIndex].IsKnockedOut &&
-            linkedCardinals[currentIndex].Hp > 0f;
+        int candidateGroup = GetVisualOrderGroup(linkedCardinals[candidateIndex]);
+        int currentGroup = GetVisualOrderGroup(linkedCardinals[currentIndex]);
 
-        if (candidateIsActive != currentIsActive)
+        if (candidateGroup != currentGroup)
         {
-            return candidateIsActive;
+            return candidateGroup < currentGroup;
+        }
+
+        // 탈락 후보는 항상 하단에서 UI 슬롯 순서대로 유지한다.
+        if (candidateGroup == 1)
+        {
+            return candidateIndex < currentIndex;
         }
 
         if (maxStats[candidateIndex] != maxStats[currentIndex])
@@ -389,9 +392,32 @@ public class StatsUI : MonoBehaviour
         StatsList[i].SetHP(hp, linkedCardinals[i].MaxHp);
         StatsList[i].SetInfluence(inf);
         StatsList[i].SetPiety(pie);
+        StatsList[i].SetGrayedOut(ShouldGrayOut(linkedCardinals[i]));
 
         MaxStats[i] = Math.Max(inf, pie);
         SubStats[i] = Math.Min(inf, pie);
+    }
+
+    private static int GetVisualOrderGroup(Cardinal cardinal)
+    {
+        if (cardinal == null)
+        {
+            return 2;
+        }
+
+        return cardinal.IsKnockedOut || cardinal.Hp <= 0f ? 1 : 0;
+    }
+
+    private static bool ShouldGrayOut(Cardinal cardinal)
+    {
+        if (cardinal == null)
+        {
+            return false;
+        }
+
+        StateController stateController = cardinal.GetComponent<StateController>();
+        return cardinal.IsKnockedOut || cardinal.Hp <= 0f ||
+            (stateController != null && stateController.CurrentState == CardinalState.Stun);
     }
 
     void MoveStat(int uiIndex, float targetY)
