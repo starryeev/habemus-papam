@@ -123,6 +123,7 @@ public class CheckUI : MonoBehaviour
             SoundManager.Instance.PlaySFX(VoteOpenSfxName);
             text.text = ElectionMessage;
             anim.Play("Elect", 0, 0f);
+            SoundManager.Instance.PlayBGM("VoteEnd");
             animState = AnimState.Elect;
             return;
         }
@@ -158,9 +159,11 @@ public class CheckUI : MonoBehaviour
         animState = AnimState.ElectWait;
         Vote.gameObject.SetActive(true);
         anim.Play("Idle", 0, 0f);
+        SoundManager.Instance.PlayBGM("VotePrep");
     }
     public void OnElectAnimFinished()
     {
+        anim.Play("Idle", 0, 0f);
         if (animState == AnimState.ElectEnd) return;
         animState = AnimState.ElectEnd;
         SetSprite(4+(winner%4));

@@ -150,7 +150,15 @@ public class ElectionManager : MonoBehaviour
             }
             else
             {
-                LoadEndingScene(EndingType.NpcPope);
+                EventManager eventManager = InGameManager.Instance.EventManager;
+                bool shouldPlayVivaSun =
+                    eventManager != null &&
+                    eventManager.WasChoice("E31200", 2, true) &&
+                    InGameManager.Instance.GetNpcCandidateNumber(currentWinnerCandidate) == 2;
+
+                LoadEndingScene(shouldPlayVivaSun
+                    ? EndingType.VivaSun
+                    : EndingType.NpcPope);
             }
         }
         else
@@ -271,8 +279,9 @@ public class ElectionManager : MonoBehaviour
     {
         EndingContext.CaptureFromCurrentGame(currentWinnerCandidate);
 
+        bool isNpcPopeEnding = endingType == EndingType.NpcPope || endingType == EndingType.VivaSun;
         if (ActionRecordManager.Instance != null &&
-            (endingType == EndingType.PlayerPope || endingType == EndingType.NpcPope))
+            (endingType == EndingType.PlayerPope || isNpcPopeEnding))
         {
             string electedName = endingType == EndingType.PlayerPope
                 ? EndingContext.PlayerName
@@ -284,7 +293,10 @@ public class ElectionManager : MonoBehaviour
             }
 
             CandidateSlot candidateSlot = ResolveCandidateSlot(currentWinnerCandidate);
-            ActionRecordManager.Instance.RecordPapalElection(endingType, electedName, candidateSlot);
+            ActionRecordManager.Instance.RecordPapalElection(
+                isNpcPopeEnding ? EndingType.NpcPope : endingType,
+                electedName,
+                candidateSlot);
         }
 
         EndingResult.Set(endingType);

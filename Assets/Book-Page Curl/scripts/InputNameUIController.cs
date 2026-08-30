@@ -8,8 +8,6 @@ public class InputNameUIController : MonoBehaviour
     private const int MaxNameLength = 10;
     private const string EmptyNameWarningMessage = "이름을 입력해주세요.";
     private const string TooLongNameWarningMessage = "이름은 10글자 이하로 입력해주세요.";
-    private const string EdgeSpaceWarningMessage = "이름은 공백으로 시작하거나 끝날 수 없습니다.";
-    private const string InvalidCharacterWarningMessage = "완성된 한글과 띄어쓰기만 입력해주세요.";
 
     [SerializeField] private Book book;
     [SerializeField] private GameObject inputNamePopup;
@@ -36,8 +34,6 @@ public class InputNameUIController : MonoBehaviour
         Valid,
         Empty,
         TooLong,
-        EdgeSpace,
-        InvalidCharacter
     }
 
     private void Awake()
@@ -160,7 +156,7 @@ public class InputNameUIController : MonoBehaviour
     private bool TrySaveInputName()
     {
         string inputName = playerNameInputField != null ? playerNameInputField.text : string.Empty;
-        NameValidationResult validationResult = ValidateKoreanName(inputName);
+        NameValidationResult validationResult = ValidateName(inputName);
 
         if (validationResult != NameValidationResult.Valid)
         {
@@ -175,39 +171,13 @@ public class InputNameUIController : MonoBehaviour
         return true;
     }
 
-    private static NameValidationResult ValidateKoreanName(string inputName)
+    private static NameValidationResult ValidateName(string inputName)
     {
         if (string.IsNullOrEmpty(inputName))
             return NameValidationResult.Empty;
 
         if (inputName.Length < MinNameLength || inputName.Length > MaxNameLength)
             return NameValidationResult.TooLong;
-
-        bool hasHangulSyllable = false;
-        bool hasInvalidCharacter = false;
-
-        for (int i = 0; i < inputName.Length; i++)
-        {
-            char character = inputName[i];
-
-            if (IsCompleteHangulSyllable(character))
-            {
-                hasHangulSyllable = true;
-                continue;
-            }
-
-            if (!IsAllowedSpace(character))
-                hasInvalidCharacter = true;
-        }
-
-        if (!hasHangulSyllable && !hasInvalidCharacter)
-            return NameValidationResult.Empty;
-
-        if (IsAllowedSpace(inputName[0]) || IsAllowedSpace(inputName[inputName.Length - 1]))
-            return NameValidationResult.EdgeSpace;
-
-        if (hasInvalidCharacter)
-            return NameValidationResult.InvalidCharacter;
 
         return NameValidationResult.Valid;
     }
@@ -220,23 +190,9 @@ public class InputNameUIController : MonoBehaviour
                 return EmptyNameWarningMessage;
             case NameValidationResult.TooLong:
                 return TooLongNameWarningMessage;
-            case NameValidationResult.EdgeSpace:
-                return EdgeSpaceWarningMessage;
-            case NameValidationResult.InvalidCharacter:
-                return InvalidCharacterWarningMessage;
             default:
                 return string.Empty;
         }
-    }
-
-    private static bool IsCompleteHangulSyllable(char character)
-    {
-        return '\uAC00' <= character && character <= '\uD7A3';
-    }
-
-    private static bool IsAllowedSpace(char character)
-    {
-        return character == ' ';
     }
 
     private void ConfigureInputField()

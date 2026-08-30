@@ -19765,6 +19765,7 @@ MonoBehaviour:
   - {fileID: 32900000, guid: 001aaeccbe42e114c9550d2a3966ac7c, type: 3}
   - {fileID: 32900000, guid: 8b5e7c446022e7443bb519d08b02db71, type: 3}
   - {fileID: 32900000, guid: ba1479344080665439fb164eaea678ee, type: 3}
+  - {fileID: 32900000, guid: 4d7a8931f7ed6e4469212599ff32f1c0, type: 3}
 --- !u!95 &964209054
 Animator:
   serializedVersion: 7
@@ -28638,7 +28639,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.9245283, g: 0.85534203, b: 0.72828406, a: 0.68235296}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -30596,8 +30597,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: PPAP
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 0f7e2e5a6f9fcca4da5ea61d7c056d6d, type: 2}
-  m_sharedMaterial: {fileID: 1051724092590999656, guid: 0f7e2e5a6f9fcca4da5ea61d7c056d6d, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
+  m_sharedMaterial: {fileID: 1688671147638797197, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -30621,7 +30622,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 33.3
+  m_fontSize: 40
   m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 1

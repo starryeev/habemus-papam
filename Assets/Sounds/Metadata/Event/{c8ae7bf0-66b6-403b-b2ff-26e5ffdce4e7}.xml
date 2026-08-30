@@ -32,7 +32,7 @@
 			<destination>{e95fe6e6-96f7-46bd-b254-03769936270f}</destination>
 		</relationship>
 		<relationship name="banks">
-			<destination>{85a05faa-7a5e-4654-94ed-32670c4e60a9}</destination>
+			<destination>{3a33d6e8-c017-4b48-857f-e91d2b417968}</destination>
 		</relationship>
 	</object>
 	<object class="EventMixer" id="{f51a1aa7-39d6-4bfd-8fab-17a23584d2c1}">
@@ -97,7 +97,7 @@
 			<value>1</value>
 		</property>
 		<property name="length">
-			<value>3.8500000000000005</value>
+			<value>3.9000000000000004</value>
 		</property>
 		<property name="volume">
 			<value>-18.5</value>
@@ -108,7 +108,7 @@
 	</object>
 	<object class="SingleSound" id="{6e5cc296-9a10-42c5-b19b-56848873e0ed}">
 		<property name="start">
-			<value>4.8500000000000005</value>
+			<value>4.9000000000000004</value>
 		</property>
 		<property name="length">
 			<value>1.7999999999999998</value>
@@ -192,7 +192,7 @@
 	<object class="MixerBusFader" id="{3ad5c21d-b5fd-43d7-845b-c4699e536be4}" />
 	<object class="AutomationPoint" id="{29dbfa66-1cc5-4769-8887-3f9e922fed6b}">
 		<property name="position">
-			<value>6.0000000000000009</value>
+			<value>6.0500000000000007</value>
 		</property>
 		<property name="value">
 			<value>1</value>
@@ -203,7 +203,7 @@
 	</object>
 	<object class="AutomationPoint" id="{5a40a9e4-18d5-4701-abde-fb3b713390a4}">
 		<property name="position">
-			<value>6.6500000000000004</value>
+			<value>6.7000000000000002</value>
 		</property>
 		<property name="value">
 			<value>0</value>

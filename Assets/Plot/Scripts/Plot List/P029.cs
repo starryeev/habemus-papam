@@ -32,7 +32,7 @@ public class P029 : Plot
         // 텍스트 기본값
         plotName = "점심 복사 버그";
         plotDescription = "떡과 생선이 복사가 돼요";
-        plotEffect = "체력<sprite name=hp> 5 증가\n정치력<sprite name=influence> 2 증가\n(경건함)% 확률로 승천 엔딩";
+        plotEffect = "체력<sprite name=hp> 5 증가\n정치력<sprite name=influence> 2 증가\n(경건함)% 확률로 특수 엔딩";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }
@@ -62,7 +62,7 @@ public class P029 : Plot
         {
             EndingContext.CaptureFromCurrentGame();
             EndingContext.SetEventTrigger(plotID, 1);
-            EndingResult.Set(EndingType.Ascension);
+            EndingResult.Set(EndingType.Bread);
             SaveManager.Instance?.ClearContinueSaveForEnding();
             Time.timeScale = 1f;
             SceneManager.LoadScene("EndingScene");
