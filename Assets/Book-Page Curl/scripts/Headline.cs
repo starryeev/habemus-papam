@@ -13,7 +13,11 @@ public class Headline : MonoBehaviour
 
         if (PopeListHistoryPresenter.TryGetLatestPopeHeadline(out string headline))
         {
-            headlineText.text = headline;
+            headlineText.text = $"제 {ActionRecordManager.Instance.GetLatestPope()?.generation}대 교주 {ActionRecordManager.Instance.GetLatestPope()?.popeName} 선종";
+        }
+        else
+        {
+            headlineText.text = "태양교 교주 선종";
         }
     }
 }
