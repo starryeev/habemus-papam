@@ -6,6 +6,8 @@ using TMPro;
 
 public class PlotUI : MonoBehaviour
 {
+    private const float PlotContactCooldown = 3f;
+
     [Header("--- 공작 선택 UI ---")]
     public GameObject plotSelectUI;
     public Image[] plotPanels = new Image[3];
@@ -107,6 +109,7 @@ public class PlotUI : MonoBehaviour
 
     public void OnClickClose()
     {
+        schemerState?.StartPlotContactCooldown(PlotContactCooldown);
         plotSelectUI.SetActive(false);
         SetPlotMovementLocked(false);
 

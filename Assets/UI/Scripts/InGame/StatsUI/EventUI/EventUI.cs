@@ -18,6 +18,8 @@ public class EventUI : MonoBehaviour
         RESULT2
     }
     private EventUIState currentState = EventUIState.NONE;
+    public bool IsOpen => currentState != EventUIState.NONE;
+
     private void Start()
     {
         SetState(EventUIState.NONE);

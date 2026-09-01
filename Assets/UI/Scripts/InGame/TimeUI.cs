@@ -199,14 +199,7 @@ public class TimeUI : MonoBehaviour
     {
         int total = context.CurrentPositionActionCount;
         int current = context.CurrentActionNumber;
-        int modifier = total - GameContext.ActionsPerPosition;
-        string denominator = modifier switch
-        {
-            > 0 => $"({GameContext.ActionsPerPosition} + {modifier})",
-            < 0 => $"({GameContext.ActionsPerPosition} - {-modifier})",
-            _ => GameContext.ActionsPerPosition.ToString()
-        };
-        return $"{current} / {denominator}";
+        return $"{current} / {total}";
     }
 
     private void UpdateClockHand(GameContext context)

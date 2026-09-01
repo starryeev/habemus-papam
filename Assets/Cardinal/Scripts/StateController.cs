@@ -131,6 +131,7 @@ public class StateController : MonoBehaviour
     private bool isPlotMovementLocked;
     private ChatSfxSession chatSfxSession;
     private ObstacleAvoidanceType defaultObstacleAvoidanceType;
+    private float nextPlotContactTime;
 
     // 프로퍼티
     public bool IsMoving => pathCoroutine != null;
@@ -1474,6 +1475,13 @@ public class StateController : MonoBehaviour
         if (currentState == CardinalState.Scheme && other.CompareTag("Player"))
         {
             if (InGameManager.Instance != null && InGameManager.Instance.IsInitialTutorialLocked) return;
+            if (Time.unscaledTime < nextPlotContactTime) return;
+
+            EventUI eventUI = UIManager.Instance?.Ingame?.Event;
+            if (eventUI != null && eventUI.IsOpen)
+            {
+                return;
+            }
 
             BoxCollider2D bodyCollider = GetComponent<BoxCollider2D>();
             if (bodyCollider == null || !bodyCollider.Distance(other).isOverlapped)
@@ -1491,6 +1499,11 @@ public class StateController : MonoBehaviour
                 player.Plot(this);
             }
         }
+    }
+
+    public void StartPlotContactCooldown(float duration)
+    {
+        nextPlotContactTime = Mathf.Max(nextPlotContactTime, Time.unscaledTime + duration);
     }
 
     // =========================================================

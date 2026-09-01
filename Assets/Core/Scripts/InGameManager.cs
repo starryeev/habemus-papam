@@ -537,6 +537,7 @@ public class InGameManager : MonoBehaviour
     private int lastEventCheckedActionPosition = -1;
     private bool endConclaveAfterEvent;
     private bool isResolvingPlayerActionNotice;
+    private bool isCompletingSpeechAction;
     private readonly PlayerActionEffectQueue playerActionEffects = new PlayerActionEffectQueue();
     private readonly NPCBehaviour[,] npcTurnBehaviours = new NPCBehaviour[3, 4];
     private readonly bool[,] npcTurnActionsExecuted = new bool[3, 4];
@@ -1208,7 +1209,7 @@ public class InGameManager : MonoBehaviour
     public bool CanPerformPlayerAction(Cardinal performer)
     {
         return performer == null || !performer.CompareTag("Player") ||
-            (isTimeRunning && !awaitingTurnEvent && !isResolvingPlayerActionNotice &&
+            (isTimeRunning && !awaitingTurnEvent && !isResolvingPlayerActionNotice && !isCompletingSpeechAction &&
              PlayerActionNoticePopupController.Instance?.IsOpen != true && gameContext.CanPlayerAct());
     }
 
@@ -1703,8 +1704,42 @@ public class InGameManager : MonoBehaviour
 
     public void CompletePlayerAction(Cardinal performer, NPCBehaviour completedAction = NPCBehaviour.None)
     {
-        if (performer == null || !performer.CompareTag("Player") || !isTimeRunning ||
-            awaitingTurnEvent || gameContext.IsEventPhase) return;
+        if (!CanCompletePlayerAction(performer)) return;
+
+        StateController stateController = completedAction == NPCBehaviour.Speech
+            ? performer.GetComponent<StateController>()
+            : null;
+        if (stateController != null && stateController.CurrentState == CardinalState.InSpeech)
+        {
+            if (isCompletingSpeechAction) return;
+            isCompletingSpeechAction = true;
+            StartCoroutine(CompleteSpeechActionAfterAnimation(performer, stateController));
+            return;
+        }
+
+        CompletePlayerActionNow(performer, completedAction);
+    }
+
+    private IEnumerator CompleteSpeechActionAfterAnimation(Cardinal performer, StateController stateController)
+    {
+        while (stateController != null && stateController.CurrentState == CardinalState.InSpeech)
+        {
+            yield return null;
+        }
+
+        isCompletingSpeechAction = false;
+        CompletePlayerActionNow(performer, NPCBehaviour.Speech);
+    }
+
+    private bool CanCompletePlayerAction(Cardinal performer)
+    {
+        return performer != null && performer.CompareTag("Player") && isTimeRunning &&
+            !awaitingTurnEvent && !gameContext.IsEventPhase;
+    }
+
+    private void CompletePlayerActionNow(Cardinal performer, NPCBehaviour completedAction)
+    {
+        if (!CanCompletePlayerAction(performer)) return;
         if (!gameContext.CompleteCommittedAction()) return;
         if (blockRemainingCurrentTurn)
         {
@@ -1729,7 +1764,7 @@ public class InGameManager : MonoBehaviour
         if (playerState == null || !playerState.CompareTag("Player") ||
             !playerState.CanAcceptManualInteraction()) return false;
 
-        if (!isTimeRunning || awaitingTurnEvent || isResolvingPlayerActionNotice ||
+        if (!isTimeRunning || awaitingTurnEvent || isResolvingPlayerActionNotice || isCompletingSpeechAction ||
             PlayerActionNoticePopupController.Instance?.IsOpen == true || !gameContext.CanPlayerAct())
             return false;
 
