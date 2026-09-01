@@ -560,6 +560,7 @@ public class StateController : MonoBehaviour
     private void MoveToTargetPos(Vector2 targetPos)
     {
         Vector3 destination = new Vector3(targetPos.x, targetPos.y, transform.position.z);
+        if (CardinalManager.Instance != null && CardinalManager.Instance.IsConclaveWallAt(destination)) return;
         if (agent.isOnNavMesh) agent.SetDestination(destination);
     }
 

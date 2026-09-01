@@ -6,6 +6,7 @@ using UnityEngine.AI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using NavMeshPlus.Components;
 
 [System.Serializable]
 public class ConclavePathData
@@ -38,6 +39,10 @@ public class CardinalManager : MonoBehaviour
     [SerializeField] private Transform leftExitPoint;
     [SerializeField] private Transform rightExitPoint;
 
+    [Header("콘클라베 구역 벽")]
+    [SerializeField] private GameObject conclaveWall;
+    [SerializeField] private NavMeshSurface conclaveNavMeshSurface;
+
     // 카디널들 관리하는 리스트
     private List<Cardinal> cardinals = new List<Cardinal>();
     public List<Cardinal> Cardinals => cardinals;
@@ -53,6 +58,7 @@ public class CardinalManager : MonoBehaviour
     private InputSystemUIInputModule blockedInputModule;
     private Coroutine enableInputCoroutine;
     private bool schemersAssignedThisConclave;
+    private Collider2D conclaveWallCollider;
 
     [SerializeField] private StatsUI statsUI;
     public StatsUI StatsUI => statsUI;
@@ -73,7 +79,14 @@ public class CardinalManager : MonoBehaviour
 
     private void Start()
     {
+        SetConclaveWall(false);
         SetConclaveTransition(true);
+    }
+
+    public bool IsConclaveWallAt(Vector3 position)
+    {
+        return conclaveWall != null && conclaveWall.activeInHierarchy &&
+            conclaveWallCollider != null && conclaveWallCollider.OverlapPoint(position);
     }
 
     public List<Cardinal> GetAICardinlas()
@@ -224,6 +237,8 @@ public class CardinalManager : MonoBehaviour
             }
         }
 
+        SetConclaveWall(true);
+
         foreach (var c in cardinals)
         {
             if (c == null) continue;
@@ -301,6 +316,7 @@ public class CardinalManager : MonoBehaviour
     // =========================================================
     public void StopConClave()
     {
+        SetConclaveWall(false);
         SetConclaveTransition(true);
         SoundManager.Instance.PlayBGM("DummyBGM", 1);
 
@@ -614,6 +630,15 @@ public class CardinalManager : MonoBehaviour
         }
 
         schemersAssignedThisConclave = assignedCount > 0;
+    }
+
+    private void SetConclaveWall(bool active)
+    {
+        if (conclaveWall == null) return;
+
+        conclaveWallCollider ??= conclaveWall.GetComponent<Collider2D>();
+        conclaveWall.SetActive(active);
+        conclaveNavMeshSurface?.BuildNavMesh();
     }
 
     public void EnsureSchemerAssignmentAfterLoad()
