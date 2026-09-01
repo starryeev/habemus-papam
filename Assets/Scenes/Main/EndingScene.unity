@@ -388,11 +388,11 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 658416194}
-  - {fileID: 2111730816}
+  - {fileID: 356743148}
   - {fileID: 1421034116}
   - {fileID: 657784700}
-  - {fileID: 356743148}
+  - {fileID: 658416194}
+  - {fileID: 2111730816}
   m_Father: {fileID: 117973342}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -481,9 +481,9 @@ MonoBehaviour:
   defaultVideoClip: {fileID: 32900000, guid: 206f0d572e99c494993445a53c236deb, type: 3}
   endingVideos:
   - endingType: 1
-    videoClip: {fileID: 32900000, guid: 206f0d572e99c494993445a53c236deb, type: 3}
+    videoClip: {fileID: 32900000, guid: d5b9b2480affdb5468b2b9f9dd2521fa, type: 3}
   - endingType: 2
-    videoClip: {fileID: 32900000, guid: 206f0d572e99c494993445a53c236deb, type: 3}
+    videoClip: {fileID: 32900000, guid: d5b9b2480affdb5468b2b9f9dd2521fa, type: 3}
   - endingType: 3
     videoClip: {fileID: 32900000, guid: 931308ec2131abf4792cae5320967fc3, type: 3}
   - endingType: 4

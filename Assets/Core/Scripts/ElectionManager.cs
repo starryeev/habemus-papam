@@ -19,6 +19,7 @@ public class ElectionManager : MonoBehaviour
     public Cardinal CurrentWinnerCandidate => currentWinnerCandidate;
     private bool isElected = false;
     public bool IsElected => isElected;
+    private EndingType deferredEndingType = EndingType.None;
 
     public void DebugElectPlayer()
     {
@@ -71,6 +72,7 @@ public class ElectionManager : MonoBehaviour
     private void SetCheckUI()
     {
         if (statsUI == null) return;
+        deferredEndingType = EndingType.None;
         checkUI.gameObject.SetActive(true);
 
         Cardinal[] candidates = statsUI.LinkedCardinals;
@@ -134,7 +136,7 @@ public class ElectionManager : MonoBehaviour
                 }
                 else
                 {
-                    LoadEndingScene(EndingType.SmokeBomb);
+                    deferredEndingType = EndingType.SmokeBomb;
                     return;
                 }
             }
@@ -142,6 +144,14 @@ public class ElectionManager : MonoBehaviour
     }
     public void GetNextScenes()
     {
+        if (deferredEndingType != EndingType.None)
+        {
+            EndingType endingType = deferredEndingType;
+            deferredEndingType = EndingType.None;
+            LoadEndingScene(endingType);
+            return;
+        }
+
         if (isElected)
         {
             if (currentWinnerCandidate.CompareTag("Player"))

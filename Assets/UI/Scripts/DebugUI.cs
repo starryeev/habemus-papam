@@ -1,15 +1,24 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class DebugUI : MonoBehaviour
 {
+    private const float GuaranteedElectionInfluence = 102f;
+    private static readonly FieldInfo InfluenceField = typeof(Cardinal).GetField(
+        "influence", BindingFlags.Instance | BindingFlags.NonPublic);
+
     [SerializeField] private string endingSceneName = "EndingScene";
     [SerializeField] private Item[] debugItems;
     private bool isHereticWarGameOverFlag;
     private Coroutine gameOverRoutine;
+    private Coroutine restoreElectionOverrideRoutine;
     private GameObject itemPanel;
+    private Cardinal electionOverrideCandidate;
+    private float originalElectionOverrideInfluence;
 
     private void Awake()
     {
@@ -17,14 +26,21 @@ public class DebugUI : MonoBehaviour
         WireButtons();
     }
 
-    public void TriggerPlayerPope()
+    public void QueuePlayerPopeElection()
     {
-        TriggerEnding(EndingType.PlayerPope);
+        QueueGuaranteedElection(FindPlayerCardinal());
     }
 
-    public void TriggerNpcPope()
+    public void QueueNpcPopeElection()
     {
-        TriggerEnding(EndingType.NpcPope);
+        List<Cardinal> npcCandidates = GetNpcCandidates();
+        if (npcCandidates.Count == 0)
+        {
+            Debug.LogWarning("[Election Debug] NPC candidate was not found.");
+            return;
+        }
+
+        QueueGuaranteedElection(npcCandidates[Random.Range(0, npcCandidates.Count)]);
     }
 
     public void TriggerCrusadeE21101()
@@ -177,6 +193,58 @@ public class DebugUI : MonoBehaviour
         InventoryManager.Instance.AddItem(item);
     }
 
+    private void QueueGuaranteedElection(Cardinal candidate)
+    {
+        if (candidate == null)
+        {
+            Debug.LogWarning("[Election Debug] Candidate was not found.");
+            return;
+        }
+
+        RestoreElectionOverride();
+
+        if (InfluenceField == null)
+        {
+            Debug.LogWarning("[Election Debug] Candidate influence field was not found.");
+            return;
+        }
+
+        electionOverrideCandidate = candidate;
+        originalElectionOverrideInfluence = candidate.Influence;
+        InfluenceField.SetValue(candidate, GuaranteedElectionInfluence);
+        restoreElectionOverrideRoutine = StartCoroutine(RestoreElectionOverrideAfterJudgment(candidate));
+        Debug.Log($"[Election Debug] {candidate.name} will be selected with a 100% election chance.");
+    }
+
+    private IEnumerator RestoreElectionOverrideAfterJudgment(Cardinal candidate)
+    {
+        CheckUI checkUI = FindFirstObjectByType<CheckUI>(FindObjectsInactive.Include);
+        yield return new WaitUntil(() =>
+            checkUI != null &&
+            checkUI.isActiveAndEnabled &&
+            ElectionManager.Instance != null &&
+            ElectionManager.Instance.CurrentWinnerCandidate == candidate);
+
+        yield return null;
+        RestoreElectionOverride();
+    }
+
+    private void RestoreElectionOverride()
+    {
+        if (restoreElectionOverrideRoutine != null)
+        {
+            StopCoroutine(restoreElectionOverrideRoutine);
+            restoreElectionOverrideRoutine = null;
+        }
+
+        if (electionOverrideCandidate != null && InfluenceField != null)
+        {
+            InfluenceField.SetValue(electionOverrideCandidate, originalElectionOverrideInfluence);
+        }
+
+        electionOverrideCandidate = null;
+    }
+
     private void AddClick(string buttonName, UnityEngine.Events.UnityAction action)
     {
         Transform buttonTransform = transform.Find(buttonName);
@@ -234,6 +302,25 @@ public class DebugUI : MonoBehaviour
         }
 
         return null;
+    }
+
+    private List<Cardinal> GetNpcCandidates()
+    {
+        var candidates = new List<Cardinal>();
+        if (CardinalManager.Instance == null || CardinalManager.Instance.Cardinals == null)
+        {
+            return candidates;
+        }
+
+        foreach (Cardinal cardinal in CardinalManager.Instance.Cardinals)
+        {
+            if (cardinal != null && !cardinal.CompareTag("Player"))
+            {
+                candidates.Add(cardinal);
+            }
+        }
+
+        return candidates;
     }
 
 }
