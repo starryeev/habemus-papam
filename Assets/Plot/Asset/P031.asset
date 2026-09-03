@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: P031
   m_EditorClassIdentifier: Assembly-CSharp::P031
   plotID: P031
-  plotName: "\uC219\uBA74"
-  plotDescription: "\uB4DC\uB974\uB801 \uCFE8\uCFE8..."
-  plotEffect: "정치력을 2, 체력을 7로 조정\n남은 콘클라베 동안 기도 불가"
+  plotName: "숙면"
+  plotDescription: "드르렁 쿨쿨..."
+  plotEffect: "정치력<sprite name=influence>을 2, 체력<sprite name=hp>을 7로 조정\n오늘 기도 불가, 연설 시 체력<sprite name=hp> 1 회복"
   plotCondiText: <sprite name=influence>9<sprite name=up>
   plotCostText: <sprite name=piety>  5
   plotImage: {fileID: 0}
@@ -24,5 +24,6 @@ MonoBehaviour:
   plotWeightMultiplier: 0.05
   minInfluence: 9
   pietyCost: 5
+  speechHpRecovery: 1
   influenceTarget: 2
   hpTarget: 7

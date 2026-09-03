@@ -5,11 +5,13 @@ using static UnityEngine.GraphicsBuffer;
 
 public class P031 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
     [SerializeField] private int influenceTarget;
     [SerializeField] private int hpTarget;
+    [SerializeField] private int speechHpRecovery;
 
     public override int cost => pietyCost;
 
@@ -27,11 +29,12 @@ public class P031 : Plot
         pietyCost = 5;
         influenceTarget = 2;
         hpTarget = 7;
+        speechHpRecovery = 1;
 
         // 텍스트 기본값
         plotName = "숙면";
         plotDescription = "드르렁 쿨쿨...";
-        plotEffect = "정치력을 2, 체력을 7로 조정\n남은 콘클라베 동안 기도 불가";
+        plotEffect = "정치력<sprite name=influence>을 2, 체력<sprite name=hp>을 7로 조정\n오늘 기도 불가, 연설 시 체력<sprite name=hp> 1 회복";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }
@@ -58,6 +61,7 @@ public class P031 : Plot
         performer.ChangeInfluence(influenceTarget);
         performer.ChangeHp(hpTarget - performer.Hp);
         InGameManager.Instance?.BlockPrayerForCurrentConclave(performer);
+        InGameManager.Instance?.EnableSpeechHpRecoveryForCurrentConclave(performer, speechHpRecovery);
     }
 
 }

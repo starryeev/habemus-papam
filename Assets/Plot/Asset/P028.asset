@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,10 +13,9 @@ MonoBehaviour:
   m_Name: P028
   m_EditorClassIdentifier: Assembly-CSharp::P028
   plotID: P028
-  plotName: "\uB808\uC218\uB974\uC2A4\uB9DD"
-  plotDescription: "\uB098 \uB2E4\uC2DC \uB3CC\uC544\uAC08\uB798!"
-  plotEffect: "\uBAA8\uB4E0 \uD6C4\uBCF4\uC758 \uC815\uCE58\uB825<sprite name=influence>\uC744
-    \uACBD\uAC74\uD568<sprite name=piety>\uC73C\uB85C \uC804\uD658"
+  plotName: "레수르스망"
+  plotDescription: "나 다시 돌아갈래!"
+  plotEffect: "모든 후보의 정치력<sprite name=influence>을 경건함<sprite name=piety>으로 전환"
   plotCondiText: <sprite name=influence>5<sprite name=up>
   plotCostText: <sprite name=piety>  4
   plotImage: {fileID: 0}

@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P005
   m_EditorClassIdentifier: Assembly-CSharp::P005
   plotID: P005
-  plotName: "\uACE8\uD0D5 \uBA39\uC774\uAE30"
-  plotDescription: "\uC548 \uC544 \uC918 \uC694"
+  plotName: "골탕 먹이기"
+  plotDescription: "안 아 줘 요"
   plotEffect: "무작위 상대 후보 한 명 체력<sprite name=hp> 2 감소"
   plotCondiText: <sprite name=influence>2<sprite name=up>
   plotCostText: <sprite name=piety>  2

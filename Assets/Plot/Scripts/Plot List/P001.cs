@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class P001 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -22,14 +23,19 @@ public class P001 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 2;
+        minInfluence = 1;
         pietyCost = 2;
         hpDelta = 2;
+
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon2 = 0;
+        iconIndexes.icon2S = 3;
+        plotIconImageIndexes = iconIndexes;
 
         // 텍스트 기본값
         plotName = "한 숨 돌리기";
         plotDescription = "휴우...";
-        plotEffect = "체력<sprite name=hp> 20 증가";
+        plotEffect = "체력<sprite name=hp> 2 증가";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }

@@ -4,6 +4,7 @@
 
 public class P027 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -20,8 +21,14 @@ public class P027 : Plot
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;
 
-        minInfluence = 6;
+        minInfluence = 0;
         pietyCost = 7;
+
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = iconIndexes.icon2 = iconIndexes.icon3 = 1;
+        iconIndexes.icon1S = iconIndexes.icon2S = iconIndexes.icon3S = 4;
+        plotIconImageIndexes = iconIndexes;
 
         // 텍스트 기본값
         plotName = "젠체하기";

@@ -3,6 +3,7 @@
 
 public class P014 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -24,11 +25,17 @@ public class P014 : Plot
         pietyCost = 0;
         pietyDelta = 3;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon2 = 1;
+        iconIndexes.icon2S = 3;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "태양 경배 자세";
         plotDescription = "Yoga 고수가 될 거야!";
-        plotEffect = "경건함<sprite name=piety> 30 증가";
-        plotCondiText = $"";
+        plotEffect = "경건함<sprite name=piety> 3 증가";
+        plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }
 

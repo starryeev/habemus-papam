@@ -478,6 +478,10 @@ public class Cardinal : MonoBehaviour
             hpDelta = item.PreviewSpeechHp(hpDelta, balance, isSuccess);
         }
 
+        hpDelta += InGameManager.Instance != null
+            ? InGameManager.Instance.GetSpeechHpRecoveryBonus(this)
+            : 0f;
+
         foreach (Item item in items)
         {
             if (item == null) continue;
@@ -617,7 +621,7 @@ public class Cardinal : MonoBehaviour
             }
 
             ChangeInfluence(speechSuccessDeltaInfluence);
-            ChangeHp(balance.SpeechSuccessDeltaHp);
+            ChangeHp(balance.SpeechSuccessDeltaHp + InGameManager.Instance.GetSpeechHpRecoveryBonus(this));
         }
         else
         {
@@ -637,7 +641,7 @@ public class Cardinal : MonoBehaviour
             }
 
             ChangeInfluence(speechFailDeltaInfluence);
-            ChangeHp(balance.SpeechFailDeltaHp);
+            ChangeHp(balance.SpeechFailDeltaHp + InGameManager.Instance.GetSpeechHpRecoveryBonus(this));
         }
 
         if (completePlayerAction)

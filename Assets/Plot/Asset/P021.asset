@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: P021
   m_EditorClassIdentifier: Assembly-CSharp::P021
   plotID: P021
-  plotName: "\uBB34\uB98E \uAFC7\uAE30"
-  plotDescription: "\uCD94\uC9C4\uB825\uC744 \uC5BB\uAE30 \uC704\uD568\uC774\uC5C8\uB2E4!"
-  plotEffect: "모든 상대 정치력 2 감소, 다음 날 첫 콘클라베에 사용 시점에 따라 모든 상대 정치력 2~5 증가"
+  plotName: "무릎 꿇기"
+  plotDescription: "추진력을 얻기 위함이었다!"
+  plotEffect: "모든 상대 후보 정치력<sprite name=influence> 2 감소\n다음 날 첫 콘클라베 때 사용 시점에 따라 모든 상대 후보 정치력<sprite name=influence> 2 ~ 5 증가"
   plotCondiText: <sprite name=influence>6<sprite name=up>
   plotCostText: <sprite name=piety>  1
   plotImage: {fileID: 0}
@@ -24,6 +24,5 @@ MonoBehaviour:
   plotWeightMultiplier: 0.05
   minInfluence: 6
   pietyCost: 1
+  nextConclaveHpDamagePerConclave: 1
   influenceDelta: -2
-  baseNextDayInfluenceDelta: 2
-  influenceGainPerConclave: 1

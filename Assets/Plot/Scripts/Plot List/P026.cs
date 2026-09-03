@@ -4,6 +4,7 @@
 
 public class P026 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -26,11 +27,16 @@ public class P026 : Plot
         pietyCost = 2;
         rewardCount = 2;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon2 = 7;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "주사위 굴리기";
         plotDescription = "주사위는 던져졌다";
         plotEffect = "일반 아이템 '주사위' 2개 획득";
-        plotCondiText = $"";
+        plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }
 

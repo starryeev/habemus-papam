@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P022
   m_EditorClassIdentifier: Assembly-CSharp::P022
   plotID: P022
-  plotName: "\uAF2C\uB9AC \uC790\uB974\uAE30"
-  plotDescription: "\uC300\uC744 \uB0B4\uC8FC\uACE0 \uBCBC\uB97C \uCDE8\uD55C\uB2E4"
+  plotName: "꼬리 자르기"
+  plotDescription: "쌀을 내주고 벼를 취한다"
   plotEffect: "이번 턴 행동 가능 횟수 2회 추가"
   plotCondiText: <sprite name=influence>5<sprite name=up>
   plotCostText: <sprite name=piety>  7

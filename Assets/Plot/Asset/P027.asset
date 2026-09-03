@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,10 +13,9 @@ MonoBehaviour:
   m_Name: P027
   m_EditorClassIdentifier: Assembly-CSharp::P027
   plotID: P027
-  plotName: "\uC820\uCCB4\uD558\uAE30"
-  plotDescription: "\uD070 \uB9DD\uC2E0\uC744 \uB2F9\uD560 \uC218\uB3C4..."
-  plotEffect: "\uADF8\uB7EC\uB098 \uC544\uBB34 \uC77C\uB3C4 \uC77C\uC5B4\uB098\uC9C0
-    \uC54A\uC558\uB2E4"
+  plotName: "젠체하기"
+  plotDescription: "큰 망신을 당할 수도..."
+  plotEffect: "그러나 아무 일도 일어나지 않았다"
   plotCondiText: <sprite name=influence>6<sprite name=up>
   plotCostText: <sprite name=piety>  7
   plotImage: {fileID: 0}

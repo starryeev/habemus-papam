@@ -4,6 +4,7 @@
 
 public class P016 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -17,7 +18,7 @@ public class P016 : Plot
     {
         // 설정 기본값
         plotID = "P016";
-        plotGrade = PlotGrade.Common;
+        plotGrade = PlotGrade.Rare;
 
         // 수치 기본값
         plotWeightBase = 20;
@@ -29,13 +30,23 @@ public class P016 : Plot
         influenceDelta = -3;
         pietyDelta = -3;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 0;
+        iconIndexes.icon1S = 3;
+        iconIndexes.icon2 = 1;
+        iconIndexes.icon2S = 4;
+        iconIndexes.icon3 = 2;
+        iconIndexes.icon3S = 4;
+        plotIconImageIndexes = iconIndexes;
+
+
         // 텍스트 기본값
         plotName = "삼위일체?";
         plotDescription = "삼삼 금지";
-        plotEffect = "체력<sprite name=hp> 33 증가\n정치력<sprite name=influence>, 경건함<sprite name=piety> 33 감소";
+        plotEffect = "체력<sprite name=hp> 3 증가\n정치력<sprite name=influence>, 경건함<sprite name=piety> 3 감소";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
-
     }
 
     public override bool CanExecute(Cardinal performer)

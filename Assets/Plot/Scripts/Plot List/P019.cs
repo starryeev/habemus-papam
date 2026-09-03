@@ -4,6 +4,7 @@
 
 public class P019 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int maxInfluence;
     [SerializeField] private int pietyCost;
@@ -23,11 +24,16 @@ public class P019 : Plot
         maxInfluence = 4;
         pietyCost = 4;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon2 = 7;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "목 좀 축이세요";
         plotDescription = "푸룬 주스가 뭘까...?";
         plotEffect = "모든 후보의 다음 2회 행동 불가";
-        plotCondiText = $"<sprite name=influence>{maxInfluence}<sprite name=down>";
+        plotCondiText = $"<sprite name=influence>{maxInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
 
     }

@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P007
   m_EditorClassIdentifier: Assembly-CSharp::P007
   plotID: P007
-  plotName: "\uB4DC\uB78D \uB354 \uBE44\uD2B8"
-  plotDescription: "\uC0C8\uAE34\uB2E4! \uD0DC\uC591\uC758 \uBE44\uD2B8!"
+  plotName: "드랍 더 비트"
+  plotDescription: "새긴다! 태양의 비트!"
   plotEffect: "플레이어의 현재 턴 행동 횟수 1회 감소, 모든 NPC의 다음 턴 행동 1회 차단"
   plotCondiText: <sprite name=influence>4<sprite name=up>
   plotCostText: <sprite name=piety>  2

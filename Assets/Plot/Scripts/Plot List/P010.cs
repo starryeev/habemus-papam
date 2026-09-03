@@ -4,6 +4,7 @@
 
 public class P010 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -27,10 +28,18 @@ public class P010 : Plot
         hpDelta = -1;
         pietyDelta = 2;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 5;
+        iconIndexes.icon1S = 9;
+        iconIndexes.icon3 = 0;
+        iconIndexes.icon3S = 4;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "태양의 발";
         plotDescription = "태양의 발을 지닌 자여, 고결함을 새겨라.";
-        plotEffect = "가장 경건함<sprite name=piety>이 낮은 상대 후보 체력<sprite name=hp> 10 감소, 경건함<sprite name=piety> 20 증가";
+        plotEffect = "가장 경건함<sprite name=piety>이 낮은 상대 후보 체력<sprite name=hp> 1 감소, 경건함<sprite name=piety> 2 증가";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }

@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class P015 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -16,7 +17,7 @@ public class P015 : Plot
     {
         // 설정 기본값
         plotID = "P015";
-        plotGrade = PlotGrade.Common;
+        plotGrade = PlotGrade.Rare;
 
         // 수치 기본값
         plotWeightBase = 20;
@@ -26,10 +27,18 @@ public class P015 : Plot
         pietyCost = 2;
         pietyDelta = 3;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 5;
+        iconIndexes.icon1S = 8;
+        iconIndexes.icon3 = 1;
+        iconIndexes.icon3S = 3;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "열렬한 찬양";
         plotDescription = "추기경님 축지법 쓰신다";
-        plotEffect = "가장 정치력<sprite name=influence>이 높은 상대 후보 경건함<sprite name=piety> 30 증가";
+        plotEffect = "가장 정치력<sprite name=influence>이 높은 상대 후보 경건함<sprite name=piety> 3 증가";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }

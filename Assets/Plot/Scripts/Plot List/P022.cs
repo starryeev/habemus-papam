@@ -4,6 +4,7 @@
 
 public class P022 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -22,6 +23,11 @@ public class P022 : Plot
 
         minInfluence = 5;
         pietyCost = 7;
+
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon2 = 7;
+        plotIconImageIndexes = iconIndexes;
 
         // 텍스트 기본값
         plotName = "꼬리 자르기";

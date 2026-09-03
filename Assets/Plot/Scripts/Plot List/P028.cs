@@ -5,6 +5,7 @@ using static UnityEngine.GraphicsBuffer;
 
 public class P028 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int maxInfluence;
     [SerializeField] private int pietyCost;
@@ -24,11 +25,20 @@ public class P028 : Plot
         maxInfluence = 5;
         pietyCost = 4;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 6;
+        iconIndexes.icon2 = 2;
+        iconIndexes.icon2S = 11;
+        iconIndexes.icon3 = 1;
+        iconIndexes.icon3S = 11;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "레수르스망";
         plotDescription = "나 다시 돌아갈래!";
         plotEffect = "모든 후보의 정치력<sprite name=influence>을 경건함<sprite name=piety>으로 전환";
-        plotCondiText = $"<sprite name=influence>{maxInfluence}<sprite name=down>";
+        plotCondiText = $"<sprite name=influence>{maxInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }
 
@@ -51,16 +61,16 @@ public class P028 : Plot
         var cm = CardinalManager.Instance;
 
         float currentInfluence = performer.Influence;
+        float currentPiety = performer.Piety;
 
-        performer.ChangeInfluence(-currentInfluence);
-        performer.ChangePiety(currentInfluence);
+        performer.ChangeInfluence(-currentInfluence + currentPiety);
 
-        for (int i = 0; i < 3; i++)
+        for (int i = 1; i < 3; i++)
         {
             currentInfluence = cm.Cardinals[i].Influence;
+            currentPiety = cm.Cardinals[i].Piety;
 
-            cm.Cardinals[i].ChangeInfluence(-currentInfluence);
-            cm.Cardinals[i].ChangePiety(currentInfluence);
+            cm.Cardinals[i].ChangeInfluence(-currentInfluence+currentPiety);
         }
 
     }

@@ -213,8 +213,8 @@ public enum CandidateSlot
 
 public enum PendingEffectType
 {
-    P021RestoreInfluence = 0,
-    P033RevengeDamage = 1
+    P033RevengeDamage = 1,
+    P021NextConclaveHpDamage = 2
 }
 
 [Serializable]
@@ -288,6 +288,7 @@ public class GameContextSaveData
     public List<bool> npcNextTurnActionBlocked = new List<bool>();
     public List<int> npcNextTurnBlockedActionCounts = new List<int>();
     public List<int> prayerBlockedCandidateNumbers = new List<int>();
+    public List<int> speechHpRecoveryCandidateNumbers = new List<int>();
     public List<PendingEffectSaveData> pendingEffects = new List<PendingEffectSaveData>();
 }
 
@@ -398,6 +399,7 @@ public class PlotSetSaveData
 {
     public List<string> plotIds = new List<string>();
     public List<bool> usedSlots = new List<bool>();
+    public List<PlotIconImageIndexes> plotIconImageIndexes = new List<PlotIconImageIndexes>();
 }
 
 [Serializable]

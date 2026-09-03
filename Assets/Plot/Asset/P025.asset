@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: P025
   m_EditorClassIdentifier: Assembly-CSharp::P025
   plotID: P025
-  plotName: "\uC559\uCF54\uB974"
-  plotDescription: "\uC88B\uC740 \uAC74 \uD55C \uBC88 \uB354 \uD574\uC57C\uC9C0"
-  plotEffect: "지난 콘클라베 선출 후보 정치력 3 증가"
+  plotName: "앙코르"
+  plotDescription: "좋은 건 한 번 더 해야지"
+  plotEffect: "저번 콘클라베에서 선출되었던 후보 정치력<sprite name=influence> 3 증가"
   plotCondiText: <sprite name=influence>6<sprite name=up>
   plotCostText: <sprite name=piety>  4
   plotImage: {fileID: 0}
@@ -24,4 +24,4 @@ MonoBehaviour:
   plotWeightMultiplier: 0.1
   minInfluence: 6
   pietyCost: 4
-  influenceDelta: 3
+  influenceDelta: 30

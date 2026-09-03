@@ -3,6 +3,45 @@
 public enum PlotGrade { Common, Rare, Legendary }
 public enum PlotCostResource { Piety, Hp }
 
+[System.Serializable]
+public class PlotIconImageIndexes
+{
+    public int icon1 = -1;
+    public int icon2 = -1;
+    public int icon3 = -1;
+    public int icon1S = -1;
+    public int icon2S = -1;
+    public int icon3S = -1;
+
+    public int GetImageIndex(int index, bool isSelectedIcon)
+    {
+        switch (index)
+        {
+            case 0:
+                return isSelectedIcon ? icon1S : icon1;
+            case 1:
+                return isSelectedIcon ? icon2S : icon2;
+            case 2:
+                return isSelectedIcon ? icon3S : icon3;
+            default:
+                return -1;
+        }
+    }
+
+    public PlotIconImageIndexes Clone()
+    {
+        return new PlotIconImageIndexes
+        {
+            icon1 = icon1,
+            icon2 = icon2,
+            icon3 = icon3,
+            icon1S = icon1S,
+            icon2S = icon2S,
+            icon3S = icon3S
+        };
+    }
+}
+
 public abstract class Plot : ScriptableObject
 {
     [SerializeField] public string plotID;
@@ -11,13 +50,43 @@ public abstract class Plot : ScriptableObject
     [TextArea] public string plotEffect;
     [TextArea] public string plotCondiText;
     [TextArea] public string plotCostText;
+    [HideInInspector]
     [SerializeField] public Sprite plotImage;
+    [HideInInspector]
+    [SerializeField] public Sprite icon1;
+    [HideInInspector]
+    [SerializeField] public Sprite icon2;
+    [HideInInspector]
+    [SerializeField] public Sprite icon3;
+    [HideInInspector]
+    [SerializeField] public Sprite icon1S;
+    [HideInInspector]
+    [SerializeField] public Sprite icon2S;
+    [HideInInspector]
+    [SerializeField] public Sprite icon3S;
+    [Header("공작 이미지 번호")]
+    [SerializeField] public PlotIconImageIndexes plotIconImageIndexes = new PlotIconImageIndexes();
     [SerializeField] public PlotGrade plotGrade;
     [SerializeField] public float plotWeightBase;
     [SerializeField] public float plotWeightMultiplier;
 
     public virtual int cost => 0;
     public virtual PlotCostResource CostResource => PlotCostResource.Piety;
+
+    public Sprite GetIconSprite(int index, bool isSelectedIcon)
+    {
+        switch (index)
+        {
+            case 0:
+                return isSelectedIcon ? icon1S : icon1;
+            case 1:
+                return isSelectedIcon ? icon2S : icon2;
+            case 2:
+                return isSelectedIcon ? icon3S : icon3;
+            default:
+                return null;
+        }
+    }
 
     public float GetPlotWeight()
     {

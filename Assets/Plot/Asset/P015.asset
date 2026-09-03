@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: P015
   m_EditorClassIdentifier: Assembly-CSharp::P015
   plotID: P015
-  plotName: "\uC5F4\uB82C\uD55C \uCC2C\uC591"
-  plotDescription: "\uCD94\uAE30\uACBD\uB2D8 \uCD95\uC9C0\uBC95 \uC4F0\uC2E0\uB2E4"
-  plotEffect: "가장 정치력이 높은 상대 후보 경건함<sprite name=piety> 3 증가"
+  plotName: "열렬한 찬양"
+  plotDescription: "추기경님 축지법 쓰신다"
+  plotEffect: "가장 정치력<sprite name=influence>이 높은 상대 후보 경건함<sprite name=piety> 3 증가"
   plotCondiText: <sprite name=influence>4<sprite name=up>
   plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}
-  plotGrade: 0
+  plotGrade: 1
   plotWeightBase: 20
   plotWeightMultiplier: 0
   minInfluence: 4

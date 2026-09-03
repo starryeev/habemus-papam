@@ -5,6 +5,7 @@ using static UnityEngine.GraphicsBuffer;
 
 public class P011 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -30,10 +31,19 @@ public class P011 : Plot
         hpDecrease = -2;
         influenceDelta = 2;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 6;
+        iconIndexes.icon2 = 0;
+        iconIndexes.icon2S = 4;
+        iconIndexes.icon3 = 2;
+        iconIndexes.icon3S = 5;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "태양의 혀";
         plotDescription = "태양의 혀를 지닌 자여, 정당함을 말하라.";
-        plotEffect = "자신을 포함한 모든 후보, 50% 확률로 체력<sprite name=hp> 20 감소 및 정치력<sprite name=influence> 20 증가.\n50% 확률로 체력<sprite name=hp> 10 증가.";
+        plotEffect = "자신을 포함한 모든 후보, 50% 확률로 체력<sprite name=hp> 2 감소 및 정치력<sprite name=influence> 2 증가.\n50% 확률로 체력<sprite name=hp> 1 증가.";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
 

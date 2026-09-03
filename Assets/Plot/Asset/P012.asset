@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P012
   m_EditorClassIdentifier: Assembly-CSharp::P012
   plotID: P012
-  plotName: "\uD479 \uC26C\uAE30"
-  plotDescription: "\uC26C\uC5C8\uC74C \uCD94\uAE30\uACBD"
+  plotName: "푹 쉬기"
+  plotDescription: "쉬었음 추기경"
   plotEffect: "체력<sprite name=hp> 2 증가"
   plotCondiText: <sprite name=influence>3<sprite name=up>
   plotCostText: <sprite name=piety>  3

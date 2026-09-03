@@ -4,6 +4,7 @@
 
 public class P024 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -25,10 +26,20 @@ public class P024 : Plot
         pietyCost = 0;
         statsDelta = 2;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 0;
+        iconIndexes.icon1S = 11;
+        iconIndexes.icon2 = 1;
+        iconIndexes.icon2S = 11;
+        iconIndexes.icon3 = 2;
+        iconIndexes.icon3S = 11;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "가지치기";
         plotDescription = "줄건 줘";
-        plotEffect = "체력<sprite name=hp>, 정치력<sprite name=influence>, 경건함<sprite name=piety> 중 가장 적은 수치 절반으로 감소\n나머지 15 증가";
+        plotEffect = "체력<sprite name=hp>, 정치력<sprite name=influence>, 경건함<sprite name=piety> 중 가장 적은 수치 절반으로 감소\n나머지 2 증가";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }
@@ -60,12 +71,12 @@ public class P024 : Plot
         bool isPolMin = Mathf.Approximately(pol, minVal);
         bool isPieMin = Mathf.Approximately(piety, minVal);
 
-        // 4. [페널티] 최솟값인 스탯들은 모두 절반으로 감소
-        if (isHpMin) performer.ChangeHp(-(hp / 2f));
-        if (isPolMin) performer.ChangeInfluence(-(pol / 2f));
-        if (isPieMin) performer.ChangePiety(-(piety / 2f));
+        // 4. [페널티] 최솟값인 스탯들은 모두 절반으로 감소 (내림 처리)
+        if (isHpMin) performer.ChangeHp(Mathf.Floor(hp / 2f) - hp);
+        if (isPolMin) performer.ChangeInfluence(Mathf.Floor(pol / 2f) - pol);
+        if (isPieMin) performer.ChangePiety(Mathf.Floor(piety / 2f) - piety);
 
-        // 5. [보너스] 깎이지 않은 "나머지" 스탯들만 15 증가
+        // 5. [보너스] 깎이지 않은 "나머지" 스탯들만 증가
         if (!isHpMin) performer.ChangeHp(statsDelta);
         if (!isPolMin) performer.ChangeInfluence(statsDelta);
         if (!isPieMin) performer.ChangePiety(statsDelta);

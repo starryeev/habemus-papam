@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class P007 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -23,6 +24,12 @@ public class P007 : Plot
 
         minInfluence = 4;
         pietyCost = 2;
+
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 6;
+        iconIndexes.icon3 = 7;
+        plotIconImageIndexes = iconIndexes;
 
         // 텍스트 기본값
         plotName = "드랍 더 비트";

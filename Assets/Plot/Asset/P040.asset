@@ -1,0 +1,34 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 649c0e8744d9456a9c94034a421c2fdf, type: 3}
+  m_Name: P040
+  m_EditorClassIdentifier: Assembly-CSharp::P040
+  plotID: P040
+  plotName: "뇌물 주기"
+  plotDescription: "엄청난 뇌물해야"
+  plotEffect: "무작위 상대 후보 한 명 경건함<sprite name=piety>, 정치력<sprite name=influence> 7 증가"
+  plotCondiText: <sprite name=influence>9<sprite name=up>
+  plotCostText: <sprite name=piety>  9
+  plotImage: {fileID: 0}
+  plotGrade: 0
+  plotWeightBase: 20
+  plotWeightMultiplier: 0
+  icons:
+    icon1: {fileID: 0}
+    icon2: {fileID: 0}
+    icon3: {fileID: 0}
+    icon1S: {fileID: 0}
+    icon2S: {fileID: 0}
+    icon3S: {fileID: 0}
+  minInfluence: 9
+  pietyCost: 9
+  statsDelta: 7

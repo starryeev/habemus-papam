@@ -6,6 +6,7 @@ using static UnityEngine.GraphicsBuffer;
 
 public class P034 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -28,10 +29,20 @@ public class P034 : Plot
         pietyCost = 4;
         pietyDelta = 6;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 5;
+        iconIndexes.icon1S = 0;
+        iconIndexes.icon2 = 0;
+        iconIndexes.icon2S = 3;
+        iconIndexes.icon3 = 1;
+        iconIndexes.icon3S = 3;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "언더독";
         plotDescription = "중요한 것은 깎이지 않는 마음";
-        plotEffect = "가장 체력<sprite name=hp> 이 낮은 후보 정치력<sprite name=influence>, 경건함<sprite name=piety>  60 증가";
+        plotEffect = "자신을 포함한 가장 체력<sprite name=hp>이 낮은 후보 정치력<sprite name=influence>, 경건함<sprite name=piety> 6 증가";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }

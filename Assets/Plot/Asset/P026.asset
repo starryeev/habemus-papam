@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: P026
   m_EditorClassIdentifier: Assembly-CSharp::P026
   plotID: P026
-  plotName: "\uC8FC\uC0AC\uC704 \uAD74\uB9AC\uAE30"
-  plotDescription: "\uC8FC\uC0AC\uC704\uB294 \uB358\uC838\uC84C\uB2E4"
-  plotEffect: "\uC77C\uBC18 \uC544\uC774\uD15C '\uC8FC\uC0AC\uC704' 2\uAC1C \uD68D\uB4DD"
+  plotName: "주사위 굴리기"
+  plotDescription: "주사위는 던져졌다"
+  plotEffect: "일반 아이템 '주사위' 2개 획득"
   plotCondiText: <sprite name=influence>3<sprite name=up>
   plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}

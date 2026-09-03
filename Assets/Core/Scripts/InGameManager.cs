@@ -543,6 +543,7 @@ public class InGameManager : MonoBehaviour
     private readonly bool[,] npcTurnActionsExecuted = new bool[3, 4];
     private readonly int[] npcNextTurnBlockedActionCounts = new int[3];
     private readonly HashSet<int> prayerBlockedCandidateNumbers = new HashSet<int>();
+    private readonly Dictionary<int, float> speechHpRecoveryByCandidateNumber = new Dictionary<int, float>();
     private readonly List<PendingEffectSaveData> pendingEffects = new List<PendingEffectSaveData>();
 
     public GameBalance Balance => balance;
@@ -679,6 +680,7 @@ public class InGameManager : MonoBehaviour
         lastEventCheckedActionPosition = -1;
         endConclaveAfterEvent = false;
         prayerBlockedCandidateNumbers.Clear();
+        speechHpRecoveryByCandidateNumber.Clear();
         pendingEffects.Clear();
         playerActionEffects.Clear();
         isResolvingPlayerActionNotice = false;
@@ -716,6 +718,7 @@ public class InGameManager : MonoBehaviour
             case GameContext.GameContextEvent.ConclaveEnd:
                 isConclaveExitInProgress = true;
                 prayerBlockedCandidateNumbers.Clear();
+                speechHpRecoveryByCandidateNumber.Clear();
                 GameSceneCameraZoom.ReleaseAllGameCameraZoomAndFollow(1f);
 
                 if (inventoryUIPanel != null)
@@ -986,6 +989,11 @@ public class InGameManager : MonoBehaviour
             saveData.prayerBlockedCandidateNumbers.Add(candidateNumber);
         }
 
+        foreach (int candidateNumber in speechHpRecoveryByCandidateNumber.Keys)
+        {
+            saveData.speechHpRecoveryCandidateNumbers.Add(candidateNumber);
+        }
+
         return saveData;
     }
 
@@ -1020,6 +1028,7 @@ public class InGameManager : MonoBehaviour
         isConclaveExitInProgress = false;
         RestoreNpcTurnPlan(saveData);
         RestorePrayerBlocks(saveData.prayerBlockedCandidateNumbers);
+        RestoreSpeechHpRecovery(saveData.speechHpRecoveryCandidateNumbers);
         RestorePendingEffects(saveData.pendingEffects);
         playerActionEffects.Restore(saveData.playerActionEffects);
         isResolvingPlayerActionNotice = false;
@@ -1226,6 +1235,21 @@ public class InGameManager : MonoBehaviour
         if (candidateNumber >= 0) prayerBlockedCandidateNumbers.Add(candidateNumber);
     }
 
+    public void EnableSpeechHpRecoveryForCurrentConclave(Cardinal performer, float amount)
+    {
+        int candidateNumber = GetCandidateNumber(performer);
+        if (candidateNumber < 0 || amount <= 0f) return;
+        speechHpRecoveryByCandidateNumber[candidateNumber] = amount;
+    }
+
+    public float GetSpeechHpRecoveryBonus(Cardinal performer)
+    {
+        int candidateNumber = GetCandidateNumber(performer);
+        return candidateNumber >= 0 && speechHpRecoveryByCandidateNumber.TryGetValue(candidateNumber, out float amount)
+            ? amount
+            : 0f;
+    }
+
     private void RestorePrayerBlocks(List<int> savedCandidateNumbers)
     {
         prayerBlockedCandidateNumbers.Clear();
@@ -1234,6 +1258,17 @@ public class InGameManager : MonoBehaviour
         {
             if (candidateNumber >= 0 && candidateNumber <= 3)
                 prayerBlockedCandidateNumbers.Add(candidateNumber);
+        }
+    }
+
+    private void RestoreSpeechHpRecovery(List<int> savedCandidateNumbers)
+    {
+        speechHpRecoveryByCandidateNumber.Clear();
+        if (savedCandidateNumbers == null) return;
+        foreach (int candidateNumber in savedCandidateNumbers)
+        {
+            if (candidateNumber >= 0 && candidateNumber <= 3)
+                speechHpRecoveryByCandidateNumber[candidateNumber] = 1f;
         }
     }
 
@@ -1492,16 +1527,24 @@ public class InGameManager : MonoBehaviour
         return candidates;
     }
 
-    public void ScheduleNextDayInfluenceRestore(string sourceId, Cardinal owner, float amount)
+    public void ScheduleNextConclaveHpDamage(string sourceId, Cardinal owner, float amount)
     {
-        RegisterPendingEffect(PendingEffectType.P021RestoreInfluence, sourceId, owner,
-            gameContext.CurrentDay + 1, GameContext.Conclave.Dawn, amount);
+        GetNextConclaveSchedule(out int triggerDay, out GameContext.Conclave triggerConclave);
+        RegisterPendingEffect(PendingEffectType.P021NextConclaveHpDamage, sourceId, owner,
+            triggerDay, triggerConclave, amount);
     }
 
     public void ScheduleNextConclaveRevenge(string sourceId, Cardinal owner)
     {
-        int triggerDay = gameContext.CurrentDay;
-        GameContext.Conclave triggerConclave = gameContext.CurrentConclave;
+        GetNextConclaveSchedule(out int triggerDay, out GameContext.Conclave triggerConclave);
+        RegisterPendingEffect(PendingEffectType.P033RevengeDamage, sourceId, owner,
+            triggerDay, triggerConclave, 0f);
+    }
+
+    private void GetNextConclaveSchedule(out int triggerDay, out GameContext.Conclave triggerConclave)
+    {
+        triggerDay = gameContext.CurrentDay;
+        triggerConclave = gameContext.CurrentConclave;
         if (triggerConclave == GameContext.Conclave.Afternoon)
         {
             triggerDay++;
@@ -1511,9 +1554,6 @@ public class InGameManager : MonoBehaviour
         {
             triggerConclave++;
         }
-
-        RegisterPendingEffect(PendingEffectType.P033RevengeDamage, sourceId, owner,
-            triggerDay, triggerConclave, 0f);
     }
 
     public void RecordPendingHpLoss(Cardinal owner, float actualLoss)
@@ -1573,8 +1613,13 @@ public class InGameManager : MonoBehaviour
                 if (target == null || target == owner) continue;
                 switch ((PendingEffectType)effect.effectType)
                 {
-                    case PendingEffectType.P021RestoreInfluence:
-                        target.ChangeInfluence(effect.accumulatedValue);
+                    case PendingEffectType.P021NextConclaveHpDamage:
+                        if (effect.accumulatedValue <= 0f) break;
+                        float nextConclaveHpDelta = eventManager != null
+                            ? eventManager.ModifyPlotHpDelta(owner, target, -effect.accumulatedValue)
+                            : -effect.accumulatedValue;
+                        target.ChangeHp(nextConclaveHpDelta);
+                        target.ResolveHpState();
                         break;
                     case PendingEffectType.P033RevengeDamage:
                         if (effect.accumulatedValue <= 0f) break;
@@ -1626,8 +1671,8 @@ public class InGameManager : MonoBehaviour
         if (savedEffects == null) return;
         foreach (PendingEffectSaveData effect in savedEffects)
         {
-            if (effect == null || effect.effectType < (int)PendingEffectType.P021RestoreInfluence ||
-                effect.effectType > (int)PendingEffectType.P033RevengeDamage) continue;
+            if (effect == null || effect.effectType < (int)PendingEffectType.P033RevengeDamage ||
+                effect.effectType > (int)PendingEffectType.P021NextConclaveHpDamage) continue;
             PendingEffectSaveData restored = ClonePendingEffect(effect);
             restored.ownerCandidateNumber = Mathf.Clamp(restored.ownerCandidateNumber, 0, 3);
             restored.createdConclave = Mathf.Clamp(restored.createdConclave, 0, 3);

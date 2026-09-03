@@ -4,6 +4,7 @@
 
 public class P020 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -15,7 +16,7 @@ public class P020 : Plot
     {
         // 설정 기본값
         plotID = "P020";
-        plotGrade = PlotGrade.Rare;
+        plotGrade = PlotGrade.Legendary;
 
         // 수치 기본값
         plotWeightBase = 20;
@@ -24,6 +25,11 @@ public class P020 : Plot
         minInfluence = 8;
         pietyCost = 3;
         rewardCount = 2;
+
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon2 = 7;
+        plotIconImageIndexes = iconIndexes;
 
         // 텍스트 기본값
         plotName = "선물 개봉";

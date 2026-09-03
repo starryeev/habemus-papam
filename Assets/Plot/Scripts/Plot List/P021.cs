@@ -4,12 +4,12 @@
 
 public class P021 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
     [SerializeField] private int influenceDelta;
-    [SerializeField] private int baseNextDayInfluenceDelta;
-    [SerializeField] private int influenceGainPerConclave;
+    [SerializeField] private int nextConclaveHpDamagePerConclave;
 
     public override int cost => pietyCost;
 
@@ -26,8 +26,16 @@ public class P021 : Plot
         minInfluence = 6;
         pietyCost = 1;
         influenceDelta = -2;
-        baseNextDayInfluenceDelta = 2;
-        influenceGainPerConclave = 1;
+        nextConclaveHpDamagePerConclave = 1;
+
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 6;
+        iconIndexes.icon2 = 2;
+        iconIndexes.icon2S = 4;
+        iconIndexes.icon3 = 0;
+        iconIndexes.icon3S = 4;
+        plotIconImageIndexes = iconIndexes;
 
         // 텍스트 기본값
         plotName = "무릎 꿇기";
@@ -63,8 +71,10 @@ public class P021 : Plot
             if (target != null && target != performer) target.ChangeInfluence(influenceDelta);
         }
 
-        int remainingConclaves = 3 - (int)gameManager.GetCurrentConclave();
-        int totalInfluenceDelta = baseNextDayInfluenceDelta + remainingConclaves * influenceGainPerConclave;
-        gameManager.ScheduleNextDayInfluenceRestore(plotID, performer, totalInfluenceDelta);
+        int pastConclaveCount = ActionRecordManager.Instance != null
+            ? ActionRecordManager.Instance.GetCurrentConclaveCount()
+            : 0;
+        int totalHpDamage = Mathf.Max(0, pastConclaveCount/4) * nextConclaveHpDamagePerConclave;
+        gameManager.ScheduleNextConclaveHpDamage(plotID, performer, totalHpDamage);
     }
 }

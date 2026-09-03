@@ -4,6 +4,7 @@
 
 public class P033 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -22,6 +23,14 @@ public class P033 : Plot
 
         minInfluence = 6;
         pietyCost = 6;
+
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 6;
+        iconIndexes.icon2 = 0;
+        iconIndexes.icon2S = 4;
+        iconIndexes.icon3 = 7;
+        plotIconImageIndexes = iconIndexes;
 
         // 텍스트 기본값
         plotName = "나는 용서하마";

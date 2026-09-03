@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P013
   m_EditorClassIdentifier: Assembly-CSharp::P013
   plotID: P013
-  plotName: "\uC2EC\uB3C4 \uC788\uB294 \uB17C\uC758"
-  plotDescription: "\uD30C\uC778\uC560\uD50C \uD53C\uC790\uB294 \uC774\uB2E8\uC778\uAC00?"
+  plotName: "심도 있는 논의"
+  plotDescription: "파인애플 피자는 이단인가?"
   plotEffect: "정치력<sprite name=influence> 2 증가"
   plotCondiText: <sprite name=influence>1<sprite name=up>
   plotCostText: <sprite name=piety>  2

@@ -1,0 +1,34 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74c850439654479284e3ab24729fd5f1, type: 3}
+  m_Name: P039
+  m_EditorClassIdentifier: Assembly-CSharp::P039
+  plotID: P039
+  plotName: "치명적인 장난"
+  plotDescription: "죽일 생각까지는 없는데?"
+  plotEffect: "무작위 상대 후보 한 명 체력<sprite name=hp> 5 감소"
+  plotCondiText: <sprite name=influence>8<sprite name=up>
+  plotCostText: <sprite name=piety>  6
+  plotImage: {fileID: 0}
+  plotGrade: 0
+  plotWeightBase: 20
+  plotWeightMultiplier: 0
+  icons:
+    icon1: {fileID: 0}
+    icon2: {fileID: 0}
+    icon3: {fileID: 0}
+    icon1S: {fileID: 0}
+    icon2S: {fileID: 0}
+    icon3S: {fileID: 0}
+  minInfluence: 8
+  pietyCost: 6
+  hpDelta: -4

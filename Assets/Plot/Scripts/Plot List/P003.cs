@@ -4,6 +4,7 @@
 
 public class P003 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -25,10 +26,17 @@ public class P003 : Plot
         pietyCost = 2;
         pietyDelta = 3;
 
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 5;
+        iconIndexes.icon1S = 11;
+        iconIndexes.icon3 = 1;
+        iconIndexes.icon3S = 3;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "마니또";
         plotDescription = "소소한 선물이야";
-        plotEffect = "무작위 상대 후보 한명 경건함<sprite name=piety> 30 증가";
+        plotEffect = "무작위 상대 후보 한 명 경건함<sprite name=piety> 3 증가";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
 

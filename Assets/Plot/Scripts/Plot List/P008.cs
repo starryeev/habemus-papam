@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class P008 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -30,10 +31,20 @@ public class P008 : Plot
         influenceDelta = 3;
         pietyDelta = 3;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 0;
+        iconIndexes.icon1S = 3;
+        iconIndexes.icon2 = 1;
+        iconIndexes.icon2S = 3;
+        iconIndexes.icon3 = 2;
+        iconIndexes.icon3S = 3;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "삼위일체";
         plotDescription = "트포다 트포";
-        plotEffect = "체력<sprite name=hp> 33 증가\n정치력<sprite name=influence>, 경건함<sprite name=piety> 3 증가";
+        plotEffect = "체력<sprite name=hp> 3 증가\n정치력<sprite name=influence>, 경건함<sprite name=piety> 3 증가";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }

@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: P030
   m_EditorClassIdentifier: Assembly-CSharp::P030
   plotID: P030
-  plotName: "\uACB0\uCF54 \uB2E4\uC2DC \uC804\uC7C1!"
-  plotDescription: "\uC131\uC804\uC774\uB2E4, \uC6B0\uB9E4\uD55C \uC774\uB2E8\uB4E4\uC544!"
-  plotEffect: "모든 후보 정치력 4 증가, 이번 콘클라베 동안 자신의 체력 최소 1 유지"
+  plotName: "결코 다시 전쟁!"
+  plotDescription: "성전이다, 우매한 이단들아!"
+  plotEffect: "모든 후보 정치력<sprite name=influence> 4 증가\n이번 콘클라베 동안 자신의 체력<sprite name=hp> 최소 1 유지"
   plotCondiText: <sprite name=influence>6<sprite name=up>
   plotCostText: <sprite name=piety>  0
   plotImage: {fileID: 0}
@@ -24,4 +24,4 @@ MonoBehaviour:
   plotWeightMultiplier: 0
   minInfluence: 6
   pietyCost: 0
-  influenceDelta: 4
+  influenceDelta: 40

@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: P006
   m_EditorClassIdentifier: Assembly-CSharp::P006
   plotID: P006
-  plotName: "\uCEE4\uD53C \uD68C\uB3D9"
-  plotDescription: "\uCEE4\uD53C \uD55C \uC794\uC758 \uC5EC\uC720"
+  plotName: "커피 회동"
+  plotDescription: "커피 한 잔의 여유"
   plotEffect: "모든 후보 정치력<sprite name=influence> 1 증가"
   plotCondiText: <sprite name=influence>3<sprite name=up>
   plotCostText: <sprite name=piety>  2

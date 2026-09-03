@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: P002
   m_EditorClassIdentifier: Assembly-CSharp::P002
   plotID: P002
-  plotName: "\uC740\uBC00\uD55C \uB17C\uC758"
-  plotDescription: "...\uC810\uC2EC \uBB50 \uBA39\uC9C0?"
-  plotEffect: "정치력<sprite name=influence> 2 증가"
+  plotName: "은밀한 논의"
+  plotDescription: "...점심 뭐 먹지?"
+  plotEffect: "정치력<sprite name=influence> 1 증가"
   plotCondiText: <sprite name=influence>1<sprite name=up>
   plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}

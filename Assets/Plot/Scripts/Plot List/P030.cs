@@ -7,6 +7,7 @@ using static UnityEngine.GraphicsBuffer;
 
 public class P030 : Plot
 {
+
     private const string MinHpEffectSource = "P030";
 
     [Header("해당 공작 설정")]
@@ -30,10 +31,19 @@ public class P030 : Plot
         pietyCost = 0;
         influenceDelta = 4;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 6;
+        iconIndexes.icon2 = 2;
+        iconIndexes.icon2S = 3;
+        iconIndexes.icon3 = 0;
+        iconIndexes.icon3S = 11;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "결코 다시 전쟁!";
         plotDescription = "성전이다, 우매한 이단들아!";
-        plotEffect = "모든 후보 정치력<sprite name=influence> 40 증가\n이번 콘클라베 동안 자신의 체력<sprite name=hp> 최소 1 유지";
+        plotEffect = "모든 후보 정치력<sprite name=influence> 4 증가\n이번 콘클라베 동안 자신의 체력<sprite name=hp> 최소 1 유지";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
 

@@ -4,6 +4,7 @@
 
 public class P012 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -25,10 +26,16 @@ public class P012 : Plot
         pietyCost = 3;
         hpDelta = 2;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon2 = 0;
+        iconIndexes.icon2S = 3;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "푹 쉬기";
         plotDescription = "쉬었음 추기경";
-        plotEffect = "체력<sprite name=hp> 20 증가";
+        plotEffect = "체력<sprite name=hp> 2 증가";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }

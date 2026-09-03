@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: P034
   m_EditorClassIdentifier: Assembly-CSharp::P034
   plotID: P034
-  plotName: "\uC5B8\uB354\uB3C5"
-  plotDescription: "\uC911\uC694\uD55C \uAC83\uC740 \uAE4E\uC774\uC9C0 \uC54A\uB294
+  plotName: "언더독"
+  plotDescription: "중요한 것은 깎이지 않는 마음"
     \uB9C8\uC74C"
-  plotEffect: "가장 체력이 낮은 후보 정치력/경건함 6 증가"
+  plotEffect: "자신을 포함한 가장 체력<sprite name=hp>이 낮은 후보 정치력<sprite name=influence>, 경건함<sprite name=piety> 6 증가"
   plotCondiText: <sprite name=influence>5<sprite name=up>
   plotCostText: <sprite name=piety>  4
   plotImage: {fileID: 0}

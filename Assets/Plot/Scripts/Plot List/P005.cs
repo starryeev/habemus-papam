@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class P005 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -21,9 +22,17 @@ public class P005 : Plot
         // 텍스트 기본값
         plotName = "골탕 먹이기";
         plotDescription = "안 아 줘 요";
-        plotEffect = "무작위 상대 후보 한명 체력<sprite name=hp> 15 감소";
+        plotEffect = "무작위 상대 후보 한 명 체력<sprite name=hp> 2 감소";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
+
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 5;
+        iconIndexes.icon1S = 11;
+        iconIndexes.icon3 = 0;
+        iconIndexes.icon3S = 4;
+        plotIconImageIndexes = iconIndexes;
 
         // 수치 기본값
         plotWeightBase = 20;

@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class P009 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -21,10 +22,17 @@ public class P009 : Plot
         // 텍스트 기본값
         plotName = "태양의 눈";
         plotDescription = "태양의 눈을 지닌 자여, 신실함을 보여라.";
-        plotEffect = "가장 경건함<sprite name=piety>이 낮은 상대 후보 체력<sprite name=hp> 20 감소";
+        plotEffect = "가장 경건함<sprite name=piety>이 낮은 상대 후보 체력<sprite name=hp> 2 감소";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 5;
+        iconIndexes.icon1S = 9;
+        iconIndexes.icon2 = 0;
+        iconIndexes.icon2S = 4;
+        plotIconImageIndexes = iconIndexes;
         // 수치 기본값
         plotWeightBase = 20;
         plotWeightMultiplier = 0f;

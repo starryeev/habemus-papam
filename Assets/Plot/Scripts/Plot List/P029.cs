@@ -6,6 +6,7 @@ using static UnityEngine.GraphicsBuffer;
 
 public class P029 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -28,6 +29,15 @@ public class P029 : Plot
         pietyCost = 4;
         hpDelta = 5;
         influenceDelta = 2;
+
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 0;
+        iconIndexes.icon1S = 3;
+        iconIndexes.icon2 = 2;
+        iconIndexes.icon2S = 4;
+        iconIndexes.icon3 = 7;
+        plotIconImageIndexes = iconIndexes;
 
         // 텍스트 기본값
         plotName = "점심 복사 버그";

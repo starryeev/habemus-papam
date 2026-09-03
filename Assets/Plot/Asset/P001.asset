@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: P001
   m_EditorClassIdentifier: Assembly-CSharp::P001
   plotID: P001
-  plotName: "\uD55C \uC228 \uB3CC\uB9AC\uAE30"
-  plotDescription: "\uD734\uC6B0..."
+  plotName: "한 숨 돌리기"
+  plotDescription: "휴우..."
   plotEffect: "체력<sprite name=hp> 2 증가"
-  plotCondiText: <sprite name=influence>2<sprite name=up>
+  plotCondiText: <sprite name=influence>1<sprite name=up>
   plotCostText: <sprite name=piety>  2
   plotImage: {fileID: 0}
   plotGrade: 0
   plotWeightBase: 20
   plotWeightMultiplier: 0
-  minInfluence: 2
+  minInfluence: 1
   pietyCost: 2
   hpDelta: 2

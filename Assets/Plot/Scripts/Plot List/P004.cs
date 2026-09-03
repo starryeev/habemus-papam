@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class P004 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -26,10 +27,16 @@ public class P004 : Plot
         pietyCost = 3;
         influenceDelta = -1;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon2 = 2;
+        iconIndexes.icon2S = 4;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "광대 놀음";
-        plotDescription = "상갓집 개 노릇";
-        plotEffect = "정치력<sprite name=influence> 10 감소";
+        plotDescription = "이런 나라도 교주로 뽑아줄 수 있어?";
+        plotEffect = "정치력<sprite name=influence> 1 감소";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
 

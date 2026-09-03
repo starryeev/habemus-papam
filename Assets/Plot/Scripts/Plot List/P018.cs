@@ -4,6 +4,7 @@
 
 public class P018 : Plot
 {
+
     [Header("해당 공작 설정")]
     [SerializeField] private int minInfluence;
     [SerializeField] private int pietyCost;
@@ -27,10 +28,19 @@ public class P018 : Plot
         hpDelta = -2;
         influenceDelta = 2;
 
+        // 아이콘 기본값
+        PlotIconImageIndexes iconIndexes = new PlotIconImageIndexes();
+        iconIndexes.icon1 = 2;
+        iconIndexes.icon1S = 3;
+        iconIndexes.icon2 = 6;
+        iconIndexes.icon3 = 0;
+        iconIndexes.icon3S = 4;
+        plotIconImageIndexes = iconIndexes;
+
         // 텍스트 기본값
         plotName = "스몰 토크";
         plotDescription = "제가 LA에 갔을 때 말이죠...";
-        plotEffect = "정치력<sprite name=influence> 20 증가\n모든 상대 후보 체력<sprite name=hp> 15 감소";
+        plotEffect = "정치력<sprite name=influence> 2 증가\n모든 상대 후보 체력<sprite name=hp> 2 감소";
         plotCondiText = $"<sprite name=influence>{minInfluence}<sprite name=up>";
         plotCostText = $"<sprite name=piety>  {cost}";
     }

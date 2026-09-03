@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -13,11 +13,9 @@ MonoBehaviour:
   m_Name: P033
   m_EditorClassIdentifier: Assembly-CSharp::P033
   plotID: P033
-  plotName: "\uB098\uB294 \uC6A9\uC11C\uD558\uB9C8"
-  plotDescription: "\uD558\uC9C0\uB9CC \uC774 \uB140\uC11D\uC774 \uC6A9\uC11C\uD560\uAE4C?"
-  plotEffect: "\uB2E4\uC74C \uCF58\uD074\uB77C\uBCA0 \uB54C, \uC774\uBC88 \uCF58\uD074\uB77C\uBCA0
-    \uB3D9\uC548 \uAC10\uC18C\uD55C \uCCB4\uB825<sprite name=hp>\uB9CC\uD07C \uBAA8\uB4E0
-    \uC0C1\uB300 \uD6C4\uBCF4\uC758 \uCCB4\uB825<sprite name=hp> \uAC10\uC18C"
+  plotName: "나는 용서하마"
+  plotDescription: "하지만 이 녀석이 용서할까?"
+  plotEffect: "다음 콘클라베 때, 이번 콘클라베 동안 감소한 체력<sprite name=hp>만큼 모든 상대 후보의 체력<sprite name=hp> 감소"
   plotCondiText: <sprite name=influence>6<sprite name=up>
   plotCostText: <sprite name=piety>  6
   plotImage: {fileID: 0}

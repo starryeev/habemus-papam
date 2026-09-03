@@ -6,14 +6,48 @@ public class PlotSet
 {
     public Plot[] plots = new Plot[3];
     public bool[] isUsed = new bool[3];
+    public PlotIconImageIndexes[] plotIconImageIndexes = new PlotIconImageIndexes[3];
 
-    public PlotSet(Plot[] plots)
+    public PlotSet(Plot[] plots, PlotIconImageIndexes[] plotIconImageIndexes = null)
     {
         for(int i = 0; i < 3; i++)
         {
             this.plots[i] = plots[i];
             this.isUsed[i] = plots[i] == null;
+            this.plotIconImageIndexes[i] = plotIconImageIndexes != null && i < plotIconImageIndexes.Length &&
+                plotIconImageIndexes[i] != null
+                ? plotIconImageIndexes[i].Clone()
+                : GetDefaultPlotIconImageIndexes(plots[i]);
         }
+    }
+
+    private static PlotIconImageIndexes GetDefaultPlotIconImageIndexes(Plot plot)
+    {
+        return plot != null && plot.plotIconImageIndexes != null
+            ? plot.plotIconImageIndexes.Clone()
+            : new PlotIconImageIndexes();
+    }
+
+    public int GetPlotIconImageIndex(int slot, int iconIndex, bool isSelectedIcon)
+    {
+        if (plotIconImageIndexes == null || slot < 0 || slot >= plotIconImageIndexes.Length ||
+            plotIconImageIndexes[slot] == null)
+        {
+            return -1;
+        }
+
+        return plotIconImageIndexes[slot].GetImageIndex(iconIndex, isSelectedIcon);
+    }
+
+    public PlotIconImageIndexes GetPlotIconImageIndexes(int slot)
+    {
+        if (plotIconImageIndexes == null || slot < 0 || slot >= plotIconImageIndexes.Length ||
+            plotIconImageIndexes[slot] == null)
+        {
+            return new PlotIconImageIndexes();
+        }
+
+        return plotIconImageIndexes[slot].Clone();
     }
 
     public void use(int slot)
@@ -36,6 +70,9 @@ public class PlotManager : MonoBehaviour
 
     [Header("공작 SO 리스트")]
     [SerializeField] private List<Plot> plots;
+
+    [Header("공작 이미지 리스트")]
+    [SerializeField] private List<Sprite> plotImages = new List<Sprite>();
 
     private PlotSet[] availPlotSets = new PlotSet[2];
     private int activePlotDay;
@@ -190,6 +227,34 @@ public class PlotManager : MonoBehaviour
             : $"<sprite name=influence>{effectiveRequirement}<sprite name=up>";
     }
 
+    public Sprite GetPlotIconSprite(PlotSet plotSet, int plotSlot, int iconIndex, bool isSelectedIcon)
+    {
+        if (plotSet == null || plotSlot < 0 || plotSlot >= plotSet.plots.Length)
+        {
+            return null;
+        }
+
+        Sprite managerSprite = GetPlotImage(
+            plotSet.GetPlotIconImageIndex(plotSlot, iconIndex, isSelectedIcon));
+        if (managerSprite != null)
+        {
+            return managerSprite;
+        }
+
+        Plot plot = plotSet.plots[plotSlot];
+        return plot != null ? plot.GetIconSprite(iconIndex, isSelectedIcon) : null;
+    }
+
+    private Sprite GetPlotImage(int imageIndex)
+    {
+        if (plotImages == null || imageIndex < 0 || imageIndex >= plotImages.Count)
+        {
+            return null;
+        }
+
+        return plotImages[imageIndex];
+    }
+
     public void RefreshPlotManager()
     {
         usedPlots.Clear();
@@ -309,6 +374,9 @@ public class PlotManager : MonoBehaviour
 
                 setSave.plotIds.Add(plotId);
                 setSave.usedSlots.Add(used);
+                setSave.plotIconImageIndexes.Add(currentSet != null
+                    ? currentSet.GetPlotIconImageIndexes(slot)
+                    : new PlotIconImageIndexes());
             }
 
             saveData.plotSets.Add(setSave);
@@ -340,12 +408,21 @@ public class PlotManager : MonoBehaviour
 
             Plot[] restoredPlots = new Plot[3];
             bool[] restoredFromSave = new bool[3];
+            PlotIconImageIndexes[] restoredPlotIconImageIndexes = new PlotIconImageIndexes[3];
+            bool[] restoredImageIndexFromSave = new bool[3];
 
             for (int slot = 0; slot < 3; slot++)
             {
                 string plotId = setSave.plotIds[slot];
                 restoredPlots[slot] = GetPlotById(plotId);
                 restoredFromSave[slot] = restoredPlots[slot] != null;
+                restoredImageIndexFromSave[slot] = setSave.plotIconImageIndexes != null &&
+                    slot < setSave.plotIconImageIndexes.Count && setSave.plotIconImageIndexes[slot] != null;
+                restoredPlotIconImageIndexes[slot] = restoredImageIndexFromSave[slot]
+                    ? setSave.plotIconImageIndexes[slot].Clone()
+                    : (restoredPlots[slot] != null && restoredPlots[slot].plotIconImageIndexes != null
+                        ? restoredPlots[slot].plotIconImageIndexes.Clone()
+                        : new PlotIconImageIndexes());
                 if (!string.IsNullOrWhiteSpace(plotId) && restoredPlots[slot] == null)
                 {
                     Debug.LogWarning($"[Save] 공작 '{plotId}'를 찾지 못해 빈 슬롯으로 복원합니다.");
@@ -359,10 +436,17 @@ public class PlotManager : MonoBehaviour
                 {
                     restoredPlots[slot] = PickSlotPlot(
                         RollPreferredGrade(slot), playerInfluence, restoredPlots, null);
+                    if (!restoredImageIndexFromSave[slot])
+                    {
+                        restoredPlotIconImageIndexes[slot] = restoredPlots[slot] != null &&
+                            restoredPlots[slot].plotIconImageIndexes != null
+                            ? restoredPlots[slot].plotIconImageIndexes.Clone()
+                            : new PlotIconImageIndexes();
+                    }
                 }
             }
 
-            availPlotSets[i] = new PlotSet(restoredPlots);
+            availPlotSets[i] = new PlotSet(restoredPlots, restoredPlotIconImageIndexes);
 
             if (setSave.usedSlots != null)
             {

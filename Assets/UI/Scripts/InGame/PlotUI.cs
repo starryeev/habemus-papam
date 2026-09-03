@@ -8,6 +8,32 @@ public class PlotUI : MonoBehaviour
 {
     private const float PlotContactCooldown = 3f;
 
+    [System.Serializable]
+    private class PlotIconSlot
+    {
+        public Image icon1 = null;
+        public Image icon2 = null;
+        public Image icon3 = null;
+        public Image icon1S = null;
+        public Image icon2S = null;
+        public Image icon3S = null;
+
+        public Image GetIconImage(int index, bool isSelectedIcon)
+        {
+            switch (index)
+            {
+                case 0:
+                    return isSelectedIcon ? icon1S : icon1;
+                case 1:
+                    return isSelectedIcon ? icon2S : icon2;
+                case 2:
+                    return isSelectedIcon ? icon3S : icon3;
+                default:
+                    return null;
+            }
+        }
+    }
+
     [Header("--- 공작 선택 UI ---")]
     public GameObject plotSelectUI;
     public Image[] plotPanels = new Image[3];
@@ -24,7 +50,8 @@ public class PlotUI : MonoBehaviour
     [SerializeField] private Sprite rareSprite;
     [SerializeField] private Sprite legendSprite;
 
-
+    [Header("--- 공작 아이콘 ---")]
+    [SerializeField] private PlotIconSlot[] plotIconSlots = new PlotIconSlot[3];
 
     [Header("--- 테스트용 공작 ---")]
     public Plot testPlot;
@@ -146,7 +173,8 @@ public class PlotUI : MonoBehaviour
 
         for (int i = 0; i < 3; i++)
         {
-            var currentPlot = pm.AvailPlotSets[0].plots[i];
+            PlotSet currentPlotSet = pm.AvailPlotSets[0];
+            var currentPlot = currentPlotSet.plots[i];
             var buttonText = plotUseButtons[i].GetComponentInChildren<TextMeshProUGUI>();
 
             if (currentPlot == null)
@@ -157,8 +185,11 @@ public class PlotUI : MonoBehaviour
                 plotEffectList[i].text = string.Empty;
                 buttonText.text = string.Empty;
                 plotUseButtons[i].interactable = false;
+                SetPlotIcons(i, null);
                 continue;
             }
+
+            SetPlotIcons(i, currentPlotSet);
 
             // 공작 등급에 따른 뒷 배경 세팅
             switch (currentPlot.plotGrade)
@@ -272,6 +303,43 @@ public class PlotUI : MonoBehaviour
         return false;
     }
 
+    private void SetPlotIcons(int plotIndex, PlotSet plotSet)
+    {
+        PlotIconSlot iconSlot = GetPlotIconSlot(plotIndex);
+        if (iconSlot == null) return;
+
+        PlotManager plotManager = PlotManager.Instance;
+        for (int iconIndex = 0; iconIndex < 3; iconIndex++)
+        {
+            SetIconImage(
+                iconSlot.GetIconImage(iconIndex, false),
+                plotManager != null ? plotManager.GetPlotIconSprite(plotSet, plotIndex, iconIndex, false) : null);
+            SetIconImage(
+                iconSlot.GetIconImage(iconIndex, true),
+                plotManager != null ? plotManager.GetPlotIconSprite(plotSet, plotIndex, iconIndex, true) : null);
+        }
+    }
+
+    private static void SetIconImage(Image image, Sprite sprite)
+    {
+        if (image == null) return;
+
+        image.sprite = sprite;
+        Color color = image.color;
+        color.a = sprite == null ? 0f : 1f;
+        image.color = color;
+    }
+
+    private PlotIconSlot GetPlotIconSlot(int index)
+    {
+        if (plotIconSlots == null || index < 0 || index >= plotIconSlots.Length)
+        {
+            return null;
+        }
+
+        return plotIconSlots[index];
+    }
+
     // 공작 UI 정보 리셋 함수
     public void ResetPlotUI()
     {
@@ -280,7 +348,9 @@ public class PlotUI : MonoBehaviour
             plotNameList[i].text = "";
             plotDescList[i].text = "";
             plotEffectList[i].text = "";
+            plotCondiList[i].text = "";
             plotUseButtons[i].interactable = false;
+            SetPlotIcons(i, null);
         }
     }
 
