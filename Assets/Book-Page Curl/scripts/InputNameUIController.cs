@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -15,6 +16,7 @@ public class InputNameUIController : MonoBehaviour
 
     [SerializeField] private GameObject inputNameGroup;
     [SerializeField] private Button inputNameButton;
+    [SerializeField] private UIButtonPulseEffect inputNamePulseEffect;
     [SerializeField] private TextMeshProUGUI playerNameDisplayText;
     [SerializeField] private TMP_InputField playerNameInputField;
 
@@ -28,6 +30,7 @@ public class InputNameUIController : MonoBehaviour
 
     public string CurrentPlayerName { get; private set; } = string.Empty;
     public bool HasPlayerName => !string.IsNullOrWhiteSpace(CurrentPlayerName);
+    public event Action OnPlayerNameConfirmed;
 
     private enum NameValidationResult
     {
@@ -40,6 +43,7 @@ public class InputNameUIController : MonoBehaviour
     {
         ResolveBookReference();
         ResolveInputFieldReference();
+        ResolveInputNamePulseEffect();
         ConfigureInputField();
         HideWarning();
 
@@ -106,6 +110,8 @@ public class InputNameUIController : MonoBehaviour
         }
 
         HideInputNamePopup();
+        SetInputNamePulseActive(false);
+        OnPlayerNameConfirmed?.Invoke();
     }
 
     public void OnClickCancel()
@@ -256,5 +262,17 @@ public class InputNameUIController : MonoBehaviour
     {
         if (playerNameInputField == null && inputNamePopup != null)
             playerNameInputField = inputNamePopup.GetComponentInChildren<TMP_InputField>(true);
+    }
+
+    private void ResolveInputNamePulseEffect()
+    {
+        if (inputNamePulseEffect == null && inputNameButton != null)
+            inputNamePulseEffect = inputNameButton.GetComponent<UIButtonPulseEffect>();
+    }
+
+    private void SetInputNamePulseActive(bool isActive)
+    {
+        if (inputNamePulseEffect != null)
+            inputNamePulseEffect.enabled = isActive;
     }
 }
