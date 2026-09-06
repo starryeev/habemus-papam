@@ -20,6 +20,10 @@ public sealed class NewsBookInitializer : MonoBehaviour
     [SerializeField] private GameObject bookRoot;
     [SerializeField] private bool activateBookAfterInitialization = true;
 
+    [Header("후보 이름")]
+    [Tooltip("후보 1, 2, 3 순서로 Title 텍스트를 연결하세요. 첫 줄의 수식어는 유지됩니다.")]
+    [SerializeField] private TMP_Text[] _candidateNameTexts = new TMP_Text[3];
+
     private readonly HashSet<ArticleData> unavailableArticles = new HashSet<ArticleData>();
     private readonly List<ArticleData> selectedArticles = new List<ArticleData>();
     private UniqueRandomArticleSelector randomSelector;
@@ -32,6 +36,7 @@ public sealed class NewsBookInitializer : MonoBehaviour
         BindFixedArticles();
         BindRandomArticles();
         BindPublishDate();
+        BindCandidateNames();
 
         if (activateBookAfterInitialization && bookRoot != null)
             bookRoot.SetActive(true);
@@ -130,6 +135,33 @@ public sealed class NewsBookInitializer : MonoBehaviour
 
         for (int i = 0; i < randomArticleViews.Length; i++)
             randomArticleViews[i].Bind(selectedArticles[i]);
+    }
+
+    private void BindCandidateNames()
+    {
+        GameNameSaveData names = SaveManager.Instance != null
+            ? SaveManager.Instance.CurrentGameNames
+            : null;
+
+        if (names?.npcNames == null || _candidateNameTexts == null)
+            return;
+
+        int count = Mathf.Min(_candidateNameTexts.Length, names.npcNames.Count);
+
+        for (int i = 0; i < count; i++)
+        {
+            TMP_Text titleText = _candidateNameTexts[i];
+            if (titleText == null)
+                continue;
+
+            string currentTitle = titleText.text;
+            int lineBreakIndex = currentTitle.IndexOf('\n');
+            string prefix = lineBreakIndex >= 0
+                ? currentTitle.Substring(0, lineBreakIndex)
+                : currentTitle;
+
+            titleText.text = $"{prefix.TrimEnd()}\n{names.npcNames[i]}";
+        }
     }
 
     private void BindPublishDate()

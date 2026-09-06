@@ -15,6 +15,7 @@ public enum PopupType
 public class SettingsUI : MonoBehaviour
 {
     private const string GameSceneName = "GameScene";
+    private const string IntroNewspaperSceneName = "IntroNewspaperScene";
 
     [SerializeField] private GameObject settingsPanel;
     [SerializeField] private ScrollRect settingsScrollRect;
@@ -931,8 +932,10 @@ public class SettingsUI : MonoBehaviour
                 ForceCloseSettingsPanel();
                 if (SaveManager.Instance != null)
                 {
-                    SaveManager.Instance.StartNewGame();
+                    SaveManager.Instance.DiscardCurrentGameSave();
                 }
+                Time.timeScale = 1f;
+                SceneManager.LoadScene(IntroNewspaperSceneName);
                 break;
             case PopupType.QuitGame:
                 ForceCloseSettingsPanel();

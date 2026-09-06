@@ -81,6 +81,41 @@ public class NameDB : MonoBehaviour
         }
     }
 
+    public string GetRandomName(ICollection<string> excludedNames)
+    {
+        int availableWeight = 0;
+
+        foreach (var entry in PopeList)
+        {
+            if (entry.Value <= 0 ||
+                string.IsNullOrWhiteSpace(entry.Key) ||
+                (excludedNames != null && excludedNames.Contains(entry.Key)))
+                continue;
+
+            availableWeight += entry.Value;
+        }
+
+        if (availableWeight <= 0)
+            return null;
+
+        int roll = UnityEngine.Random.Range(0, availableWeight);
+
+        foreach (var entry in PopeList)
+        {
+            if (entry.Value <= 0 ||
+                string.IsNullOrWhiteSpace(entry.Key) ||
+                (excludedNames != null && excludedNames.Contains(entry.Key)))
+                continue;
+
+            if (roll < entry.Value)
+                return entry.Key;
+
+            roll -= entry.Value;
+        }
+
+        return null;
+    }
+
     public string GetRandomName()
     {
         float randNum = UnityEngine.Random.Range(0, weightSum);
