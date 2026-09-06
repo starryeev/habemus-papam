@@ -22,6 +22,7 @@ public sealed class IntroNewspaperFlowController : MonoBehaviour
     [SerializeField] private AutoFlip autoFlip;
     [SerializeField] private InputNameUIController inputNameUIController;
     [SerializeField] private Button nextButton;
+    [SerializeField] private UIButtonPulseEffect nextButtonPulseEffect;
     [SerializeField] private Button previousButton;
     [SerializeField] private GameObject gameStartConfirmPopup;
     [SerializeField] private Button gameStartConfirmButton;
@@ -44,6 +45,9 @@ public sealed class IntroNewspaperFlowController : MonoBehaviour
             book.OnFlipStarted += RefreshNavigationButtons;
             book.OnFlipSettled += RefreshNavigationButtons;
         }
+
+        if (inputNameUIController != null)
+            inputNameUIController.OnPlayerNameConfirmed += RefreshNavigationButtons;
     }
 
     private void Start()
@@ -58,6 +62,9 @@ public sealed class IntroNewspaperFlowController : MonoBehaviour
             book.OnFlipStarted -= RefreshNavigationButtons;
             book.OnFlipSettled -= RefreshNavigationButtons;
         }
+
+        if (inputNameUIController != null)
+            inputNameUIController.OnPlayerNameConfirmed -= RefreshNavigationButtons;
     }
 
     private void ResolveReferences()
@@ -73,6 +80,9 @@ public sealed class IntroNewspaperFlowController : MonoBehaviour
 
         if (nextButton == null)
             nextButton = FindSceneButton(NextButtonName);
+
+        if (nextButtonPulseEffect == null && nextButton != null)
+            nextButtonPulseEffect = nextButton.GetComponent<UIButtonPulseEffect>();
 
         if (previousButton == null)
             previousButton = FindSceneButton(PreviousButtonName);
@@ -171,11 +181,23 @@ public sealed class IntroNewspaperFlowController : MonoBehaviour
         {
             SetButtonActive(previousButton, false);
             SetButtonActive(nextButton, false);
+            SetPulseActive(nextButtonPulseEffect, false);
             return;
         }
 
+        bool hasPlayerName = inputNameUIController != null && inputNameUIController.HasPlayerName;
+        bool isEnteringNameInputPage =
+            book.currentPage < NameInputPage &&
+            autoFlip != null &&
+            autoFlip.IsFlipping;
+        bool isWaitingForName =
+            !hasPlayerName &&
+            (book.currentPage == NameInputPage || isEnteringNameInputPage);
+        bool shouldShowNextButton = book.currentPage < book.TotalPageCount && !isWaitingForName;
+
         SetButtonActive(previousButton, book.currentPage > 0);
-        SetButtonActive(nextButton, book.currentPage < book.TotalPageCount);
+        SetButtonActive(nextButton, shouldShowNextButton);
+        SetPulseActive(nextButtonPulseEffect, shouldShowNextButton && hasPlayerName);
     }
 
     private void SetGameStartConfirmPopup(bool isActive)
@@ -188,6 +210,12 @@ public sealed class IntroNewspaperFlowController : MonoBehaviour
     {
         if (button != null)
             button.gameObject.SetActive(isActive);
+    }
+
+    private static void SetPulseActive(UIButtonPulseEffect pulseEffect, bool isActive)
+    {
+        if (pulseEffect != null)
+            pulseEffect.enabled = isActive;
     }
 
     private static Button FindSceneButton(string objectName)

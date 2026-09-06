@@ -4868,8 +4868,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uCDE8\uC18C"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
-  m_sharedMaterial: {fileID: 1688671147638797197, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
+  m_sharedMaterial: {fileID: 4509894828682110792, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -9295,6 +9295,7 @@ GameObject:
   - component: {fileID: 533084657}
   - component: {fileID: 533084656}
   - component: {fileID: 533084655}
+  - component: {fileID: 533084658}
   m_Layer: 5
   m_Name: btn_next
   m_TagString: Untagged
@@ -9415,6 +9416,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 533084653}
   m_CullTransparentMesh: 0
+--- !u!114 &533084658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 533084653}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b52f0c7e93ff4de48501c2ce31ad24a9, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonPulseEffect
+  targetGraphic: {fileID: 533084656}
+  brightColor: {r: 1, g: 1, b: 1, a: 1}
+  dimColor: {r: 1, g: 1, b: 1, a: 0.25}
+  duration: 0.5
+  useUnscaledTime: 1
 --- !u!1 &536941132
 GameObject:
   m_ObjectHideFlags: 0
@@ -12185,8 +12203,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uB2F9\uC2E0\uC758 \uC774\uB984\uC740..."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
-  m_sharedMaterial: {fileID: 1688671147638797197, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
+  m_sharedMaterial: {fileID: 4509894828682110792, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -15532,6 +15550,7 @@ MonoBehaviour:
   autoFlip: {fileID: 1007772760}
   inputNameUIController: {fileID: 2045087338}
   nextButton: {fileID: 533084655}
+  nextButtonPulseEffect: {fileID: 533084658}
   previousButton: {fileID: 2023777105}
   gameStartConfirmPopup: {fileID: 1557561837}
   gameStartConfirmButton: {fileID: 1454098851}
@@ -15595,8 +15614,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uC2DC\uC791\n"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
-  m_sharedMaterial: {fileID: 1688671147638797197, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
+  m_sharedMaterial: {fileID: 4509894828682110792, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -18060,7 +18079,7 @@ MonoBehaviour:
   m_CaretWidth: 1
   m_ReadOnly: 0
   m_RichText: 1
-  m_GlobalFontAsset: {fileID: 11400000, guid: 522a6d3a3cede4c40bfa6a8788255d49, type: 2}
+  m_GlobalFontAsset: {fileID: 11400000, guid: 4a77291de50dd044581b6fa3d6ba6f49, type: 2}
   m_OnFocusSelectAll: 1
   m_ResetOnDeActivation: 1
   m_KeepTextSelectionVisible: 0
@@ -21754,6 +21773,10 @@ MonoBehaviour:
   - {fileID: 1790965093}
   bookRoot: {fileID: 1007772757}
   activateBookAfterInitialization: 1
+  _candidateNameTexts:
+  - {fileID: 1712630939}
+  - {fileID: 734549612}
+  - {fileID: 65826914}
 --- !u!1 &1511477352
 GameObject:
   m_ObjectHideFlags: 0
@@ -25497,8 +25520,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uAC8C\uC784\uC744 \uC2DC\uC791\uD558\uC2DC\uACA0\uC2B5\uB2C8\uAE4C?"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
-  m_sharedMaterial: {fileID: 1688671147638797197, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
+  m_sharedMaterial: {fileID: 4509894828682110792, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -27288,8 +27311,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uD655\uC778"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
-  m_sharedMaterial: {fileID: 1688671147638797197, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
+  m_sharedMaterial: {fileID: 4509894828682110792, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -28509,8 +28532,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "\uB2EB\uAE30"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
-  m_sharedMaterial: {fileID: 1688671147638797197, guid: 5351849d4e9f65d4db48e651883e5dcc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
+  m_sharedMaterial: {fileID: 4509894828682110792, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -28975,6 +28998,7 @@ MonoBehaviour:
   dim: {fileID: 1088664996}
   inputNameGroup: {fileID: 744537775}
   inputNameButton: {fileID: 1801050373}
+  inputNamePulseEffect: {fileID: 1801050376}
   playerNameDisplayText: {fileID: 1206147655}
   playerNameInputField: {fileID: 1247531732}
   warningText: {fileID: 256968099}
@@ -30244,6 +30268,50 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 22425882, guid: fe9bfb5044c0cc646baba1ad7d354100, type: 3}
   m_PrefabInstance: {fileID: 370341741}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1150622663
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1150622664}
+  - component: {fileID: 1150622665}
+  m_Layer: 0
+  m_Name: NameDB
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1150622664
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1150622663}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1150622665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1150622663}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d5f8214eedf86d49b2417763bd014f7, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::NameDB
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -30255,3 +30323,4 @@ SceneRoots:
   - {fileID: 586876447}
   - {fileID: 2045087337}
   - {fileID: 1827246975}
+  - {fileID: 1150622664}

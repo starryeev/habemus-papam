@@ -474,7 +474,7 @@ MonoBehaviour:
   endingText: {fileID: 658416195}
   subText: {fileID: 2111730817}
   regularFont: {fileID: 11400000, guid: 10b561fa58c82b24296b0948ae70d42f, type: 2}
-  boldFont: {fileID: 11400000, guid: e3ef4a2ffacf1df49b434b708cbf02f1, type: 2}
+  boldFont: {fileID: 11400000, guid: 344a88ee5a5804a46b10d7b49751193d, type: 2}
   fadeInDuration: 1
   holdDuration: 4
   videoPlayer: {fileID: 356743147}

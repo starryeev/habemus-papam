@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -8,6 +10,8 @@ public class InputNameUIController : MonoBehaviour
     private const int MaxNameLength = 10;
     private const string EmptyNameWarningMessage = "이름을 입력해주세요.";
     private const string TooLongNameWarningMessage = "이름은 10글자 이하로 입력해주세요.";
+    private const string DuplicateCandidateNameWarningMessage = "다른 후보와 같은 이름은 사용할 수 없습니다.";
+    private const string IncompleteHangulWarningMessage = "한글은 자음·모음을 조합하여 입력해주세요.";
 
     [SerializeField] private Book book;
     [SerializeField] private GameObject inputNamePopup;
@@ -15,6 +19,7 @@ public class InputNameUIController : MonoBehaviour
 
     [SerializeField] private GameObject inputNameGroup;
     [SerializeField] private Button inputNameButton;
+    [SerializeField] private UIButtonPulseEffect inputNamePulseEffect;
     [SerializeField] private TextMeshProUGUI playerNameDisplayText;
     [SerializeField] private TMP_InputField playerNameInputField;
 
@@ -28,18 +33,22 @@ public class InputNameUIController : MonoBehaviour
 
     public string CurrentPlayerName { get; private set; } = string.Empty;
     public bool HasPlayerName => !string.IsNullOrWhiteSpace(CurrentPlayerName);
+    public event Action OnPlayerNameConfirmed;
 
     private enum NameValidationResult
     {
         Valid,
         Empty,
         TooLong,
+        DuplicateCandidateName,
+        IncompleteHangul,
     }
 
     private void Awake()
     {
         ResolveBookReference();
         ResolveInputFieldReference();
+        ResolveInputNamePulseEffect();
         ConfigureInputField();
         HideWarning();
 
@@ -106,6 +115,8 @@ public class InputNameUIController : MonoBehaviour
         }
 
         HideInputNamePopup();
+        SetInputNamePulseActive(false);
+        OnPlayerNameConfirmed?.Invoke();
     }
 
     public void OnClickCancel()
@@ -156,7 +167,10 @@ public class InputNameUIController : MonoBehaviour
     private bool TrySaveInputName()
     {
         string inputName = playerNameInputField != null ? playerNameInputField.text : string.Empty;
-        NameValidationResult validationResult = ValidateName(inputName);
+        IReadOnlyList<string> candidateNames = SaveManager.Instance != null
+            ? SaveManager.Instance.CurrentGameNames.npcNames
+            : null;
+        NameValidationResult validationResult = ValidateName(inputName, candidateNames);
 
         if (validationResult != NameValidationResult.Valid)
         {
@@ -165,21 +179,49 @@ public class InputNameUIController : MonoBehaviour
             return false;
         }
 
-        CurrentPlayerName = inputName;
+        CurrentPlayerName = inputName.Trim();
         UpdatePlayerNameDisplay();
         HideWarning();
         return true;
     }
 
-    private static NameValidationResult ValidateName(string inputName)
+    private static NameValidationResult ValidateName(
+        string inputName,
+        IReadOnlyList<string> candidateNames)
     {
-        if (string.IsNullOrEmpty(inputName))
+        if (string.IsNullOrWhiteSpace(inputName))
             return NameValidationResult.Empty;
 
         if (inputName.Length < MinNameLength || inputName.Length > MaxNameLength)
             return NameValidationResult.TooLong;
 
+        string normalizedName = inputName.Trim();
+
+        for (int i = 0; i < normalizedName.Length; i++)
+        {
+            if (IsHangulJamo(normalizedName[i]))
+                return NameValidationResult.IncompleteHangul;
+        }
+
+        if (candidateNames != null)
+        {
+            for (int i = 0; i < candidateNames.Count; i++)
+            {
+                if (string.Equals(normalizedName, candidateNames[i], StringComparison.Ordinal))
+                    return NameValidationResult.DuplicateCandidateName;
+            }
+        }
+
         return NameValidationResult.Valid;
+    }
+
+    private static bool IsHangulJamo(char character)
+    {
+        return (character >= '\u1100' && character <= '\u11FF') || // 한글 자모
+               (character >= '\u3130' && character <= '\u318F') || // 호환용 한글 자모
+               (character >= '\uA960' && character <= '\uA97F') || // 한글 자모 확장 A
+               (character >= '\uD7B0' && character <= '\uD7FF') || // 한글 자모 확장 B
+               (character >= '\uFFA0' && character <= '\uFFDC');   // 반각 한글 자모
     }
 
     private static string GetWarningMessage(NameValidationResult validationResult)
@@ -190,6 +232,10 @@ public class InputNameUIController : MonoBehaviour
                 return EmptyNameWarningMessage;
             case NameValidationResult.TooLong:
                 return TooLongNameWarningMessage;
+            case NameValidationResult.DuplicateCandidateName:
+                return DuplicateCandidateNameWarningMessage;
+            case NameValidationResult.IncompleteHangul:
+                return IncompleteHangulWarningMessage;
             default:
                 return string.Empty;
         }
@@ -256,5 +302,17 @@ public class InputNameUIController : MonoBehaviour
     {
         if (playerNameInputField == null && inputNamePopup != null)
             playerNameInputField = inputNamePopup.GetComponentInChildren<TMP_InputField>(true);
+    }
+
+    private void ResolveInputNamePulseEffect()
+    {
+        if (inputNamePulseEffect == null && inputNameButton != null)
+            inputNamePulseEffect = inputNameButton.GetComponent<UIButtonPulseEffect>();
+    }
+
+    private void SetInputNamePulseActive(bool isActive)
+    {
+        if (inputNamePulseEffect != null)
+            inputNamePulseEffect.enabled = isActive;
     }
 }

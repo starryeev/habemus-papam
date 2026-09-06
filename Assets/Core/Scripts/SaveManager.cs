@@ -9,6 +9,7 @@ public class SaveManager : MonoBehaviour
 {
     private const int CurrentSaveVersion = 5;
     private const string MainSceneName = "MainScene";
+    private const string IntroNewspaperSceneName = "IntroNewspaperScene";
     private const string GameSceneName = "GameScene";
     private const string SaveFolderName = "Json";
     private const string SaveFileName = "autosave.json";
@@ -137,12 +138,19 @@ public class SaveManager : MonoBehaviour
 
     public void StartNewGame()
     {
+        if (SceneManager.GetActiveScene().name != IntroNewspaperSceneName)
+        {
+            DiscardCurrentGameSave();
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(IntroNewspaperSceneName);
+            return;
+        }
+
         pendingLoad = false;
         pendingNewGame = true;
         Time.timeScale = 1f;
 
         EnsureCurrentPlayerName();
-        currentGameNames.npcNames.Clear();
         if (ActionRecordManager.Instance != null)
         {
             ActionRecordManager.Instance.ClearCurrentRunStats();
@@ -239,11 +247,7 @@ public class SaveManager : MonoBehaviour
 
     public void SetNewGamePlayerName(string playerName)
     {
-        currentGameNames = new GameNameSaveData
-        {
-            playerName = SanitizeName(playerName),
-            npcNames = new List<string>()
-        };
+        currentGameNames.playerName = SanitizeName(playerName);
     }
 
     public void SaveCheckpoint(SaveCheckpointType checkpointType, SaveResumeStep resumeStep)
@@ -264,6 +268,14 @@ public class SaveManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        if (scene.name == IntroNewspaperSceneName)
+        {
+            currentGameNames = new GameNameSaveData();
+            SyncCompletedPlayerNamesToNameDB();
+            EnsureNpcNames();
+            return;
+        }
+
         if (scene.name != GameSceneName)
         {
             return;
@@ -302,7 +314,6 @@ public class SaveManager : MonoBehaviour
         if (pendingNewGame)
         {
             EnsureCurrentPlayerName();
-            EnsureNpcNames();
             pendingNewGame = false;
         }
     }
@@ -475,10 +486,18 @@ public class SaveManager : MonoBehaviour
 
         while (currentGameNames.npcNames.Count < 3)
         {
-            string npcName = NameDB.Instance != null ? NameDB.Instance.GetRandomName() : null;
+            string npcName = NameDB.Instance != null
+                ? NameDB.Instance.GetRandomName(currentGameNames.npcNames)
+                : null;
             if (string.IsNullOrWhiteSpace(npcName))
             {
-                npcName = $"NPC{currentGameNames.npcNames.Count + 1}";
+                int fallbackNumber = currentGameNames.npcNames.Count + 1;
+
+                do
+                {
+                    npcName = $"NPC{fallbackNumber++}";
+                }
+                while (currentGameNames.npcNames.Contains(npcName));
             }
 
             currentGameNames.npcNames.Add(npcName);
@@ -524,10 +543,7 @@ public class SaveManager : MonoBehaviour
 
     private void SyncCompletedPlayerNamesToNameDB()
     {
-        if (NameDB.Instance != null)
-        {
-            NameDB.SetPlayerInputNames(ReadCompletedPlayerNames().playerInputNames);
-        }
+        NameDB.SetPlayerInputNames(ReadCompletedPlayerNames().playerInputNames);
     }
 
     private CompletedPlayerNameSaveData ReadCompletedPlayerNames()
